@@ -1,0 +1,35 @@
+.home-container {
+  text-align: center;
+}
+.profile-picture {
+  border-radius: 50%;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Some icons.
+ * See https://icon-sets.iconify.design/
+ */
+.github-icon {
+  /* Add dimensions to span */
+  display: inline-block;
+  width: 48px;
+  height: 48px;
+
+  /* Add background image */
+  background-image: url('https://api.iconify.design/mdi/github.svg');
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+}
+.email-icon {
+  /* Add dimensions to span */
+  display: inline-block;
+  width: 48px;
+  height: 48px;
+
+  /* Add background image */
+  background-image: url('https://api.iconify.design/mdi/email-edit-outline.svg');
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+}

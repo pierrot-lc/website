@@ -1,0 +1,16 @@
+---
+styles: ["styles.css", "navigation.css"]
+---
+<!doctype html>
+<html>
+  {% include head.html %}
+  <body>
+    {% include navigation.html %}
+
+    <main>
+      {{ content }}
+    </main>
+
+    {% include footer.html %}
+  </body>
+</html>

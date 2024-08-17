@@ -1,0 +1,8 @@
+<nav>
+  <a class="nav-title" href="/">{{ site.title | upcase }}</a>
+  <ul class="nav-list">
+    {% for item in site.data.navigation %}
+      <li><a href="{{ item.link }}" class="current">{{ item.name }}</a></li>
+    {% endfor %}
+  </ul>
+</nav>
