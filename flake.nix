@@ -20,7 +20,6 @@
       name = "website";
       buildInputs = [
         (pkgs.ruby.withPackages rubyPackages)
-        pkgs.bundix
         pkgs.just
         pkgs.marksman
       ];
