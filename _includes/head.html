@@ -1,6 +1,8 @@
 <head>
   <meta charset="utf-8">
-  <title>{{ page.title }}</title>
+  <title>{{ site.title }}</title>
+
+  <link rel="icon" type="image/x-icon" href={{ "/assets/images/favicon.ico" | relative_url }}>
 
   <!-- Add all CSS files declared by the layout. -->
   {% for item in layout.styles %}
