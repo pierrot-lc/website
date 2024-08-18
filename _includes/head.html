@@ -4,9 +4,9 @@
 
   <!-- Add all CSS files declared by the layout. -->
   {% for item in layout.styles %}
-    <link rel="stylesheet" href={{ "/assets/css/" | append: item }}>
+    <link rel="stylesheet" href={{ "/assets/css/" | append: item | relative_url }}>
   {% endfor %}
   {% for item in page.styles %}
-    <link rel="stylesheet" href={{ "/assets/css/" | append: item }}>
+    <link rel="stylesheet" href={{ "/assets/css/" | append: item | relative_url }}>
   {% endfor %}
 </head>

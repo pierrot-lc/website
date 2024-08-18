@@ -1,9 +1,9 @@
 <header>
 <nav>
-  <a class="nav-title" href="/">{{ site.title | upcase }}</a>
+  <a class="nav-title" href={{ "/" | relative_url }}>{{ site.title | upcase }}</a>
   <ul class="nav-list">
     {% for item in site.data.navigation %}
-      <li><a href="{{ item.link }}" class="current">{{ item.name }}</a></li>
+      <li><a href="{{ item.link | relative_url }}" class="current">{{ item.name }}</a></li>
     {% endfor %}
   </ul>
 </nav>

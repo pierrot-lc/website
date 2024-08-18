@@ -3,7 +3,7 @@ layout: default
 styles: ["home.css"]
 ---
 <div class="home-container">
-  <img src="/assets/images/profile.png" class="profile-picture">
+  <img src={{ "/assets/images/profile.png" | relative_url }} class="profile-picture">
   <p>{{ site.description }}</p>
 
   <a href={{ "https://github.com/" | append: site.github_username }}><span class="github-icon"></span></a>
