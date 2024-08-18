@@ -1,5 +1,20 @@
 # Personal Jekyll Website
 
+To setup with `nix flakes`:
+
+```sh
+# Install ruby.
+nix develop
+# Install ruby dependencies.
+bundle install
+```
+
+To serve:
+
+```sh
+bundle exec jekyll serve
+```
+
 ## Thanks
 
 Heavily inspired by the following themes:
