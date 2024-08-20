@@ -4,5 +4,8 @@ serve:
 install:
   bundle install
 
+doctor:
+  bundle exec jekyll doctor
+
 lock:
   bundle lock
