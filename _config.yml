@@ -26,6 +26,9 @@ github_username:  pierrot-lc
 plugins:
   - jekyll-feed
 
+kramdown:
+  math_engine: katex
+
 exclude:
   - Gemfile
   - Gemfile.lock
@@ -35,6 +38,8 @@ exclude:
   - README.md
 
 themes:
+  # https://developer.mozilla.org/en-US/docs/Web/CSS/color_value.
+  # https://developer.mozilla.org/en-US/docs/Web/CSS/named-color.
   light:
     text-color: black
   dark:

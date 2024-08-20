@@ -41,3 +41,11 @@ gem "kramdown-parser-gfm"
 gem "http_parser.rb", "~> 0.6.0", :platforms => [:jruby]
 
 gem "webrick", "~> 1.8"
+
+gem "kramdown-math-katex", "~> 1.0"
+
+# Katex needs JS.
+gem "execjs", "~> 2.9"
+
+# Simple JS runtime for execjs.
+gem "mini_racer", "~> 0.14.1"
