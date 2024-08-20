@@ -1,8 +1,14 @@
 <head>
   <meta charset="utf-8">
+
+  <!-- The metadata about the webpage. See https://developer.mozilla.org/en-US/docs/Web/HTML/Element/meta/name. -->
+  <meta name="author" content={{ site.fullname }}>
+  <meta name="description" content={{ site.description }}>  <!-- Should be the description of the page instead of the website. -->
+
   <title>{{ site.title }}</title>
 
   <link rel="icon" type="image/x-icon" href={{ "/assets/images/favicon.ico" | relative_url }}>
+  <link rel="alternate" type="application/rss+xml" title="RSS" href={{ "/feed.xml" | relative_url }}>
 
   <!-- Add all CSS files declared by the layout. -->
   {% for item in layout.styles %}
