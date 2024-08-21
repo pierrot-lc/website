@@ -28,7 +28,7 @@ modular approach using the list of edges representation.
 Let's first recap how we usually represent a graph. For a list of nodes $$N$$,
 we represent the relation between the nodes by some *adjacency matrix* $$A \in
 \mathbb{N}^{N \times N}$$ where $$a_{i, j} \in \{0, 1\}$$ represents the edge
-between the nodes $$i$$ and $$j$$ ($$1$$ if the edge actually exists, $$0$$
+from the node $$j$$ to node $$i$$ ($$1$$ if the edge actually exists, $$0$$
 otherwise). We will use this adjacency matrix to summarize how the nodes are
 connected within each other.
 
