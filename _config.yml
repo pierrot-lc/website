@@ -26,9 +26,6 @@ github_username:  pierrot-lc
 plugins:
   - jekyll-feed
 
-kramdown:
-  math_engine: katex
-
 exclude:
   - Gemfile
   - Gemfile.lock
