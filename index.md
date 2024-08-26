@@ -4,11 +4,27 @@ styles: ["home.css"]
 
 # {{ site.title }}
 
-Hi, I am a PhD student at Inria Sophia Antipolis about *Neural Combinatorial
-Optimization* and *Neural Adaptive Computation*. I love Deep Learning in
-general, tinkering with computers and opensource softwares.
+I will start a PhD in the [COATI team][coati], joint project of [INRIA -
+Université Côte d'Azur][inria] and [I3S lab][i3s] ([CNRS][cnrs]/[UCA][uca]). My
+PhD will be done under the supervision of [Emanuele Natale][ema-natale] and
+[Frédéric Giroire][fred-giroire].
 
-My PhD is funded by the DS4H scholarship.
+I'm specializing in *Neural Combinatorial Optimization*. I'm also interested
+into *Neural Adaptive Computation*, which I think is key to make deep learning
+models to execute an algorithm. I love Deep Learning in general, tinkering with
+computers and open source softwares.
+
+My PhD is funded by the [DS4H scholarship][ds4h].
 
 [<span class="github-icon socials"></span>]({{ "https://github.com/" | append: site.github_username }})
 [<span class="email-icon socials"></span>]({{ "mailto:" | append: site.email }})
+
+[cnrs]:         http://www.cnrs.fr/
+[coati]:        https://team.inria.fr/coati/team-members/
+[ds4h]:         https://ds4h.univ-cotedazur.fr/
+[ema-natale]:   https://natema.github.io/ema-webpage/
+[fred-giroire]: https://www-sop.inria.fr/members/Frederic.Giroire/
+[i3s]:          http://www.i3s.unice.fr/
+[inria]:        https://www.inria.fr/en/inria-centre-universite-cote-azur
+[uca]:          https://univ-cotedazur.fr/
+[unice]:        http://www.unice.fr/
