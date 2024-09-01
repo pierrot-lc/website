@@ -1,2 +1,2 @@
 convert-icons:
-  magick overfitting.svg -resize 32x32 favicon.ico
+  magick favicon.png -resize 32x32 favicon.ico
