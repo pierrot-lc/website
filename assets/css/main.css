@@ -7,7 +7,7 @@
 html {}
 
 @import "navigation.css";
-@import "zenburn.css";
+@import "code-highlight.css";
 
 /* Overall look. */
 body {
@@ -26,10 +26,18 @@ main {
 
   a:link, a:visited {
     color: darkslategray;
+    font-weight: bolder;
   }
 
   p {
     text-align: justify;
+  }
+
+  p:has(> img) {
+    text-align: center;
+  }
+  p img {
+    max-width: 90%;
   }
 }
 header {
@@ -45,6 +53,7 @@ footer {
 
   a:link, a:visited {
     color: darkslategray;
+    font-weight: bolder;
   }
 }
 
@@ -64,7 +73,7 @@ main {
 
 /* Specifics. */
 blockquote {
-  background-color: lavender;
+  background-color: silver;
   border-radius: 3px;
   padding: 0px 5px;
 }
