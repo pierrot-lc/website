@@ -82,3 +82,6 @@ blockquote {
   padding: 2px 5px;
   border-radius: 3px;
 }
+.post-illustration {
+  width: 100%;
+}

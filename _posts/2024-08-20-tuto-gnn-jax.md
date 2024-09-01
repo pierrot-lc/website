@@ -3,6 +3,7 @@ title: "How to Build a Graph Convolutional Network with JAX and Equinox!"
 description: >-
   JAX implementation of graph neural networks. Uses Equinox and shows two
   different ways of implementing GNNs.
+illustration: "/assets/images/posts/gnn-tuto/illustration.png"
 
 layout: post
 date: 2024-09-01
@@ -26,7 +27,7 @@ modular approach using the edge list representation.
 
 ## Level 1: Using the Adjacency Matrix
 
-Let's first recap how we usually represent a graph. For a list of nodes $$N$$,
+Let's first recap how we usually represent a graph. For a list of $$N$$ nodes,
 we represent the relation between the nodes with an *adjacency matrix* $$A \in
 \mathbb{N}^{N \times N}$$ where $$a_{i, j} \in \{0, 1\}$$ represents the edge
 from node $$j$$ to node $$i$$ ($$1$$ if the edge actually exists, $$0$$
