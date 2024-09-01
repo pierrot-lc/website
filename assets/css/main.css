@@ -7,14 +7,14 @@
 html {}
 
 @import "navigation.css";
-@import "zenburn.css";
+@import "code-highlight.css";
 
+/* Overall look. */
 body {
   font-family: lato, monospace;
 
   a:link, a:visited {
     text-decoration: none;
-    color: unset;
   }
   a:hover, a:active {
     text-decoration: underline;
@@ -23,13 +23,38 @@ body {
 main {
   max-width: 70%;
   margin: 0 auto;
+
+  a:link, a:visited {
+    color: darkslategray;
+    font-weight: bolder;
+  }
+
+  p {
+    text-align: justify;
+  }
+
+  p:has(> img) {
+    text-align: center;
+  }
+  p img {
+    max-width: 90%;
+  }
 }
 header {
   margin: 0 20px;
+
+  a:link, a:visited {
+    color: unset;
+  }
 }
 footer {
   text-align: center;
   font-size: 14px;
+
+  a:link, a:visited {
+    color: darkslategray;
+    font-weight: bolder;
+  }
 }
 
 /* Sticky footer using flex display. */
@@ -43,4 +68,17 @@ header, footer {
 }
 main {
   flex: 1 0 auto;
+  width: 700px;
+}
+
+/* Specifics. */
+blockquote {
+  background-color: silver;
+  border-radius: 3px;
+  padding: 0px 5px;
+}
+.highlight {
+  margin: 0 10px;
+  padding: 2px 5px;
+  border-radius: 3px;
 }

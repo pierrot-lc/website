@@ -2,19 +2,22 @@
   <meta charset="utf-8">
 
   <!-- The metadata about the webpage. See https://developer.mozilla.org/en-US/docs/Web/HTML/Element/meta/name. -->
-  <meta name="author" content={{ site.fullname }}>
-  <meta name="description" content={{ site.description }}>  <!-- Should be the description of the page instead of the website. -->
+  <meta name="author" content="{{ site.fullname }}">
+  <meta name="description" content="{{ page.description }}">
 
   <title>{{ site.title }}</title>
 
   <link rel="icon" type="image/x-icon" href={{ "/assets/images/favicon.ico" | relative_url }}>
   <link rel="alternate" type="application/rss+xml" title="RSS" href={{ "/feed.xml" | relative_url }}>
 
-  <!-- Add all CSS files declared by the layout. -->
+  <!-- Add all CSS files declared by the layout and the page. -->
   {% for item in layout.styles %}
     <link rel="stylesheet" href={{ "/assets/css/" | append: item | relative_url }}>
   {% endfor %}
   {% for item in page.styles %}
     <link rel="stylesheet" href={{ "/assets/css/" | append: item | relative_url }}>
   {% endfor %}
+
+  <!-- KaTeX rendering. -->
+  <link rel="stylesheet" href={{ "/assets/css/katex.min.css" | relative_url }}>
 </head>

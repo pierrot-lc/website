@@ -16,8 +16,6 @@
 title: "Pierre Pereira"
 fullname: "Pierre Pereira"
 email: "pierrot-lc.website@proton.me"
-description: >- # this means to ignore newlines until "baseurl:"
-  Here I discuss about GNNs, RL, NCO and other Deep Learning things.
 baseurl: "/website" # the subpath of your site, e.g. /blog
 url: "https://pierrot-lc.github.io" # the base hostname & protocol for your site, e.g. http://example.com
 github_username:  pierrot-lc
@@ -34,7 +32,13 @@ exclude:
   - flake.nix
   - README.md
 
+# Jekyll global configs.
+# See https://jekyllrb.com/docs/configuration/options/.
+disable_disk_cache: true  # Avoid some random infinite loop during livereload.
+
 themes:
+  # https://developer.mozilla.org/en-US/docs/Web/CSS/color_value.
+  # https://developer.mozilla.org/en-US/docs/Web/CSS/named-color.
   light:
     text-color: black
   dark:
@@ -45,6 +49,8 @@ defaults:
       path: ""
     values:
       layout: "default"
+      description: >-
+        Here I discuss about GNNs, RL, NCO and other Deep Learning things.
 
   - scope:
       path: ""
