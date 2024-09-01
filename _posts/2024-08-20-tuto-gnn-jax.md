@@ -178,11 +178,12 @@ typically have a variable number of nodes and edges for different graphs of our
 datasets.
 
 It means that in order to avoid recompilation, we need to pad our graphs before
-feeding them into the model. This is why in my implementation you will find
-that I create fictive nodes and edges.
+feeding them into the model. For the adjacency matrix, we can simply fill it
+with more 0s. For the edge list, we can create fictive self-loops to a padded
+fictive node.
 
 You can have a look at this [explanation][jit-shape-discussion] from a JAX dev
-for a more in-depth understanding.
+for a more in-depth understanding of how JIT works under-the-hood.
 
 ## Conclusion
 
