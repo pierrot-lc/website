@@ -6,8 +6,12 @@
   <meta name="description" content="{{ page.description }}">
 
   <!-- Socials specific metadata. -->
-  <meta name="og:image" content="{{ page.illustration | relative_url }}">
-  <meta name="twitter:image" content="{{ page.illustration | relative_url }}">
+  <meta name="og:title" content="{{ page.title }}">
+  <meta name="og:description" content="{{ page.description }}">
+  <meta name="og:image" content="{{ page.illustration | absolute_url }}">
+  <meta name="twitter:title" content="{{ page.title }}">
+  <meta name="twitter:description" content="{{ page.description }}">
+  <meta name="twitter:image" content="{{ page.illustration | absolute_url }}">
 
   <title>{{ site.title }}</title>
 

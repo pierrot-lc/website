@@ -1,4 +1,6 @@
 ---
+title: "Pierre Pereira's Blog"
+
 styles: ["home.css"]
 ---
 
