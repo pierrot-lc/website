@@ -15,7 +15,7 @@ To serve:
 bundle exec jekyll serve
 ```
 
-## Thanks
+## Acknowledgements
 
 Heavily inspired by the following themes:
 
