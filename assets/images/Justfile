@@ -1,2 +1,0 @@
-convert-icons:
-  magick favicon.png -resize 32x32 favicon.ico
