@@ -1,0 +1,2 @@
+compile:
+    clang -I $TS_INCLUDE_DIR test-json-parser.c -ltree-sitter -ljson -o test-json-parser -L $TS_GRAMMARS_DIR
