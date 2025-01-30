@@ -1,2 +1,6 @@
 compile:
-    clang -I $TS_INCLUDE_DIR test-json-parser.c -ltree-sitter -ljson -o test-json-parser -L $TS_GRAMMARS_DIR
+    meson compile -C builddir
+
+setup:
+    meson setup builddir
+    cp builddir/compile_commands.json compile_commands.json

@@ -12,45 +12,63 @@
     system = "x86_64-linux";
     pkgs = import nixpkgs {inherit system;};
 
-    packages = [
+    # Compile tree-sitter grammars and generate a proper directory with the
+    # resulting libraries such that pkg-config can find them.
+    tree-sitter-grammars = let
+      grammars = pkgs.tree-sitter.withPlugins (p: [
+        p.tree-sitter-json
+        p.tree-sitter-markdown
+      ]);
+      pkgConfigFile = pkgs.writeText "tree-sitter-grammars.pc" ''
+        libdir=''${prefix}/lib
+
+        Name: tree-sitter-grammars
+        Description: Grammars implemented for tree-sitter
+        URL: ${pkgs.tree-sitter.meta.homepage}
+        Version: ${pkgs.tree-sitter.version}
+        Libs: -L''${libdir}
+      '';
+    in
+      pkgs.stdenv.mkDerivation {
+        name = "tree-sitter-grammars";
+        unpackPhase = "true"; # No src.
+
+        buildPhase = ''
+          mkdir -p $out/lib/pkgconfig
+
+          # Import the draft of pkg-config file and define prefix.
+          cp ${pkgConfigFile} $out/lib/pkgconfig/tree-sitter-grammars.pc
+          sed -i "1i prefix=$out" $out/lib/pkgconfig/tree-sitter-grammars.pc
+
+          for file in "${grammars}"/*.so; do
+            # Fetch grammar and rename it as a C lib.
+            cp "$file" "$out/lib/lib$(basename $file)"
+
+            # Add the lib to pkg-config.
+            sed -i "$ s/$/ -l$(basename -s .so $file)/" $out/lib/pkgconfig/tree-sitter-grammars.pc
+          done
+        '';
+      };
+
+    buildInputs = [
       pkgs.clang
       pkgs.just
-      pkgs.marksman
+      pkgs.meson
+      pkgs.ninja
+      pkgs.pkg-config
       pkgs.tree-sitter
+      tree-sitter-grammars
     ];
 
-    tree-sitter-grammars = pkgs.tree-sitter.withPlugins (p: [
-      p.tree-sitter-json
-      p.tree-sitter-markdown
-    ]);
-
-    tree-sitter-libs = pkgs.stdenv.mkDerivation {
-      name = "tree-sitter-libs";
-      unpackPhase = "true";
-
-      buildInputs = [tree-sitter-grammars];
-      buildPhase = ''
-        mkdir -p $out/lib
-        for file in "${tree-sitter-grammars}"/*.so; do
-          cp "$file" "$out/lib/lib$(basename $file)"
-        done
-      '';
-    };
-
-    libs = [
-      pkgs.tree-sitter
-      tree-sitter-libs
-    ];
-
+    # NOTE: `pkgs.pkg-config` automatically generate the environment variables
+    # in the shell based on the `buildInputs` packages. As long as a package
+    # have a 'lib/pkgconfig' directory it gets added to the pkg-config path.
     shell = pkgs.mkShell {
       name = "factory";
-      inherit packages;
-      env = {
-        LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath libs;
-        TS_GRAMMARS_DIR = "${tree-sitter-libs}/lib";
-        TS_INCLUDE_DIR = "${pkgs.tree-sitter}/include";
-      };
+      inherit buildInputs;
       shellHook = ''
+        just setup
+
         export SHELL="/run/current-system/sw/bin/bash"
       '';
     };
