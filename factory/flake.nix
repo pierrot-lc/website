@@ -67,9 +67,10 @@
       name = "factory";
       inherit buildInputs;
       shellHook = ''
-        just setup
-
         export SHELL="/run/current-system/sw/bin/bash"
+        export CC="${pkgs.clang}/bin/clang"
+
+        just setup
       '';
     };
   in {
