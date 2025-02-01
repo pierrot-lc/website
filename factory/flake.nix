@@ -50,9 +50,11 @@
         '';
       };
 
+    # NOTE: Do not use clangd from `pkgs.clang` as it is poorly integrated with
+    # NixOS libc.
     buildInputs = [
-      pkgs.clang
       pkgs.just
+      pkgs.llvmPackages_latest.clang-tools
       pkgs.meson
       pkgs.ninja
       pkgs.pkg-config
@@ -68,8 +70,6 @@
       inherit buildInputs;
       shellHook = ''
         export SHELL="/run/current-system/sw/bin/bash"
-        export CC="${pkgs.clang}/bin/clang"
-
         just setup
       '';
     };
