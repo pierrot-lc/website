@@ -18,6 +18,7 @@
       grammars = pkgs.tree-sitter.withPlugins (p: [
         p.tree-sitter-json
         p.tree-sitter-markdown
+        p.tree-sitter-typst
       ]);
       pkgConfigFile = pkgs.writeText "tree-sitter-grammars.pc" ''
         libdir=''${prefix}/lib

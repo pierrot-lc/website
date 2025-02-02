@@ -2,4 +2,12 @@ project('factory', 'c')
 
 treesitterdep = dependency('tree-sitter', method : 'pkg-config')
 grammarsdep = dependency('tree-sitter-grammars', method : 'pkg-config')
-executable('test-json-parser', 'test-json-parser.c', dependencies : [treesitterdep, grammarsdep])
+
+incdir = include_directories('include')
+sources = files(
+  'src/main.c',
+  'src/hash.c',
+)
+
+executable('parser', sources, include_directories : incdir, dependencies : [treesitterdep, grammarsdep])
+executable('hash-codes', 'src/hash_codes.c', 'src/hash.c', include_directories : incdir)

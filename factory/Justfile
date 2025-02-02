@@ -1,11 +1,10 @@
 compile:
     meson compile -C builddir
 
-setup:
-    rm -rf builddir
+setup: clean
     meson setup builddir
-    rm compile_commands.json
     ln -s builddir/compile_commands.json compile_commands.json
 
 clean:
     rm -rf builddir .cache
+    rm compile_commands.json
