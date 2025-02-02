@@ -1,3 +1,6 @@
+tests:
+    meson test -C builddir -v
+
 compile:
     meson compile -C builddir
 

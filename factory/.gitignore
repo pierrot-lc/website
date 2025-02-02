@@ -1,3 +1,4 @@
 .cache/
 builddir/
 compile_commands.json
+tests/outs/
