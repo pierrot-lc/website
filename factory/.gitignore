@@ -3,4 +3,3 @@ builddir/
 compile_commands.json
 factory
 hash-codes
-tests/outs/

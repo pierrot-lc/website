@@ -15,7 +15,7 @@ int main() {
     for (int j = 0; node_types[i][j] != '\0'; j++)
       printf("%c", toupper(node_types[i][j]));
 
-    printf(" %lu\n", hash(node_types[i]));
+    printf(" %iu\n", hash(node_types[i]));
   }
 
   return 0;

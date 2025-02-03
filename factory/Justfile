@@ -9,7 +9,6 @@ compile:
 
 setup: clean
     meson setup builddir
-    mkdir -p tests/outs
     ln -s builddir/compile_commands.json compile_commands.json
 
 clean:
