@@ -16,9 +16,7 @@
     # resulting libraries such that pkg-config can find them.
     tree-sitter-grammars = let
       grammars = pkgs.tree-sitter.withPlugins (p: [
-        p.tree-sitter-json
         p.tree-sitter-markdown
-        p.tree-sitter-typst
       ]);
       pkgConfigFile = pkgs.writeText "tree-sitter-grammars.pc" ''
         libdir=''${prefix}/lib
@@ -72,6 +70,7 @@
       shellHook = ''
         export SHELL="/run/current-system/sw/bin/bash"
         just setup
+        just tests
       '';
     };
   in {
