@@ -3,6 +3,7 @@ tests:
 
 compile:
     meson compile -C builddir
+    rm -f factory hash-codes
     ln -s builddir/factory factory
     ln -s builddir/hash-codes hash-codes
 

@@ -37,13 +37,13 @@ char *read_file(const char *path) {
   return content;
 }
 
-char *node_text(const char *source_code, TSNode node) {
+char *node_text(const char *code, TSNode node) {
   unsigned int start = ts_node_start_byte(node);
   unsigned int end = ts_node_end_byte(node);
   unsigned int length = end - start;
 
-  char *node_text = malloc(length + 1);
-  strncpy(node_text, source_code + start, length);
+  char *node_text = (char *)malloc(length + 1);
+  strncpy(node_text, code + start, length);
   node_text[length] = '\0';
   return node_text;
 }

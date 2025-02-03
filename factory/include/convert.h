@@ -9,8 +9,13 @@
  */
 void convert_tree(FILE *, const char *, TSNode);
 
-void convert_heading(FILE *, const char *, TSNode);
-void convert_inline(FILE *, const char *, TSNode);
-void convert_named_children(FILE *, const char *, TSNode);
+/* Inline are their own tree.
+ */
+void convert_inline_tree(FILE *, const char *, TSNode);
+
+void _convert_emphasis(FILE *file, const char *source, TSNode node);
+void _convert_heading(FILE *, const char *, TSNode);
+void _convert_inline(FILE *, const char *, TSNode);
+void _convert_named_children(FILE *, const char *, TSNode);
 
 #endif
