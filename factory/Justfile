@@ -3,11 +3,12 @@ tests:
 
 compile:
     meson compile -C builddir
+    ln -s builddir/factory factory
+    ln -s builddir/hash-codes hash-codes
 
 setup: clean
     meson setup builddir
     ln -s builddir/compile_commands.json compile_commands.json
 
 clean:
-    rm -rf builddir .cache
-    rm compile_commands.json
+    rm -rf builddir .cache compile_commands.json
