@@ -53,16 +53,20 @@ void _convert_emphasis(FILE *file, const char *source, TSNode node) {
   TSNode node_2 = ts_node_named_child(node, 1);
   char *emph_1 = node_text(source, node_1);
   char *emph_2 = node_text(source, node_2);
+  char *text = extract_text(source, ts_node_end_byte(node_1),
+                            ts_node_start_byte(node_2));
   assert(strcmp(emph_1, emph_2) == 0);
 
   if (strcmp(emph_1, "*") == 0) {
-    fprintf(file, "<strong>");
-    fprintf(file, "</strong>");
+    fprintf(file, "<strong>%s</strong>", text);
   } else if (strcmp(emph_2, "_") == 0) {
-    fprintf(file, "<emph>");
-    fprintf(file, "</emph>");
+    fprintf(file, "<em>%s</em>", text);
   } else
     assert(false);
+
+  free(text);
+  free(emph_2);
+  free(emph_1);
 }
 
 void _convert_heading(FILE *file, const char *source, TSNode node) {
@@ -95,9 +99,7 @@ void _convert_inline(FILE *file, const char *source, TSNode node) {
 
     // Copy the content from the current start to the next child.
     end = ts_node_start_byte(child);
-    text = (char *)malloc(end - start + 1);
-    strncpy(text, source, end - start);
-    text[end - start] = '\0';
+    text = extract_text(source, start, end);
     fprintf(file, "%s", text);
     free(text);
 
@@ -118,9 +120,7 @@ void _convert_inline(FILE *file, const char *source, TSNode node) {
 
   // Copy the rest of the inline node.
   end = ts_node_end_byte(node);
-  text = (char *)malloc(end - start + 1);
-  strncpy(text, source, end - start);
-  text[end - start] = '\0';
+  text = extract_text(source, start, end);
   fprintf(file, "%s", text);
   free(text);
 }

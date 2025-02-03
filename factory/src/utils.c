@@ -1,4 +1,5 @@
 #include "utils.h"
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -37,13 +38,16 @@ char *read_file(const char *path) {
   return content;
 }
 
-char *node_text(const char *code, TSNode node) {
-  unsigned int start = ts_node_start_byte(node);
-  unsigned int end = ts_node_end_byte(node);
+char *extract_text(const char *buffer, unsigned int start, unsigned int end) {
+  assert(end >= start);
   unsigned int length = end - start;
+  char *text = (char *)malloc(length + 1);
 
-  char *node_text = (char *)malloc(length + 1);
-  strncpy(node_text, code + start, length);
-  node_text[length] = '\0';
-  return node_text;
+  strncpy(text, buffer + start, length);
+  text[length] = '\0';
+  return text;
+}
+
+char *node_text(const char *code, TSNode node) {
+  return extract_text(code, ts_node_start_byte(node), ts_node_end_byte(node));
 }
