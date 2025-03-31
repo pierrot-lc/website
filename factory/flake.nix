@@ -69,7 +69,6 @@
       name = "factory";
       inherit buildInputs;
       shellHook = ''
-        export SHELL="/run/current-system/sw/bin/bash"
         just setup
         just tests
       '';

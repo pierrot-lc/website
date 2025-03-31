@@ -7,6 +7,8 @@ incdir = include_directories('include')
 sources = files(
   'src/convert.c',
   'src/hash.c',
+  'src/parse.c',
+  'src/tree.c',
   'src/utils.c',
 )
 

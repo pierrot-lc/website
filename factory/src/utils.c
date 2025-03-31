@@ -1,9 +1,10 @@
-#include "utils.h"
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <tree_sitter/api.h>
+
+#include "utils.h"
 
 char *read_file(const char *path) {
   FILE *file;
