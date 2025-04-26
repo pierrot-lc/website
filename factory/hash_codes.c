@@ -3,14 +3,23 @@
 #include <stdio.h>
 
 int main() {
-  char *node_types[10] = {
-      "atx_h1_marker",   "atx_h2_marker", "atx_heading",
-      "document",        "emphasis",      "emphasis_delimiter",
-      "heading_content", "inline",        "paragraph",
+  char *node_types[13] = {
+      "atx_h1_marker",
+      "atx_h2_marker",
+      "atx_heading",
+      "document",
+      "emph_em",
+      "emph_strong",
+      "emphasis",
+      "emphasis_delimiter",
+      "heading_content",
+      "inline",
+      "paragraph",
       "section",
+      "text",
   };
 
-  for (int i = 0; i < 9; i++) {
+  for (int i = 0; i < 13; i++) {
     printf("#define HASH_");
 
     for (int j = 0; node_types[i][j] != '\0'; j++)

@@ -98,7 +98,8 @@ static Node *_node(const char *source, TSNode ts_node) {
     break;
 
   default:
-    fprintf(stderr, "Unknown hash: %u\n", hash(ts_node_type(ts_node)));
+    fprintf(stderr, "[TREE MD] Unknown hash: %u\n",
+            hash(ts_node_type(ts_node)));
     assert(false);
   }
 
@@ -119,8 +120,6 @@ static void _children(Node *parent, const char *source, TSNode ts_parent) {
 
 /*
  * *Main*
- *
- * This is the main function of the file.
  */
 
 Node *convert_tree_md(const char *source, TSTree *tree) {

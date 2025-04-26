@@ -6,6 +6,13 @@
 #include "tree.h"
 #include "write_html.h"
 
+/* Place a pair of opening and closing balise and write the children in the
+ * middle.
+ */
+static void _balise(FILE *, Node *, char *);
+
+/* Write all children of the given node.
+ */
 static void _children(FILE *, Node *);
 
 /*
@@ -14,27 +21,15 @@ static void _children(FILE *, Node *);
  * Each function here write some HTML code based on the specific Node type.
  */
 
-static void _heading(FILE *file, Node *node) {
-  Node *title = node->children[0];
-
-  fprintf(file, "<%s>", node->content);
-  write_html(file, title);
-  fprintf(file, "</%s>\n", node->content);
-}
-
-static void _inline(FILE *file, Node *node) {
-  fprintf(file, "%s", node->content);
-}
-
-static void _paragraph(FILE *file, Node *node) {
-  fprintf(file, "<p>");
-  _children(file, node);
-  fprintf(file, "</p>\n");
-}
-
 /*
  * *Utils*
  */
+
+static void _balise(FILE *file, Node *node, char *balise) {
+  fprintf(file, "<%s>", balise);
+  _children(file, node);
+  fprintf(file, "</%s>", balise);
+}
 
 static void _children(FILE *file, Node *node) {
   for (int i = 0; i < node->child_count; i++)
@@ -48,24 +43,35 @@ static void _children(FILE *file, Node *node) {
 void write_html(FILE *file, Node *root) {
   switch (root->code) {
   case HASH_ATX_HEADING:
-    _heading(file, root);
+    _balise(file, root, root->content);
+    fprintf(file, "\n");
     break;
 
-  case HASH_INLINE:
-    _inline(file, root);
+  case HASH_EMPH_EM:
+    _balise(file, root, "em");
+    break;
+
+  case HASH_EMPH_STRONG:
+    _balise(file, root, "strong");
     break;
 
   case HASH_PARAGRAPH:
-    _paragraph(file, root);
+    _balise(file, root, "p");
+    fprintf(file, "\n");
+    break;
+
+  case HASH_TEXT:
+    fprintf(file, "%s", root->content);
     break;
 
   case HASH_DOCUMENT:
+  case HASH_INLINE:
   case HASH_SECTION:
     _children(file, root);
     break;
 
   default:
-    fprintf(stderr, "Unknown hash: %u\n", root->code);
+    fprintf(stderr, "[HTML] Unknown hash: %u\n", root->code);
     assert(false);
   }
 }
