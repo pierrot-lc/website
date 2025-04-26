@@ -1,9 +1,11 @@
 #include <assert.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
 #include <tree_sitter/api.h>
 
-#include "convert.h"
+#include "convert_tree_md.h"
+#include "convert_tree_md_inline.h"
 #include "hash.h"
 #include "parse.h"
 #include "tree.h"
@@ -11,81 +13,17 @@
 
 const TSLanguage *tree_sitter_markdown_inline(void);
 
-Node *convert_tree_md(const char *source, TSTree *tree) {
-  Node *root;
-  TSNode ts_root;
-  unsigned int hash_document;
+static Node *_node(const char *, TSNode);
+static void _children(Node *, const char *, TSNode);
 
-  ts_root = ts_tree_root_node(tree);
-  hash_document = hash(ts_node_type(ts_root));
+/*
+ * *Converters*
+ *
+ * Convert TSNode into Node. Each function is specifically made for a certain
+ * type of TSNode.
+ */
 
-  assert(hash_document == HASH_DOCUMENT);
-  assert(ts_node_is_null(ts_node_next_sibling(ts_root)));
-
-  root = create_node(hash_document, NULL);
-  _children(root, source, ts_root);
-  return root;
-}
-
-Node *convert_tree_md_inline(const char *source, TSTree *tree) {
-  return _node_md_inline(source, ts_tree_root_node(tree));
-}
-
-void _children(Node *parent, const char *source, TSNode ts_parent) {
-  Node *child;
-  TSNode ts_child;
-
-  for (int i = 0; i < ts_node_named_child_count(ts_parent); i++) {
-    ts_child = ts_node_named_child(ts_parent, i);
-    child = _node_md(source, ts_child);
-    add_child(parent, child);
-  }
-}
-
-Node *_node_md(const char *source, TSNode ts_node) {
-  Node *node;
-  switch (hash(ts_node_type(ts_node))) {
-  case HASH_ATX_HEADING:
-    node = _heading(source, ts_node);
-    break;
-  case HASH_INLINE:
-    node = _inline(source, ts_node);
-    break;
-  case HASH_SECTION:
-    node = create_node(HASH_SECTION, NULL);
-    _children(node, source, ts_node);
-    break;
-  default:
-    fprintf(stderr, "Unknown hash: %u\n", hash(ts_node_type(ts_node)));
-    assert(false);
-  }
-
-  return node;
-}
-
-Node *_node_md_inline(const char *source, TSNode ts_node) {
-  Node *node;
-  char *content;
-
-  content = node_text(source, ts_node);
-  node = create_node(HASH_INLINE, content);
-  return node;
-}
-
-Node *_inline(const char *source, TSNode ts_node) {
-  Node *node;
-  TSTree *tree;
-  char *source_inline;
-
-  source_inline = node_text(source, ts_node);
-  tree = parse(source_inline, tree_sitter_markdown_inline());
-  node = _node_md_inline(source_inline, ts_tree_root_node(tree));
-  free(source_inline);
-  ts_tree_delete(tree);
-  return node;
-}
-
-Node *_heading(const char *source, TSNode ts_node) {
+static Node *_heading(const char *source, TSNode ts_node) {
   assert(ts_node_named_child_count(ts_node) == 2);
 
   Node *node, *child;
@@ -113,9 +51,92 @@ Node *_heading(const char *source, TSNode ts_node) {
   node = create_node(HASH_ATX_HEADING, content);
 
   ts_content = ts_node_child(ts_node, 1);
-  child = _node_md(source, ts_content);
+  child = _node(source, ts_content);
   add_child(node, child);
   return node;
+}
+
+static Node *_inline(const char *source, TSNode ts_node) {
+  Node *node;
+  TSTree *tree;
+  char *source_inline;
+
+  source_inline = node_text(source, ts_node);
+  tree = parse(source_inline, tree_sitter_markdown_inline());
+  node = convert_tree_md_inline(source_inline, tree);
+  free(source_inline);
+  ts_tree_delete(tree);
+  return node;
+}
+
+/*
+ * *Utils*
+ *
+ * The following functions do not directly convert a TSNode into a Node.
+ */
+
+/* Choose the right convert function to use. */
+static Node *_node(const char *source, TSNode ts_node) {
+  Node *node;
+  switch (hash(ts_node_type(ts_node))) {
+  case HASH_ATX_HEADING:
+    node = _heading(source, ts_node);
+    break;
+
+  case HASH_INLINE:
+    node = _inline(source, ts_node);
+    break;
+
+  case HASH_PARAGRAPH:
+    node = create_node(HASH_PARAGRAPH, NULL);
+    _children(node, source, ts_node);
+    break;
+
+  case HASH_SECTION:
+    node = create_node(HASH_SECTION, NULL);
+    _children(node, source, ts_node);
+    break;
+
+  default:
+    fprintf(stderr, "Unknown hash: %u\n", hash(ts_node_type(ts_node)));
+    assert(false);
+  }
+
+  return node;
+}
+
+/* Loop over all children of the TSNode and convert them. */
+static void _children(Node *parent, const char *source, TSNode ts_parent) {
+  Node *child;
+  TSNode ts_child;
+
+  for (int i = 0; i < ts_node_named_child_count(ts_parent); i++) {
+    ts_child = ts_node_named_child(ts_parent, i);
+    child = _node(source, ts_child);
+    add_child(parent, child);
+  }
+}
+
+/*
+ * *Main*
+ *
+ * This is the main function of the file.
+ */
+
+Node *convert_tree_md(const char *source, TSTree *tree) {
+  Node *root;
+  TSNode ts_root;
+  unsigned int hash_document;
+
+  ts_root = ts_tree_root_node(tree);
+  hash_document = hash(ts_node_type(ts_root));
+
+  assert(hash_document == HASH_DOCUMENT);
+  assert(ts_node_is_null(ts_node_next_sibling(ts_root)));
+
+  root = create_node(hash_document, NULL);
+  _children(root, source, ts_root);
+  return root;
 }
 
 // void _convert_emphasis(FILE *file, const char *source, TSNode node) {

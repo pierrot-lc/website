@@ -3,3 +3,4 @@ builddir/
 compile_commands.json
 factory
 hash-codes
+tests/examples/*.test

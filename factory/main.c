@@ -3,10 +3,11 @@
 #include <string.h>
 #include <tree_sitter/api.h>
 
-#include "convert.h"
+#include "convert_tree_md.h"
 #include "parse.h"
 #include "tree.h"
 #include "utils.h"
+#include "write_html.h"
 
 int main(int argc, char *argv[]) {
   char *source, *string;
@@ -38,5 +39,8 @@ int main(int argc, char *argv[]) {
   free(string);
   free(source);
   ts_tree_delete(tree);
+
+  write_html(stdout, converted_tree);
+  free_tree(converted_tree);
   return 0;
 }
