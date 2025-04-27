@@ -18,4 +18,14 @@ char *extract_text(const char *, unsigned int, unsigned int);
  */
 char *node_text(const char *, TSNode);
 
+/* Return the root node by iteratively going up the tree.
+ */
+TSNode search_root(TSNode);
+
+/* Search for the given hash value and node text within the node and its
+ * children. Return the first node that match both criteria. In case of
+ * failure, the returned node is the null node (`ts_node_is_null`).
+ */
+TSNode search_node(const char *, TSNode, unsigned int, char *);
+
 #endif

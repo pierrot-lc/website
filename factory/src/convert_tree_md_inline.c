@@ -9,6 +9,7 @@
 #include "tree.h"
 #include "utils.h"
 
+static Node *_inline(const char *, TSNode);
 static Node *_node(const char *, TSNode);
 
 /*
@@ -60,6 +61,34 @@ static Node *_emph(const char *source, TSNode ts_node) {
   return node;
 }
 
+static Node *_full_reference_link(const char *source, TSNode ts_node) {
+  Node *node, *text, *destination;
+  TSNode ts_label, ts_destination;
+  char *label;
+
+  node = create_node(HASH_LINK, NULL);
+
+  text = _inline(source, ts_node_named_child(ts_node, 0));
+  text->code = HASH_LINK_TEXT;
+  add_child(node, text);
+
+  // Search for the label destination in the tree.
+  label = node_text(source, ts_node_named_child(ts_node, 1));
+  ts_label = search_node(source, search_root(ts_node), HASH_LINK_LABEL, label);
+  free(label);
+
+  if (!ts_node_is_null(ts_label)) {
+    ts_destination = ts_node_next_named_sibling(ts_label);
+    if (!ts_node_is_null(ts_destination)) {
+      destination =
+          create_node(HASH_LINK_DESTINATION, node_text(source, ts_destination));
+      add_child(node, destination);
+    }
+  }
+
+  return node;
+}
+
 static Node *_inline(const char *source, TSNode ts_node) {
   Node *node, *child;
   TSNode ts_child;
@@ -91,6 +120,63 @@ static Node *_inline(const char *source, TSNode ts_node) {
   return node;
 }
 
+static Node *_inline_link(const char *source, TSNode ts_node) {
+  Node *node, *text, *destination;
+  TSNode child;
+
+  node = create_node(HASH_LINK, NULL);
+
+  for (int i = 0; i < ts_node_named_child_count(ts_node); i++) {
+    child = ts_node_named_child(ts_node, i);
+
+    switch (hash(ts_node_type(child))) {
+    case HASH_LINK_TEXT:
+      text = _inline(source, child);
+      text->code = HASH_LINK_TEXT;
+      add_child(node, text);
+      break;
+
+    case HASH_LINK_DESTINATION:
+      destination =
+          create_node(HASH_LINK_DESTINATION, node_text(source, child));
+      add_child(node, destination);
+      break;
+
+    default:
+      fprintf(stderr, "[INLINE LINK] Unexpected hash type: %u",
+              hash(ts_node_type(child)));
+      assert(false);
+    }
+  }
+
+  return node;
+}
+
+static Node *_shortcut_link(const char *source, TSNode ts_node) {
+  Node *node, *text;
+
+  node = create_node(HASH_LINK, NULL);
+
+  text = _inline(source, ts_node_named_child(ts_node, 0));
+  text->code = HASH_LINK_TEXT;
+  add_child(node, text);
+
+  return node;
+}
+
+static Node *_uri_autolink(const char *source, TSNode ts_node) {
+  Node *node, *text, *destination;
+
+  node = create_node(HASH_LINK, NULL);
+
+  text = create_node(HASH_LINK_TEXT, node_text(source, ts_node));
+  add_child(node, text);
+
+  destination = create_node(HASH_LINK_DESTINATION, node_text(source, ts_node));
+  add_child(node, destination);
+  return node;
+}
+
 /*
  * *Utils*
  */
@@ -102,8 +188,24 @@ static Node *_node(const char *source, TSNode ts_node) {
     node = _emph(source, ts_node);
     break;
 
+  case HASH_FULL_REFERENCE_LINK:
+    node = _full_reference_link(source, ts_node);
+    break;
+
   case HASH_INLINE:
     node = _inline(source, ts_node);
+    break;
+
+  case HASH_INLINE_LINK:
+    node = _inline_link(source, ts_node);
+    break;
+
+  case HASH_SHORTCUT_LINK:
+    node = _shortcut_link(source, ts_node);
+    break;
+
+  case HASH_URI_AUTOLINK:
+    node = _uri_autolink(source, ts_node);
     break;
 
   default:
@@ -119,11 +221,11 @@ static Node *_node(const char *source, TSNode ts_node) {
  * *Main*
  */
 
-Node *convert_tree_md_inline(const char *source, TSTree *tree) {
+Node *convert_tree_md_inline(const char *source, TSTree *ts_tree) {
   TSNode ts_root;
   unsigned int hash_inline;
 
-  ts_root = ts_tree_root_node(tree);
+  ts_root = ts_tree_root_node(ts_tree);
   hash_inline = hash(ts_node_type(ts_root));
 
   assert(hash_inline == HASH_INLINE);
