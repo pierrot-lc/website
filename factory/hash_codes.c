@@ -4,7 +4,7 @@
 
 #include "hash.h"
 
-#define TOTAL_TYPES 22
+#define TOTAL_TYPES 23
 
 int main() {
 
@@ -19,6 +19,7 @@ int main() {
       "emphasis_delimiter",
       "full_reference_link",
       "heading_content",
+      "html_block",
       "inline",
       "inline_link",
       "link",

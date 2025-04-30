@@ -87,6 +87,11 @@ static Node *_node(const char *source, TSNode ts_node) {
     node = _inline(source, ts_node);
     break;
 
+  case HASH_HTML_BLOCK:
+    // TODO
+    node = create_node(HASH_PARAGRAPH, NULL);
+    break;
+
   case HASH_PARAGRAPH:
     node = create_node(HASH_PARAGRAPH, NULL);
     _children(node, source, ts_node);

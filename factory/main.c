@@ -32,15 +32,18 @@ int main(int argc, char *argv[]) {
 
   string = ts_node_string(root_node);
   printf("Syntax tree: %s\n\n", string);
+  fprintf(stderr, "OK");
 
   converted_tree = convert_tree_md(source, tree);
   print_tree(converted_tree);
+  fprintf(stderr, "OK 2");
 
   free(string);
   free(source);
   ts_tree_delete(tree);
 
   write_html(stdout, converted_tree);
+  fprintf(stderr, "OK 3");
   free_tree(converted_tree);
   return 0;
 }
