@@ -4,6 +4,7 @@
 
 #include "hash.h"
 #include "tree.h"
+#include "utils.h"
 #include "write_html.h"
 
 /* Place a pair of opening and closing balise and write the children in the
@@ -31,9 +32,15 @@ static void _link(FILE *file, Node *node) {
     case HASH_LINK_TEXT:
       text = child;
       break;
+
     case HASH_LINK_DESTINATION:
       destination = child;
       break;
+
+    case HASH_LINK_LABEL:
+      destination = search_label_destination(tree_root(node), child->content);
+      break;
+
     default:
       fprintf(stderr, "[WRITER LINK] Unexpected hash type: %u", child->code);
       assert(false);
@@ -102,6 +109,9 @@ void write_html(FILE *file, Node *node) {
   case HASH_INLINE:
   case HASH_SECTION:
     _children(file, node);
+    break;
+
+  case HASH_LINK_REFERENCE_DEFINITION:
     break;
 
   default:

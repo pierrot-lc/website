@@ -13,6 +13,7 @@ Node *create_node(unsigned int code, char *content) {
   node->content = content;
   node->children = NULL;
   node->child_count = 0;
+  node->parent = NULL;
   return node;
 }
 
@@ -23,6 +24,14 @@ void add_child(Node *parent, Node *child) {
 
   parent->children[parent->child_count] = child;
   parent->child_count++;
+  child->parent = parent;
+}
+
+Node *tree_root(Node *node) {
+  if (node->parent == NULL)
+    return node;
+
+  return tree_root(node->parent);
 }
 
 void free_tree(Node *root) {

@@ -5,6 +5,7 @@
 #include <tree_sitter/api.h>
 
 #include "hash.h"
+#include "tree.h"
 #include "utils.h"
 
 char *read_file(const char *path) {
@@ -54,43 +55,26 @@ char *node_text(const char *source, TSNode node) {
   return extract_text(source, ts_node_start_byte(node), ts_node_end_byte(node));
 }
 
-TSNode search_root(TSNode node) {
+TSNode ts_tree_root(TSNode node) {
   TSNode parent = ts_node_parent(node);
   if (ts_node_is_null(parent))
-    return parent;
+    return node;
 
-  return search_root(parent);
+  return ts_tree_root(parent);
 }
 
-TSNode search_node(const char *source, TSNode node, unsigned int hash_value,
-                   char *text_value) {
-  // NOTE: A failed search is returning the null node. The issue is that I
-  // don't know how to instanciate a null node directly, so I use the fact that
-  // the next_named_sibling is returning the null node when running out of
-  // siblings. To have a coherent search, I start by searching for the target
-  // node in the children, and then in the siblings.
+Node *search_label_destination(Node *node, char *label) {
+  Node *found;
 
-  // Check children.
-  if (ts_node_named_child_count(node) >= 1) {
-    TSNode found = search_node(source, ts_node_named_child(node, 0), hash_value,
-                               text_value);
-    if (!ts_node_is_null(found))
+  if (node->code == HASH_LINK_REFERENCE_DEFINITION &&
+      strcmp(node->content, label) == 0)
+    return node->children[0];
+
+  for (int i = 0; i < node->child_count; i++) {
+    found = search_label_destination(node->children[i], label);
+    if (found != NULL)
       return found;
   }
 
-  // Check current node and its siblings.
-  do {
-    if (hash(ts_node_type(node)) == hash_value) {
-      char *text = node_text(source, node);
-      if (strcmp(text, text_value) == 0) {
-        free(text);
-        return node;
-      }
-
-      free(text);
-    }
-    node = ts_node_next_named_sibling(node);
-  } while (!ts_node_is_null(node));
-
-  return node; // It is the null node at this point.
+  return NULL;
 }

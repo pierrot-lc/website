@@ -31,19 +31,16 @@ int main(int argc, char *argv[]) {
   root_node = ts_tree_root_node(tree);
 
   string = ts_node_string(root_node);
-  printf("Syntax tree: %s\n\n", string);
-  fprintf(stderr, "OK");
+  // printf("Syntax tree: %s\n\n", string);
 
   converted_tree = convert_tree_md(source, tree);
-  print_tree(converted_tree);
-  fprintf(stderr, "OK 2");
+  // print_tree(converted_tree);
 
   free(string);
   free(source);
   ts_tree_delete(tree);
 
   write_html(stdout, converted_tree);
-  fprintf(stderr, "OK 3");
   free_tree(converted_tree);
   return 0;
 }

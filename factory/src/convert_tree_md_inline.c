@@ -62,9 +62,7 @@ static Node *_emph(const char *source, TSNode ts_node) {
 }
 
 static Node *_full_reference_link(const char *source, TSNode ts_node) {
-  Node *node, *text, *destination;
-  TSNode ts_label, ts_destination;
-  char *label;
+  Node *node, *text, *label;
 
   node = create_node(HASH_LINK, NULL);
 
@@ -72,19 +70,9 @@ static Node *_full_reference_link(const char *source, TSNode ts_node) {
   text->code = HASH_LINK_TEXT;
   add_child(node, text);
 
-  // Search for the label destination in the tree.
-  label = node_text(source, ts_node_named_child(ts_node, 1));
-  ts_label = search_node(source, search_root(ts_node), HASH_LINK_LABEL, label);
-  free(label);
-
-  if (!ts_node_is_null(ts_label)) {
-    ts_destination = ts_node_next_named_sibling(ts_label);
-    if (!ts_node_is_null(ts_destination)) {
-      destination =
-          create_node(HASH_LINK_DESTINATION, node_text(source, ts_destination));
-      add_child(node, destination);
-    }
-  }
+  label = create_node(HASH_LINK_LABEL,
+                      node_text(source, ts_node_named_child(ts_node, 1)));
+  add_child(node, label);
 
   return node;
 }
@@ -165,14 +153,23 @@ static Node *_shortcut_link(const char *source, TSNode ts_node) {
 }
 
 static Node *_uri_autolink(const char *source, TSNode ts_node) {
-  Node *node, *text, *destination;
+  Node *node, *text, *inline_text, *destination;
+  char *url;
 
   node = create_node(HASH_LINK, NULL);
 
-  text = create_node(HASH_LINK_TEXT, node_text(source, ts_node));
+  text = create_node(HASH_LINK_TEXT, NULL);
+  url = extract_text(source, ts_node_start_byte(ts_node) + 1,
+                     ts_node_end_byte(ts_node) - 1);
+  inline_text = create_node(HASH_TEXT, url);
   add_child(node, text);
+  add_child(text, inline_text);
 
-  destination = create_node(HASH_LINK_DESTINATION, node_text(source, ts_node));
+  // Alloc a second time the string, to avoid freeing twice the same string
+  // when freeing the tree.
+  url = extract_text(source, ts_node_start_byte(ts_node) + 1,
+                     ts_node_end_byte(ts_node) - 1);
+  destination = create_node(HASH_LINK_DESTINATION, url);
   add_child(node, destination);
   return node;
 }
@@ -184,6 +181,11 @@ static Node *_uri_autolink(const char *source, TSNode ts_node) {
 static Node *_node(const char *source, TSNode ts_node) {
   Node *node;
   switch (hash(ts_node_type(ts_node))) {
+
+  case HASH_COLLAPSED_REFERENCE_LINK:
+    node = _inline_link(source, ts_node);
+    break;
+
   case HASH_EMPHASIS:
     node = _emph(source, ts_node);
     break;
@@ -209,7 +211,7 @@ static Node *_node(const char *source, TSNode ts_node) {
     break;
 
   default:
-    fprintf(stderr, "[TREE MD INLINE] Unknown hash: %u",
+    fprintf(stderr, "[TREE MD INLINE] Unknown hash: %u\n",
             hash(ts_node_type(ts_node)));
     assert(false);
   }

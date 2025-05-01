@@ -3,6 +3,8 @@
 
 #include <tree_sitter/api.h>
 
+#include "tree.h"
+
 /* Read the whole file provided its path. You are responsible to `free` the
  * returned string.
  */
@@ -20,12 +22,11 @@ char *node_text(const char *, TSNode);
 
 /* Return the root node by iteratively going up the tree.
  */
-TSNode search_root(TSNode);
+TSNode ts_tree_root(TSNode);
 
-/* Search for the given hash value and node text within the node and its
- * children. Return the first node that match both criteria. In case of
- * failure, the returned node is the null node (`ts_node_is_null`).
+/* Return the destination node for the given label.
+ * NULL if search has failed.
  */
-TSNode search_node(const char *, TSNode, unsigned int, char *);
+Node *search_label_destination(Node *, char *);
 
 #endif

@@ -52,20 +52,35 @@ static Node *_heading(const char *source, TSNode ts_node) {
 
   ts_content = ts_node_child(ts_node, 1);
   child = _node(source, ts_content);
-  add_child(node, child);
+  if (child != NULL)
+    add_child(node, child);
   return node;
 }
 
 static Node *_inline(const char *source, TSNode ts_node) {
   Node *node;
-  TSTree *tree;
+  TSTree *ts_tree;
   char *source_inline;
 
   source_inline = node_text(source, ts_node);
-  tree = parse(source_inline, tree_sitter_markdown_inline());
-  node = convert_tree_md_inline(source_inline, tree);
+  ts_tree = parse(source_inline, tree_sitter_markdown_inline());
+  node = convert_tree_md_inline(source_inline, ts_tree);
   free(source_inline);
-  ts_tree_delete(tree);
+  ts_tree_delete(ts_tree);
+  return node;
+}
+
+static Node *_link_reference_definition(const char *source, TSNode ts_node) {
+  Node *node, *child;
+  char *label, *destination;
+
+  label = node_text(source, ts_node_named_child(ts_node, 0));
+  node = create_node(HASH_LINK_REFERENCE_DEFINITION, label);
+
+  destination = node_text(source, ts_node_named_child(ts_node, 1));
+  child = create_node(HASH_LINK_DESTINATION, destination);
+  add_child(node, child);
+
   return node;
 }
 
@@ -77,19 +92,23 @@ static Node *_inline(const char *source, TSNode ts_node) {
 
 /* Choose the right convert function to use. */
 static Node *_node(const char *source, TSNode ts_node) {
-  Node *node;
+  Node *node = NULL;
   switch (hash(ts_node_type(ts_node))) {
   case HASH_ATX_HEADING:
     node = _heading(source, ts_node);
+    break;
+
+  case HASH_HTML_BLOCK:
+    // TODO
+    node = create_node(HASH_PARAGRAPH, NULL);
     break;
 
   case HASH_INLINE:
     node = _inline(source, ts_node);
     break;
 
-  case HASH_HTML_BLOCK:
-    // TODO
-    node = create_node(HASH_PARAGRAPH, NULL);
+  case HASH_LINK_REFERENCE_DEFINITION:
+    node = _link_reference_definition(source, ts_node);
     break;
 
   case HASH_PARAGRAPH:
@@ -119,7 +138,8 @@ static void _children(Node *parent, const char *source, TSNode ts_parent) {
   for (int i = 0; i < ts_node_named_child_count(ts_parent); i++) {
     ts_child = ts_node_named_child(ts_parent, i);
     child = _node(source, ts_child);
-    add_child(parent, child);
+    if (child != NULL)
+      add_child(parent, child);
   }
 }
 
@@ -127,12 +147,12 @@ static void _children(Node *parent, const char *source, TSNode ts_parent) {
  * *Main*
  */
 
-Node *convert_tree_md(const char *source, TSTree *tree) {
+Node *convert_tree_md(const char *source, TSTree *ts_tree) {
   Node *root;
   TSNode ts_root;
   unsigned int hash_document;
 
-  ts_root = ts_tree_root_node(tree);
+  ts_root = ts_tree_root_node(ts_tree);
   hash_document = hash(ts_node_type(ts_root));
 
   assert(hash_document == HASH_DOCUMENT);
@@ -142,68 +162,3 @@ Node *convert_tree_md(const char *source, TSTree *tree) {
   _children(root, source, ts_root);
   return root;
 }
-
-// void _convert_emphasis(FILE *file, const char *source, TSNode node) {
-//   assert(ts_node_named_child_count(node) == 2);
-//
-//   TSNode node_1 = ts_node_named_child(node, 0);
-//   TSNode node_2 = ts_node_named_child(node, 1);
-//   char *emph_1 = node_text(source, node_1);
-//   char *emph_2 = node_text(source, node_2);
-//   char *text = extract_text(source, ts_node_end_byte(node_1),
-//                             ts_node_start_byte(node_2));
-//   assert(strcmp(emph_1, emph_2) == 0);
-//
-//   if (strcmp(emph_1, "*") == 0) {
-//     fprintf(file, "<strong>%s</strong>", text);
-//   } else if (strcmp(emph_2, "_") == 0) {
-//     fprintf(file, "<em>%s</em>", text);
-//   } else
-//     assert(false);
-//
-//   free(text);
-//   free(emph_2);
-//   free(emph_1);
-// }
-//
-// Node *_convert_inline(const char *source, TSNode node) {
-//   char *text;
-//   TSNode child;
-//   unsigned int start = ts_node_start_byte(node);
-//   unsigned int end;
-//
-//   for (int i = 0; i < ts_node_named_child_count(node); i++) {
-//     child = ts_node_named_child(node, i);
-//
-//     // Copy the content from the current start to the next child.
-//     end = ts_node_start_byte(child);
-//     text = extract_text(source, start, end);
-//     fprintf(file, "%s", text);
-//     free(text);
-//
-//     // Convert the child.
-//     switch (hash(ts_node_type(child))) {
-//     case HASH_EMPHASIS:
-//       _convert_emphasis(file, source, child);
-//       break;
-//
-//     default:
-//       fprintf(stderr, "%s", ts_node_type(child));
-//       assert(false);
-//     }
-//
-//     // Update starting point for next iteration.
-//     start = ts_node_end_byte(child);
-//   }
-//
-//   // Copy the rest of the inline node.
-//   end = ts_node_end_byte(node);
-//   text = extract_text(source, start, end);
-//   fprintf(file, "%s", text);
-//   free(text);
-// }
-//
-// void _convert_named_children(FILE *file, const char *source, TSNode node) {
-//   for (int i = 0; i < ts_node_named_child_count(node); i++)
-//     convert_tree(file, source, ts_node_named_child(node, i));
-// }

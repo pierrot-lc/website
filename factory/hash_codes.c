@@ -4,7 +4,7 @@
 
 #include "hash.h"
 
-#define TOTAL_TYPES 23
+#define TOTAL_TYPES 24
 
 int main() {
 
@@ -12,6 +12,7 @@ int main() {
       "atx_h1_marker",
       "atx_h2_marker",
       "atx_heading",
+      "collapsed_reference_link",
       "document",
       "emph_em",
       "emph_strong",
@@ -25,7 +26,7 @@ int main() {
       "link",
       "link_destination",
       "link_label",
-      "link_reference_destination",
+      "link_reference_definition",
       "link_text",
       "paragraph",
       "section",

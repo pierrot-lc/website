@@ -7,10 +7,13 @@ typedef struct Node {
 
   struct Node **children;
   unsigned int child_count;
+
+  struct Node *parent;
 } Node;
 
 Node *create_node(unsigned int, char *);
 void add_child(Node *, Node *);
+Node *tree_root(Node *);
 void free_tree(Node *);
 void print_tree(Node *);
 
