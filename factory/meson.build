@@ -5,12 +5,13 @@ grammarsdep = dependency('tree-sitter-grammars', method : 'pkg-config')
 
 incdir = include_directories('include')
 sources = files(
-  'src/convert_tree_md.c',
-  'src/convert_tree_md_inline.c',
   'src/hash.c',
-  'src/parse.c',
+  'src/parsers/markdown.c',
+  'src/parsers/markdown_inline.c',
+  'src/parsers/utils.c',
+  'src/parsers/yaml.c',
   'src/tree.c',
-  'src/utils.c',
+  'src/ts_utils.c',
   'src/write_html.c',
 )
 

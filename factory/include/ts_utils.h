@@ -1,5 +1,5 @@
-#ifndef UTILS_H
-#define UTILS_H
+#ifndef TS_UTILS_H
+#define TS_UTILS_H
 
 #include <tree_sitter/api.h>
 
@@ -23,10 +23,5 @@ char *node_text(const char *, TSNode);
 /* Return the root node by iteratively going up the tree.
  */
 TSNode ts_tree_root(TSNode);
-
-/* Return the destination node for the given label.
- * NULL if search has failed.
- */
-Node *search_label_destination(Node *, char *);
 
 #endif

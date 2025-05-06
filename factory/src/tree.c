@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "hash.h"
 #include "tree.h"
 
 Node *create_node(unsigned int code, char *content) {

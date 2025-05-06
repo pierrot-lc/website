@@ -1,5 +1,5 @@
-#ifndef PARSE_H
-#define PARSE_H
+#ifndef PARSERS_UTILS_H
+#define PARSERS_UTILS_H
 
 #include <tree_sitter/api.h>
 

@@ -3,8 +3,8 @@
 #include <stdio.h>
 
 #include "hash.h"
+#include "parsers/markdown.h"
 #include "tree.h"
-#include "utils.h"
 #include "write_html.h"
 
 /* Place a pair of opening and closing balise and write the children in the

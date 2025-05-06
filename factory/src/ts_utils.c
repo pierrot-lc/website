@@ -4,9 +4,7 @@
 #include <string.h>
 #include <tree_sitter/api.h>
 
-#include "hash.h"
-#include "tree.h"
-#include "utils.h"
+#include "ts_utils.h"
 
 char *read_file(const char *path) {
   FILE *file;
@@ -61,20 +59,4 @@ TSNode ts_tree_root(TSNode node) {
     return node;
 
   return ts_tree_root(parent);
-}
-
-Node *search_label_destination(Node *node, char *label) {
-  Node *found;
-
-  if (node->code == HASH_LINK_REFERENCE_DEFINITION &&
-      strcmp(node->content, label) == 0)
-    return node->children[0];
-
-  for (int i = 0; i < node->child_count; i++) {
-    found = search_label_destination(node->children[i], label);
-    if (found != NULL)
-      return found;
-  }
-
-  return NULL;
 }

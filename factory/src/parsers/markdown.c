@@ -4,12 +4,12 @@
 #include <string.h>
 #include <tree_sitter/api.h>
 
-#include "convert_tree_md.h"
-#include "convert_tree_md_inline.h"
 #include "hash.h"
-#include "parse.h"
+#include "parsers/markdown.h"
+#include "parsers/markdown_inline.h"
+#include "parsers/utils.h"
 #include "tree.h"
-#include "utils.h"
+#include "ts_utils.h"
 
 const TSLanguage *tree_sitter_markdown(void);
 
@@ -46,7 +46,7 @@ static Node *_heading(const char *source, TSNode ts_node) {
     assert(false);
   }
 
-  content = (char *)malloc(strlen(h) * sizeof(char));
+  content = (char *)malloc((strlen(h) + 1) * sizeof(char));
   strcpy(content, h);
   node = create_node(HASH_ATX_HEADING, content);
 
@@ -59,11 +59,10 @@ static Node *_heading(const char *source, TSNode ts_node) {
 
 static Node *_inline(const char *source, TSNode ts_node) {
   Node *node;
-  TSTree *ts_tree;
   char *source_inline;
 
   source_inline = node_text(source, ts_node);
-  node = convert_tree_md_inline(source_inline);
+  node = parse_markdown_inline(source_inline);
   free(source_inline);
   return node;
 }
@@ -145,7 +144,23 @@ static void _children(Node *parent, const char *source, TSNode ts_parent) {
  * *Main*
  */
 
-Node *convert_tree_md(const char *source) {
+Node *search_label_destination(Node *node, char *label) {
+  Node *found;
+
+  if (node->code == HASH_LINK_REFERENCE_DEFINITION &&
+      strcmp(node->content, label) == 0)
+    return node->children[0];
+
+  for (int i = 0; i < node->child_count; i++) {
+    found = search_label_destination(node->children[i], label);
+    if (found != NULL)
+      return found;
+  }
+
+  return NULL;
+}
+
+Node *parse_markdown(const char *source) {
   Node *root;
   TSNode ts_root;
   TSTree *ts_tree;

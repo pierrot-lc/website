@@ -3,9 +3,9 @@
 #include <tree_sitter/api.h>
 
 #include "hash.h"
-#include "parse.h"
+#include "parsers/utils.h"
 #include "tree.h"
-#include "utils.h"
+#include "ts_utils.h"
 
 const TSLanguage *tree_sitter_yaml(void);
 
@@ -61,7 +61,28 @@ static Node *_node(const char *source, TSNode ts_node) {
   return node;
 }
 
-Node *convert_tree_yaml(const char *source) {
+/*
+ * *Main*
+ */
+
+Node *get_value(Node *node, char *key) {
+  if (node->child_count == 0)
+    return NULL;
+
+  if (node->code == HASH_KEY)
+    return node->children[0];
+
+  Node *value;
+  for (int i = 0; i < node->child_count; i++) {
+    value = get_value(node->children[i], key);
+    if (value != NULL)
+      return value;
+  }
+
+  return NULL;
+}
+
+Node *parse_yaml(const char *source) {
   Node *root;
   TSNode ts_root;
   TSTree *ts_tree;

@@ -4,11 +4,11 @@
 #include <string.h>
 #include <tree_sitter/api.h>
 
-#include "convert_tree_md_inline.h"
 #include "hash.h"
-#include "parse.h"
+#include "parsers/markdown_inline.h"
+#include "parsers/utils.h"
 #include "tree.h"
-#include "utils.h"
+#include "ts_utils.h"
 
 const TSLanguage *tree_sitter_markdown_inline(void);
 
@@ -226,7 +226,7 @@ static Node *_node(const char *source, TSNode ts_node) {
  * *Main*
  */
 
-Node *convert_tree_md_inline(const char *source) {
+Node *parse_markdown_inline(const char *source) {
   Node *root;
   TSNode ts_root;
   TSTree *ts_tree;

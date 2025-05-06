@@ -3,15 +3,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <tree_sitter/api.h>
 
-#include "convert_tree_md.h"
-#include "parse.h"
+#include "parsers/markdown.h"
 #include "tree.h"
-#include "utils.h"
+#include "ts_utils.h"
 #include "write_html.h"
-
-const TSLanguage *tree_sitter_markdown(void);
 
 /* Compare a reference HTML file and one converted from a corresponding
  * markdown reference.
@@ -21,7 +17,6 @@ int main(int argc, char *argv[]) {
   char path[100];
   FILE *file;
 
-  TSTree *tree;
   Node *converted_tree;
 
   if (argc < 3) {
@@ -33,10 +28,8 @@ int main(int argc, char *argv[]) {
   assert(code_1 != NULL);
 
   // Convert markdown into our tree structure.
-  tree = parse(code_1, tree_sitter_markdown());
-  converted_tree = convert_tree_md(code_1, tree);
+  converted_tree = parse_markdown(code_1);
   free(code_1);
-  ts_tree_delete(tree);
 
   // Convert our tree into HTML.
   sprintf(path, "%s.test", argv[2]);

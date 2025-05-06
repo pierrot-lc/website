@@ -2,7 +2,7 @@
 #include <string.h>
 #include <tree_sitter/api.h>
 
-#include "parse.h"
+#include "parsers/utils.h"
 
 TSTree *parse(const char *source, const TSLanguage *language) {
   TSParser *parser;
