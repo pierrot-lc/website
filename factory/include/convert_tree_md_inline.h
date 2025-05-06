@@ -6,6 +6,6 @@
 #include "tree.h"
 
 /* Convert a markdown inline tree. */
-Node *convert_tree_md_inline(const char *, TSTree *);
+Node *convert_tree_md_inline(const char *);
 
 #endif

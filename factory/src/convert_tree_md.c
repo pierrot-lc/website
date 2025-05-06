@@ -11,7 +11,7 @@
 #include "tree.h"
 #include "utils.h"
 
-const TSLanguage *tree_sitter_markdown_inline(void);
+const TSLanguage *tree_sitter_markdown(void);
 
 static Node *_node(const char *, TSNode);
 static void _children(Node *, const char *, TSNode);
@@ -63,10 +63,8 @@ static Node *_inline(const char *source, TSNode ts_node) {
   char *source_inline;
 
   source_inline = node_text(source, ts_node);
-  ts_tree = parse(source_inline, tree_sitter_markdown_inline());
-  node = convert_tree_md_inline(source_inline, ts_tree);
+  node = convert_tree_md_inline(source_inline);
   free(source_inline);
-  ts_tree_delete(ts_tree);
   return node;
 }
 
@@ -147,11 +145,13 @@ static void _children(Node *parent, const char *source, TSNode ts_parent) {
  * *Main*
  */
 
-Node *convert_tree_md(const char *source, TSTree *ts_tree) {
+Node *convert_tree_md(const char *source) {
   Node *root;
   TSNode ts_root;
+  TSTree *ts_tree;
   unsigned int hash_document;
 
+  ts_tree = parse(source, tree_sitter_markdown());
   ts_root = ts_tree_root_node(ts_tree);
   hash_document = hash(ts_node_type(ts_root));
 
@@ -160,5 +160,6 @@ Node *convert_tree_md(const char *source, TSTree *ts_tree) {
 
   root = create_node(hash_document, NULL);
   _children(root, source, ts_root);
+  ts_tree_delete(ts_tree);
   return root;
 }

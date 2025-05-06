@@ -4,7 +4,7 @@
 
 #include "hash.h"
 
-#define TOTAL_TYPES 24
+#define TOTAL_TYPES 30
 
 int main() {
 
@@ -12,6 +12,9 @@ int main() {
       "atx_h1_marker",
       "atx_h2_marker",
       "atx_heading",
+      "block_mapping",
+      "block_mapping_pair",
+      "block_node",
       "collapsed_reference_link",
       "document",
       "emph_em",
@@ -23,6 +26,7 @@ int main() {
       "html_block",
       "inline",
       "inline_link",
+      "key",
       "link",
       "link_destination",
       "link_label",
@@ -31,8 +35,10 @@ int main() {
       "paragraph",
       "section",
       "shortcut_link",
+      "stream",
       "text",
       "uri_autolink",
+      "value",
   };
 
   // Make sure there is no collision.

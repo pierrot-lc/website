@@ -6,8 +6,11 @@
 
 #include "convert_tree_md_inline.h"
 #include "hash.h"
+#include "parse.h"
 #include "tree.h"
 #include "utils.h"
+
+const TSLanguage *tree_sitter_markdown_inline(void);
 
 static Node *_inline(const char *, TSNode);
 static Node *_node(const char *, TSNode);
@@ -223,15 +226,20 @@ static Node *_node(const char *source, TSNode ts_node) {
  * *Main*
  */
 
-Node *convert_tree_md_inline(const char *source, TSTree *ts_tree) {
+Node *convert_tree_md_inline(const char *source) {
+  Node *root;
   TSNode ts_root;
+  TSTree *ts_tree;
   unsigned int hash_inline;
 
+  ts_tree = parse(source, tree_sitter_markdown_inline());
   ts_root = ts_tree_root_node(ts_tree);
   hash_inline = hash(ts_node_type(ts_root));
 
   assert(hash_inline == HASH_INLINE);
   assert(ts_node_is_null(ts_node_next_sibling(ts_root)));
 
-  return _node(source, ts_root);
+  root = _node(source, ts_root);
+  ts_tree_delete(ts_tree);
+  return root;
 }

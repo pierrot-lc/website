@@ -4,17 +4,14 @@
 #include <tree_sitter/api.h>
 
 #include "convert_tree_md.h"
-#include "parse.h"
+#include "yaml_parser.h"
 #include "tree.h"
 #include "utils.h"
 #include "write_html.h"
 
 int main(int argc, char *argv[]) {
-  char *source, *string;
-
-  TSTree *tree;
-  TSNode root_node;
   Node *converted_tree;
+  char *source;
 
   if (argc != 2) {
     fprintf(stderr, "Usage: %s <markdown-path>\n", argv[0]);
@@ -27,20 +24,10 @@ int main(int argc, char *argv[]) {
     return -1;
   }
 
-  tree = parse(source, tree_sitter_markdown());
-  root_node = ts_tree_root_node(tree);
-
-  string = ts_node_string(root_node);
-  // printf("Syntax tree: %s\n\n", string);
-
-  converted_tree = convert_tree_md(source, tree);
+  converted_tree = convert_tree_md(source);
   // print_tree(converted_tree);
-
-  free(string);
-  free(source);
-  ts_tree_delete(tree);
-
   write_html(stdout, converted_tree);
   free_tree(converted_tree);
+  free(source);
   return 0;
 }

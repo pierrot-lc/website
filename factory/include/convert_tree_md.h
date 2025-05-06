@@ -8,6 +8,6 @@
 /* Main function, used to convert the content of the markdown tree into the
  * given file.
  */
-Node *convert_tree_md(const char *, TSTree *);
+Node *convert_tree_md(const char *);
 
 #endif
