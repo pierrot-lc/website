@@ -2,13 +2,13 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "parsers/yaml.h"
+#include "parsers/markdown.h"
 #include "tree.h"
 #include "ts_utils.h"
-#include "write_html.h"
+#include "writers/html.h"
 
 int main(int argc, char *argv[]) {
-  Node *converted_tree;
+  Node *node;
   char *source;
 
   if (argc != 2) {
@@ -22,12 +22,9 @@ int main(int argc, char *argv[]) {
     return -1;
   }
 
-  // converted_tree = convert_tree_md(source);
-  converted_tree = parse_yaml(source);
-  print_tree(converted_tree);
-  printf("Value of key '%s': %s\n", "title", get_value(converted_tree, "title")->content);
-  // write_html(stdout, converted_tree);
-  free_tree(converted_tree);
+  node = parse_markdown(source);
+  write_html(stdout, node);
+  free_tree(node);
   free(source);
   return 0;
 }

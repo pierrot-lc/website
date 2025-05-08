@@ -54,7 +54,8 @@ static Node *_node(const char *source, TSNode ts_node) {
     break;
 
   default:
-    fprintf(stderr, "[YAML] Unknown hash: %u\n", hash(ts_node_type(ts_node)));
+    fprintf(stderr, "[YAML] Unknown hash: %s (%u)\n", ts_node_type(ts_node),
+            hash(ts_node_type(ts_node)));
     assert(false);
   }
 

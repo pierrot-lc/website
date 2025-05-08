@@ -5,7 +5,7 @@
 #include "hash.h"
 #include "parsers/markdown.h"
 #include "tree.h"
-#include "write_html.h"
+#include "writers/body_main.h"
 
 /* Place a pair of opening and closing balise and write the children in the
  * middle.
@@ -70,14 +70,14 @@ static void _balise(FILE *file, Node *node, char *balise) {
 
 static void _children(FILE *file, Node *node) {
   for (int i = 0; i < node->child_count; i++)
-    write_html(file, node->children[i]);
+    write_body_main(file, node->children[i]);
 }
 
 /*
  * *Main*
  */
 
-void write_html(FILE *file, Node *node) {
+void write_body_main(FILE *file, Node *node) {
   switch (node->code) {
   case HASH_ATX_HEADING:
     _balise(file, node, node->content);
@@ -90,6 +90,12 @@ void write_html(FILE *file, Node *node) {
 
   case HASH_EMPH_STRONG:
     _balise(file, node, "strong");
+    break;
+
+  case HASH_DOCUMENT:
+    fprintf(file, "<main>\n");
+    _children(file, node);
+    fprintf(file, "</main>\n");
     break;
 
   case HASH_LINK:
@@ -105,17 +111,17 @@ void write_html(FILE *file, Node *node) {
     fprintf(file, "%s", node->content);
     break;
 
-  case HASH_DOCUMENT:
   case HASH_INLINE:
   case HASH_SECTION:
     _children(file, node);
     break;
 
   case HASH_LINK_REFERENCE_DEFINITION:
+  case HASH_MINUS_METADATA:
     break;
 
   default:
-    fprintf(stderr, "[HTML] Unknown hash: %u\n", node->code);
+    fprintf(stderr, "[BODY-MAIN] Unknown hash: %u\n", node->code);
     assert(false);
   }
 }

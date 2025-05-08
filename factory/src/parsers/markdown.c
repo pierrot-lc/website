@@ -7,6 +7,7 @@
 #include "hash.h"
 #include "parsers/markdown.h"
 #include "parsers/markdown_inline.h"
+#include "parsers/yaml.h"
 #include "parsers/utils.h"
 #include "tree.h"
 #include "ts_utils.h"
@@ -81,6 +82,20 @@ static Node *_link_reference_definition(const char *source, TSNode ts_node) {
   return node;
 }
 
+static Node *_minus_metadata(const char *source, TSNode ts_node) {
+  Node *node, *child;
+  char *source_yaml;
+
+  node = create_node(HASH_MINUS_METADATA, NULL);
+
+  source_yaml = node_text(source, ts_node);
+  child = parse_yaml(source_yaml);
+  free(source_yaml);
+  add_child(node, child);
+
+  return node;
+}
+
 /*
  * *Utils*
  *
@@ -108,6 +123,10 @@ static Node *_node(const char *source, TSNode ts_node) {
     node = _link_reference_definition(source, ts_node);
     break;
 
+  case HASH_MINUS_METADATA:
+    node = _minus_metadata(source, ts_node);
+    break;
+
   case HASH_PARAGRAPH:
     node = create_node(HASH_PARAGRAPH, NULL);
     _children(node, source, ts_node);
@@ -119,7 +138,7 @@ static Node *_node(const char *source, TSNode ts_node) {
     break;
 
   default:
-    fprintf(stderr, "[TREE MD] Unknown hash: %u\n",
+    fprintf(stderr, "[TREE MD] Unknown hash: %s (%u)\n", ts_node_type(ts_node),
             hash(ts_node_type(ts_node)));
     assert(false);
   }

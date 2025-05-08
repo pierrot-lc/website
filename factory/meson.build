@@ -12,14 +12,19 @@ sources = files(
   'src/parsers/yaml.c',
   'src/tree.c',
   'src/ts_utils.c',
-  'src/write_html.c',
+  'src/writers/body_main.c',
+  'src/writers/head.c',
+  'src/writers/html.c',
 )
 
 executable('factory', 'main.c', sources, include_directories : incdir, dependencies : [treesitterdep, grammarsdep])
 executable('hash-codes', 'hash_codes.c', 'src/hash.c', include_directories : incdir)
 
-test_convert = executable('test-factory', 'tests/test.c', sources, include_directories : incdir, dependencies : [treesitterdep, grammarsdep])
-test('header', test_convert, args: ['../tests/examples/header.md', '../tests/examples/header.html'])
-test('par', test_convert, args: ['../tests/examples/paragraph.md', '../tests/examples/paragraph.html'])
-test('emph', test_convert, args: ['../tests/examples/emph.md', '../tests/examples/emph.html'])
-test('link', test_convert, args: ['../tests/examples/link.md', '../tests/examples/link.html'])
+test_body_main = executable('test-body-main', 'tests/test_body_main.c', sources, include_directories : incdir, dependencies : [treesitterdep, grammarsdep])
+test('header', test_body_main, args: ['../tests/body_main/header.md', '../tests/body_main/header.html'])
+test('par', test_body_main, args: ['../tests/body_main/paragraph.md', '../tests/body_main/paragraph.html'])
+test('emph', test_body_main, args: ['../tests/body_main/emph.md', '../tests/body_main/emph.html'])
+test('link', test_body_main, args: ['../tests/body_main/link.md', '../tests/body_main/link.html'])
+
+test_head = executable('test-head', 'tests/test_head.c', sources, include_directories : incdir, dependencies : [treesitterdep, grammarsdep])
+test('title', test_head, args: ['../tests/head/title.md', '../tests/head/title.html'])

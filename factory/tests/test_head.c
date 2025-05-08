@@ -7,17 +7,16 @@
 #include "parsers/markdown.h"
 #include "tree.h"
 #include "ts_utils.h"
-#include "write_html.h"
+#include "writers/head.h"
 
 /* Compare a reference HTML file and one converted from a corresponding
  * markdown reference.
  */
 int main(int argc, char *argv[]) {
+  FILE *file;
+  Node *node;
   char *code_1, *code_2;
   char path[100];
-  FILE *file;
-
-  Node *converted_tree;
 
   if (argc < 3) {
     printf("Usage: %s MD_FILE HTML_FILE\n", argv[0]);
@@ -28,14 +27,14 @@ int main(int argc, char *argv[]) {
   assert(code_1 != NULL);
 
   // Convert markdown into our tree structure.
-  converted_tree = parse_markdown(code_1);
+  node = parse_markdown(code_1);
   free(code_1);
 
   // Convert our tree into HTML.
   sprintf(path, "%s.test", argv[2]);
   file = fopen(path, "w");
   assert(file != NULL);
-  write_html(file, converted_tree);
+  write_head(file, node);
   fclose(file);
 
   code_1 = read_file(argv[2]);
