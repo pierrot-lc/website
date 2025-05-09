@@ -1,5 +1,5 @@
-import app/router
 import app/context.{Context}
+import app/web
 import gleam/erlang/process
 import mist
 import wisp
@@ -10,7 +10,7 @@ pub fn main() {
 
   let secret_key_base = wisp.random_string(64)
   let ctx = Context(static_directory: static_directory())
-  let handler = router.handle_request(_, ctx)
+  let handler = web.handle_request(_, ctx)
 
   let assert Ok(_) =
     wisp_mist.handler(handler, secret_key_base)
