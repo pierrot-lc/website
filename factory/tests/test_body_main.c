@@ -1,5 +1,4 @@
 #include <assert.h>
-#include <libgen.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -13,10 +12,11 @@
  * markdown reference.
  */
 int main(int argc, char *argv[]) {
-  FILE *file;
-  Node *node;
   char *code_1, *code_2;
   char path[100];
+
+  FILE *file;
+  Node *node;
 
   if (argc < 3) {
     printf("Usage: %s MD_FILE HTML_FILE\n", argv[0]);

@@ -1,5 +1,6 @@
 #include <assert.h>
 #include <stdio.h>
+#include <string.h>
 #include <tree_sitter/api.h>
 
 #include "hash.h"
@@ -9,16 +10,17 @@
 
 const TSLanguage *tree_sitter_yaml(void);
 
-static Node *_node(const char *, TSNode);
+static Node *_node(const char *source, TSNode ts_node);
 
 static Node *block_mapping_pair(const char *source, TSNode ts_node) {
-  Node *key, *value;
   char *text;
 
-  text = node_text(source, ts_node_named_child(ts_node, 0));
+  Node *key, *value;
+
+  text = ts_node_text(source, ts_node_named_child(ts_node, 0));
   key = create_node(HASH_KEY, text);
 
-  text = node_text(source, ts_node_named_child(ts_node, 1));
+  text = ts_node_text(source, ts_node_named_child(ts_node, 1));
   value = create_node(HASH_VALUE, text);
   add_child(key, value);
 
@@ -67,13 +69,14 @@ static Node *_node(const char *source, TSNode ts_node) {
  */
 
 Node *get_value(Node *node, char *key) {
+  Node *value;
+
   if (node->child_count == 0)
     return NULL;
 
-  if (node->code == HASH_KEY)
+  if (node->code == HASH_KEY && strcmp(node->content, key) == 0)
     return node->children[0];
 
-  Node *value;
   for (int i = 0; i < node->child_count; i++) {
     value = get_value(node->children[i], key);
     if (value != NULL)
@@ -84,10 +87,11 @@ Node *get_value(Node *node, char *key) {
 }
 
 Node *parse_yaml(const char *source) {
+  unsigned int hash_stream;
+
   Node *root;
   TSNode ts_root;
   TSTree *ts_tree;
-  unsigned int hash_stream;
 
   ts_tree = parse(source, tree_sitter_yaml());
   ts_root = ts_tree_root_node(ts_tree);

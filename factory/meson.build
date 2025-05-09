@@ -12,6 +12,7 @@ sources = files(
   'src/parsers/yaml.c',
   'src/tree.c',
   'src/ts_utils.c',
+  'src/writers/articles_index.c',
   'src/writers/body_main.c',
   'src/writers/head.c',
   'src/writers/html.c',

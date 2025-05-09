@@ -26,7 +26,7 @@ static Node *_emph(const char *source, TSNode ts_node) {
   unsigned int start, end;
 
   ts_child = ts_node_named_child(ts_node, 0);
-  emph = node_text(source, ts_child);
+  emph = ts_node_text(source, ts_child);
 
   if (strcmp(emph, "*") == 0)
     node = create_node(HASH_EMPH_STRONG, NULL);
@@ -74,7 +74,7 @@ static Node *_full_reference_link(const char *source, TSNode ts_node) {
   add_child(node, text);
 
   label = create_node(HASH_LINK_LABEL,
-                      node_text(source, ts_node_named_child(ts_node, 1)));
+                      ts_node_text(source, ts_node_named_child(ts_node, 1)));
   add_child(node, label);
 
   return node;
@@ -129,7 +129,7 @@ static Node *_inline_link(const char *source, TSNode ts_node) {
 
     case HASH_LINK_DESTINATION:
       destination =
-          create_node(HASH_LINK_DESTINATION, node_text(source, child));
+          create_node(HASH_LINK_DESTINATION, ts_node_text(source, child));
       add_child(node, destination);
       break;
 

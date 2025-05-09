@@ -55,6 +55,7 @@
     # NixOS libc.
     buildInputs = [
       pkgs.just
+      pkgs.lldb
       pkgs.llvmPackages_latest.clang-tools
       pkgs.meson
       pkgs.ninja

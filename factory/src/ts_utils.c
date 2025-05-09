@@ -49,7 +49,7 @@ char *extract_text(const char *buffer, unsigned int start, unsigned int end) {
   return text;
 }
 
-char *node_text(const char *source, TSNode node) {
+char *ts_node_text(const char *source, TSNode node) {
   return extract_text(source, ts_node_start_byte(node), ts_node_end_byte(node));
 }
 

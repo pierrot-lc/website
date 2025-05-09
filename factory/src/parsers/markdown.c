@@ -62,7 +62,7 @@ static Node *_inline(const char *source, TSNode ts_node) {
   Node *node;
   char *source_inline;
 
-  source_inline = node_text(source, ts_node);
+  source_inline = ts_node_text(source, ts_node);
   node = parse_markdown_inline(source_inline);
   free(source_inline);
   return node;
@@ -72,10 +72,10 @@ static Node *_link_reference_definition(const char *source, TSNode ts_node) {
   Node *node, *child;
   char *label, *destination;
 
-  label = node_text(source, ts_node_named_child(ts_node, 0));
+  label = ts_node_text(source, ts_node_named_child(ts_node, 0));
   node = create_node(HASH_LINK_REFERENCE_DEFINITION, label);
 
-  destination = node_text(source, ts_node_named_child(ts_node, 1));
+  destination = ts_node_text(source, ts_node_named_child(ts_node, 1));
   child = create_node(HASH_LINK_DESTINATION, destination);
   add_child(node, child);
 
@@ -88,7 +88,7 @@ static Node *_minus_metadata(const char *source, TSNode ts_node) {
 
   node = create_node(HASH_MINUS_METADATA, NULL);
 
-  source_yaml = node_text(source, ts_node);
+  source_yaml = ts_node_text(source, ts_node);
   child = parse_yaml(source_yaml);
   free(source_yaml);
   add_child(node, child);
