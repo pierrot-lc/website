@@ -1,5 +1,5 @@
 import app/router
-import app/web.{Context}
+import app/context.{Context}
 import gleam/erlang/process
 import mist
 import wisp
@@ -23,5 +23,5 @@ pub fn main() {
 
 pub fn static_directory() -> String {
   let assert Ok(priv_directory) = wisp.priv_directory("website")
-  priv_directory <> "/static"
+  priv_directory
 }
