@@ -1,3 +1,6 @@
+---
+title: Home
+---
 # Title
 
 I am a PhD student in the [COATI team][coati], joint project of [INRIA - Université Côte

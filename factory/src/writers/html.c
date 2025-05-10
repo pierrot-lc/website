@@ -6,6 +6,7 @@
 #include "writers/head.h"
 
 void articles_index_page(FILE *file, const char *articles_dir, Node *config) {
+  fprintf(file, "<!DOCTYPE html>\n");
   fprintf(file, "<html>\n\n");
 
   write_head(file, config);
@@ -18,6 +19,7 @@ void articles_index_page(FILE *file, const char *articles_dir, Node *config) {
 }
 
 void write_html(FILE *file, Node *node) {
+  fprintf(file, "<!DOCTYPE html>\n");
   fprintf(file, "<html>\n\n");
 
   write_head(file, node);

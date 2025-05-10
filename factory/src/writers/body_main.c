@@ -118,6 +118,7 @@ void write_body_main(FILE *file, Node *node) {
 
   case HASH_LINK_REFERENCE_DEFINITION:
   case HASH_MINUS_METADATA:
+  case HASH_STREAM:
     break;
 
   default:
