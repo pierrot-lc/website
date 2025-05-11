@@ -4,7 +4,7 @@
 
 #include "hash.h"
 
-#define TOTAL_TYPES 31
+#define TOTAL_TYPES 32
 
 int main() {
 
@@ -34,6 +34,7 @@ int main() {
       "link_text",
       "minus_metadata",
       "paragraph",
+      "plain_scalar",
       "section",
       "shortcut_link",
       "stream",

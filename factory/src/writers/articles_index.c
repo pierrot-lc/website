@@ -24,7 +24,7 @@ static struct ArticleInfos get_article_infos(char *path) {
 
   strlcpy(infos.path, path, 256);
 
-  title = get_value(tree, "title");
+  title = get_key(tree, "title");
   assert(title != NULL);
   strlcpy(infos.title, title->content, 512);
 

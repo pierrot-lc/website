@@ -3,8 +3,8 @@
 
 #include "tree.h"
 
-/* Get the value node of the corresponding key node. */
-Node *get_value(Node *tree, char *key);
+/* Get the first key node of the corresponding key content. */
+Node *get_key(Node *tree, char *key);
 Node *parse_yaml(const char *source);
 
 #endif
