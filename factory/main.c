@@ -40,33 +40,12 @@ int from_markdown(char *markdown_path, char *config_path) {
   return 0;
 }
 
-int articles_index(char *articles_dir, char *config_path) {
-  char *source;
-
-  Node *yaml;
-
-  source = read_file(config_path);
-  if (source == NULL) {
-    fprintf(stderr, "Can't open %s\n", config_path);
-    return -1;
-  }
-  yaml = parse_yaml(source);
-  free(source);
-
-  articles_index_page(stdout, articles_dir, yaml);
-
-  return 0;
-}
-
 void help_args(char *self) {
-  fprintf(stdout,
-          "Usage: %s --config <config-path> [--md <md-path> ] [--articles "
-          "<articles-dir>]\n",
-          self);
+  fprintf(stdout, "Usage: %s --config <config-path> --md <md-path>\n", self);
 }
 
 int main(int argc, char *argv[]) {
-  char *markdown_path = NULL, *articles_dir = NULL, *config_path = NULL;
+  char *markdown_path = NULL, *config_path = NULL;
 
   for (int i = 1; i < argc;) {
     if (strcmp(argv[i], "--config") == 0 && i + 1 < argc) {
@@ -81,26 +60,16 @@ int main(int argc, char *argv[]) {
       continue;
     }
 
-    if (strcmp(argv[i], "--articles") == 0 && i + 1 < argc) {
-      articles_dir = argv[i + 1];
-      i += 2;
-      continue;
-    }
-
     help_args(argv[0]);
     return 0;
   }
 
-  if (config_path == NULL || (articles_dir == NULL && markdown_path == NULL)) {
+  if (config_path == NULL || markdown_path == NULL) {
     help_args(argv[0]);
     return 0;
   }
 
-  if (markdown_path != NULL)
-    from_markdown(markdown_path, config_path);
-
-  if (articles_dir != NULL)
-    articles_index(articles_dir, config_path);
+  from_markdown(markdown_path, config_path);
 
   return 0;
 }

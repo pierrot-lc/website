@@ -1,4 +1,11 @@
 ---
 title: Pierre Pereira's Blog
 author: Pierre Pereira
----
+
+nav:
+  home: /index.html
+  others:
+    - name: Blogs
+      href: /blogs.html
+    - name: Papers
+      href: /papers.html
