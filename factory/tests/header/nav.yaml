@@ -1,0 +1,8 @@
+---
+nav:
+  home: index.html
+  others:
+    - name: Blogs
+      href: blogs.html
+    - name: Papers
+      href: publications.html

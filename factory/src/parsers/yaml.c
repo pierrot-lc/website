@@ -10,19 +10,36 @@
 
 const TSLanguage *tree_sitter_yaml(void);
 
-static Node *_node(const char *source, TSNode ts_node);
+static Node *next_node(const char *source, TSNode ts_node);
+static Node *block_mapping_pair(const char *source, TSNode ts_node);
 
-static void search_value(const char *source, TSNode ts_node, Node *key) {
+/* Add all child values to key node. */
+static void search_values(const char *source, TSNode ts_node, Node *key) {
   Node *value;
 
-  if (hash(ts_node_type(ts_node)) == HASH_PLAIN_SCALAR) {
+  switch (hash(ts_node_type(ts_node))) {
+  case HASH_BLOCK_MAPPING_PAIR:
+    value = block_mapping_pair(source, ts_node);
+    add_child(key, value);
+    break;
+
+  case HASH_BLOCK_SEQUENCE_ITEM:
+    value = create_node(HASH_BLOCK_SEQUENCE_ITEM, NULL);
+    add_child(key, value);
+
+    for (int i = 0; i < ts_node_named_child_count(ts_node); i++)
+      search_values(source, ts_node_named_child(ts_node, i), value);
+    break;
+
+  case HASH_PLAIN_SCALAR:
     value = create_node(HASH_VALUE, ts_node_text(source, ts_node));
     add_child(key, value);
-    return;
-  }
+    break;
 
-  for (int i = 0; i < ts_node_named_child_count(ts_node); i++)
-    search_value(source, ts_node_named_child(ts_node, i), key);
+  default:
+    for (int i = 0; i < ts_node_named_child_count(ts_node); i++)
+      search_values(source, ts_node_named_child(ts_node, i), key);
+  }
 }
 
 static Node *block_mapping_pair(const char *source, TSNode ts_node) {
@@ -32,7 +49,7 @@ static Node *block_mapping_pair(const char *source, TSNode ts_node) {
 
   text = ts_node_text(source, ts_node_named_child(ts_node, 0));
   key = create_node(HASH_KEY, text);
-  search_value(source, ts_node_named_child(ts_node, 1), key);
+  search_values(source, ts_node_named_child(ts_node, 1), key);
   return key;
 }
 
@@ -42,13 +59,13 @@ static void _children(Node *parent, const char *source, TSNode ts_node) {
 
   for (int i = 0; i < ts_node_named_child_count(ts_node); i++) {
     ts_child = ts_node_named_child(ts_node, i);
-    child = _node(source, ts_child);
+    child = next_node(source, ts_child);
     if (child != NULL)
       add_child(parent, child);
   }
 }
 
-static Node *_node(const char *source, TSNode ts_node) {
+static Node *next_node(const char *source, TSNode ts_node) {
   Node *node;
 
   switch (hash(ts_node_type(ts_node))) {

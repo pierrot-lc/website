@@ -4,8 +4,10 @@
  * See https://developer.mozilla.org/en-US/docs/Web/HTML/Element/meta/name
  * for examples of meta tags.
  */
+#include <assert.h>
 #include <stdio.h>
 
+#include "hash.h"
 #include "parsers/yaml.h"
 #include "tree.h"
 #include "writers/head.h"
@@ -28,16 +30,18 @@ static void _title(FILE *file, Node *node) {
 }
 
 static void _css(FILE *file, Node *tree) {
-  Node *styles;
+  Node *styles, *href;
 
   styles = get_key(tree, "styles");
 
   if (styles == NULL)
     return;
 
-  for (int i = 0; i < styles->child_count; i++)
-    fprintf(file, "<link rel=\"stylesheet\" href=\"%s\">\n",
-            styles->children[i]->content);
+  for (int i = 0; i < styles->child_count; i++) {
+    assert(styles->children[i]->code == HASH_BLOCK_SEQUENCE_ITEM);
+    assert((href = styles->children[i]->children[0]) != NULL);
+    fprintf(file, "<link rel=\"stylesheet\" href=\"%s\">\n", href->content);
+  }
 }
 
 static void _meta(FILE *file, char *name, char *content) {

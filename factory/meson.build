@@ -15,7 +15,9 @@ sources = files(
   'src/writers/articles_index.c',
   'src/writers/body_main.c',
   'src/writers/head.c',
+  'src/writers/header.c',
   'src/writers/html.c',
+  'src/writers/utils.c',
 )
 
 executable('factory', 'main.c', sources, include_directories : incdir, dependencies : [treesitterdep, grammarsdep])
@@ -30,3 +32,6 @@ test('link', test_body_main, args: ['../tests/body_main/link.md', '../tests/body
 test_head = executable('test-head', 'tests/test_head.c', sources, include_directories : incdir, dependencies : [treesitterdep, grammarsdep])
 test('title', test_head, args: ['../tests/head/title.md', '../tests/head/title.html'])
 test('css', test_head, args: ['../tests/head/css.md', '../tests/head/css.html'])
+
+test_header = executable('test-header', 'tests/test_header.c', sources, include_directories : incdir, dependencies : [treesitterdep, grammarsdep])
+test('nav', test_header, args: ['../tests/header/nav.yaml', '../tests/header/nav.html'])
