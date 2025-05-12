@@ -11,6 +11,7 @@
   }: let
     system = "x86_64-linux";
     pkgs = import nixpkgs {inherit system;};
+    lib = pkgs.lib;
 
     # Compile tree-sitter grammars and generate a proper directory with the
     # resulting libraries such that pkg-config can find them.
@@ -75,7 +76,34 @@
         just tests
       '';
     };
+
+    fs = lib.fileset;
+    factory = pkgs.stdenv.mkDerivation {
+      pname = "factory";
+      version = "1.0.0";
+      inherit buildInputs;
+
+      # From https://nix.dev/tutorials/working-with-local-files
+      src = fs.toSource {
+        root = ./.;
+        fileset = fs.difference ./. (fs.maybeMissing ./result);
+      };
+
+      configurePhase = ''
+        meson setup builddir
+      '';
+
+      buildPhase = ''
+        meson compile -C builddir
+      '';
+
+      installPhase = ''
+        mkdir -p $out/bin
+        cp ./builddir/factory $out/bin/factory
+      '';
+    };
   in {
     devShells.${system}.default = shell;
+    packages.${system}.default = factory;
   };
 }
