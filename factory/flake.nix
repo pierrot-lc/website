@@ -80,7 +80,9 @@
     fs = lib.fileset;
     factory = pkgs.stdenv.mkDerivation {
       pname = "factory";
-      version = "1.0.0";
+      version = "git";
+      doCheck = true;
+
       inherit buildInputs;
 
       # From https://nix.dev/tutorials/working-with-local-files
@@ -95,6 +97,10 @@
 
       buildPhase = ''
         meson compile -C builddir
+      '';
+
+      checkPhase = ''
+        meson test -C builddir -v
       '';
 
       installPhase = ''
