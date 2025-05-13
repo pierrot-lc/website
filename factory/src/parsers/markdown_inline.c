@@ -22,44 +22,39 @@ static Node *_node(const char *, TSNode);
 static Node *_emph(const char *source, TSNode ts_node) {
   Node *node, *child;
   TSNode ts_child;
-  char *text, *emph;
+  char *text;
   unsigned int start, end;
 
-  ts_child = ts_node_named_child(ts_node, 0);
-  emph = ts_node_text(source, ts_child);
+  node = create_node(hash(ts_node_type(ts_node)), NULL);
 
-  if (strcmp(emph, "*") == 0)
-    node = create_node(HASH_EMPH_STRONG, NULL);
-  else if (strcmp(emph, "_") == 0)
-    node = create_node(HASH_EMPH_EM, NULL);
-  else
-    assert(false);
-
-  start = ts_node_end_byte(ts_child);
+  start = ts_node_start_byte(ts_node);
 
   // NOTE: The first and last children are the emphasis delimiter.
-  for (int i = 1; i < ts_node_named_child_count(ts_node) - 1; i++) {
+  for (int i = 0; i < ts_node_named_child_count(ts_node); i++) {
     ts_child = ts_node_named_child(ts_node, i);
-
     end = ts_node_start_byte(ts_child);
-    text = extract_text(source, start, end);
-    child = create_node(HASH_TEXT, text);
-    add_child(node, child);
 
-    child = _node(source, ts_child);
-    add_child(node, child);
+    if (start != end) {
+      text = extract_text(source, start, end);
+      child = create_node(HASH_TEXT, text);
+      add_child(node, child);
+    }
+
+    if (hash(ts_node_type(ts_child)) != HASH_EMPHASIS_DELIMITER &&
+        hash(ts_node_type(ts_child)) != HASH_CODE_SPAN_DELIMITER) {
+      child = _node(source, ts_child);
+      add_child(node, child);
+    }
 
     start = ts_node_end_byte(ts_child);
   }
 
-  ts_child =
-      ts_node_named_child(ts_node, ts_node_named_child_count(ts_node) - 1);
-  end = ts_node_start_byte(ts_child);
-  text = extract_text(source, start, end);
-  child = create_node(HASH_TEXT, text);
-  add_child(node, child);
-
-  free(emph);
+  // ts_child =
+  //     ts_node_named_child(ts_node, ts_node_named_child_count(ts_node) - 1);
+  // end = ts_node_start_byte(ts_child);
+  // text = extract_text(source, start, end);
+  // child = create_node(HASH_TEXT, text);
+  // add_child(node, child);
 
   return node;
 }
@@ -189,7 +184,9 @@ static Node *_node(const char *source, TSNode ts_node) {
     node = _inline_link(source, ts_node);
     break;
 
+  case HASH_CODE_SPAN:
   case HASH_EMPHASIS:
+  case HASH_STRONG_EMPHASIS:
     node = _emph(source, ts_node);
     break;
 
@@ -214,7 +211,7 @@ static Node *_node(const char *source, TSNode ts_node) {
     break;
 
   default:
-    fprintf(stderr, "[TREE MD INLINE] Unknown type: %s(%u)\n",
+    fprintf(stderr, "[TREE MD INLINE] Unknown type: %s (%u)\n",
             ts_node_type(ts_node), hash(ts_node_type(ts_node)));
     assert(false);
   }

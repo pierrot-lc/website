@@ -93,12 +93,12 @@ void write_body_main(FILE *file, Node *node) {
     fprintf(file, "\n");
     break;
 
-  case HASH_EMPH_EM:
-    _balise(file, node, "em");
+  case HASH_CODE_SPAN:
+    _balise(file, node, "code");
     break;
 
-  case HASH_EMPH_STRONG:
-    _balise(file, node, "strong");
+  case HASH_EMPHASIS:
+    _balise(file, node, "em");
     break;
 
   case HASH_DOCUMENT:
@@ -118,6 +118,10 @@ void write_body_main(FILE *file, Node *node) {
   case HASH_PARAGRAPH:
     _balise(file, node, "p");
     fprintf(file, "\n");
+    break;
+
+  case HASH_STRONG_EMPHASIS:
+    _balise(file, node, "strong");
     break;
 
   case HASH_TEXT:

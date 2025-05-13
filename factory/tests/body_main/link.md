@@ -1,4 +1,4 @@
-[normal-*link*](destination)
+[normal-**link**](destination)
 
 Another [without destination]. A self-reference <https://google.com>.
 
