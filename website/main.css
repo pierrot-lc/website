@@ -1,6 +1,8 @@
 body {
-  font-family: lato, monospace;
+  font-family: lato;
   line-height: 1.7;
+
+  background-color: floralwhite;
 }
 
 main {
@@ -10,6 +12,14 @@ main {
 
 p {
   text-align: justify;
+
+  code {
+    background-color: lightgray;
+    font-family: monospace;
+
+    padding: 2px;
+    border-radius: 4px;
+  }
 }
 
 a:link, a:visited {
