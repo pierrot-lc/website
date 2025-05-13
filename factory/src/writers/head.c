@@ -44,6 +44,21 @@ static void _css(FILE *file, Node *tree) {
   }
 }
 
+static void _scripts(FILE *file, Node *tree) {
+  Node *scripts, *src;
+
+  scripts = get_key(tree, "scripts");
+
+  if (scripts == NULL)
+    return;
+
+  for (int i = 0; i < scripts->child_count; i++) {
+    assert(scripts->children[i]->code == HASH_BLOCK_SEQUENCE_ITEM);
+    assert((src = scripts->children[i]->children[0]) != NULL);
+    fprintf(file, "<script src=\"%s\"></script>\n", src->content);
+  }
+}
+
 static void _meta(FILE *file, char *name, char *content) {
   fprintf(file, "<meta name=\"%s\" content=\"%s\">\n", name, content);
 }
@@ -53,5 +68,6 @@ void write_head(FILE *file, Node *tree) {
   _charset(file, tree);
   _title(file, tree);
   _css(file, tree);
+  _scripts(file, tree);
   fprintf(file, "</head>\n");
 }
