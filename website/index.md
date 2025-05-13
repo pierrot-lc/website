@@ -1,6 +1,7 @@
 ---
 title: Home
 ---
+
 # Pierre Pereira's Blog
 
 I am a PhD student in the [COATI team][coati], joint project of [INRIA - Université Côte

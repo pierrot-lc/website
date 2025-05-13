@@ -134,8 +134,8 @@ static Node *_inline_link(const char *source, TSNode ts_node) {
       break;
 
     default:
-      fprintf(stderr, "[INLINE LINK] Unexpected hash type: %u",
-              hash(ts_node_type(child)));
+      fprintf(stderr, "[INLINE LINK] Unknown type: %s (%u)",
+              ts_node_type(child), hash(ts_node_type(child)));
       assert(false);
     }
   }
@@ -214,8 +214,8 @@ static Node *_node(const char *source, TSNode ts_node) {
     break;
 
   default:
-    fprintf(stderr, "[TREE MD INLINE] Unknown hash: %u\n",
-            hash(ts_node_type(ts_node)));
+    fprintf(stderr, "[TREE MD INLINE] Unknown type: %s(%u)\n",
+            ts_node_type(ts_node), hash(ts_node_type(ts_node)));
     assert(false);
   }
 
