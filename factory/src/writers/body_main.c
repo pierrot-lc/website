@@ -58,6 +58,15 @@ static void _link(FILE *file, Node *node) {
   fprintf(file, "</a>");
 }
 
+static void _list(FILE *file, Node *node) {
+  fprintf(file, "<ul>\n");
+  for (int i = 0; i < node->child_count; i++) {
+    _balise(file, node->children[i], "li");
+    fprintf(file, "\n");
+  }
+  fprintf(file, "</ul>\n");
+}
+
 /*
  * *Utils*
  */
@@ -100,6 +109,10 @@ void write_body_main(FILE *file, Node *node) {
 
   case HASH_LINK:
     _link(file, node);
+    break;
+
+  case HASH_LIST:
+    _list(file, node);
     break;
 
   case HASH_PARAGRAPH:

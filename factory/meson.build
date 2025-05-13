@@ -27,6 +27,7 @@ test('header', test_body_main, args: ['../tests/body_main/header.md', '../tests/
 test('par', test_body_main, args: ['../tests/body_main/paragraph.md', '../tests/body_main/paragraph.html'])
 test('emph', test_body_main, args: ['../tests/body_main/emph.md', '../tests/body_main/emph.html'])
 test('link', test_body_main, args: ['../tests/body_main/link.md', '../tests/body_main/link.html'])
+test('list', test_body_main, args: ['../tests/body_main/list.md', '../tests/body_main/list.html'])
 
 test_head = executable('test-head', 'tests/test_head.c', sources, include_directories : incdir, dependencies : [treesitterdep, grammarsdep])
 test('title', test_head, args: ['../tests/head/title.md', '../tests/head/title.html'])

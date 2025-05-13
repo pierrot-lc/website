@@ -7,8 +7,8 @@
 #include "hash.h"
 #include "parsers/markdown.h"
 #include "parsers/markdown_inline.h"
-#include "parsers/yaml.h"
 #include "parsers/utils.h"
+#include "parsers/yaml.h"
 #include "tree.h"
 #include "ts_utils.h"
 
@@ -82,6 +82,25 @@ static Node *_link_reference_definition(const char *source, TSNode ts_node) {
   return node;
 }
 
+static Node *_list_item(const char *source, TSNode ts_node) {
+  char *source_inline;
+
+  TSNode ts_content;
+  Node *node;
+
+  assert(ts_node_named_child_count(ts_node) == 2);
+
+  ts_content = ts_node_named_child(ts_node, 1);
+  assert(hash(ts_node_type(ts_content)) == HASH_PARAGRAPH);
+  assert(hash(ts_node_type(ts_node_named_child(ts_content, 0))) == HASH_INLINE);
+
+  source_inline = ts_node_text(source, ts_node_named_child(ts_content, 0));
+  node = parse_markdown_inline(source_inline);
+  free(source_inline);
+
+  return node;
+}
+
 static Node *_minus_metadata(const char *source, TSNode ts_node) {
   Node *node, *child;
   char *source_yaml;
@@ -121,6 +140,15 @@ static Node *_node(const char *source, TSNode ts_node) {
 
   case HASH_LINK_REFERENCE_DEFINITION:
     node = _link_reference_definition(source, ts_node);
+    break;
+
+  case HASH_LIST:
+    node = create_node(HASH_LIST, NULL);
+    _children(node, source, ts_node);
+    break;
+
+  case HASH_LIST_ITEM:
+    node = _list_item(source, ts_node);
     break;
 
   case HASH_MINUS_METADATA:
