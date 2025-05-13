@@ -1,0 +1,35 @@
+body {
+  font-family: lato, monospace;
+  line-height: 1.7;
+}
+
+main {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+p {
+  text-align: justify;
+}
+
+a:link, a:visited {
+  text-decoration: none;
+  color: darkslategray;
+}
+
+header {
+  margin: 0 20px;
+  overflow: auto;
+
+  strong {
+    float: left;
+    font-size: 20px;
+  }
+
+  ul {
+    float: right;
+  }
+  li {
+    display: inline;
+  }
+}

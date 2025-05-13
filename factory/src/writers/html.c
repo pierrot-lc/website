@@ -11,8 +11,8 @@ void write_html(FILE *file, Node *tree) {
 
   write_head(file, tree);
 
-  write_header(file, tree);
   fprintf(file, "\n<body>\n");
+  write_header(file, tree);
   write_body_main(file, tree);
   fprintf(file, "</body>\n\n");
 

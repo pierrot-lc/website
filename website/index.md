@@ -1,7 +1,7 @@
 ---
 title: Home
 ---
-# Title
+# Pierre Pereira's Blog
 
 I am a PhD student in the [COATI team][coati], joint project of [INRIA - Université Côte
 d'Azur][inria] and [I3S lab][i3s] ([CNRS][cnrs]/[UCA][uca]). My PhD will be done under the

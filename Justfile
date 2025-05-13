@@ -1,5 +1,5 @@
 CONTENT_DIR := "website"
-BUILD_DIR := "build"
+BUILD_DIR := "delivery/priv"
 
 build: clean
     nix build ./factory

@@ -19,7 +19,7 @@ static void nav(FILE *file, Node *tree) {
 
   fprintf(file, "<nav>\n");
 
-  write_link(file, home->children[0]->content, "Home");
+  write_link(file, home->children[0]->content, "<strong>Home</strong>");
   fprintf(file, "\n");
 
   fprintf(file, "<ul>\n");
