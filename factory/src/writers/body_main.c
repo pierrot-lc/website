@@ -22,6 +22,16 @@ static void _children(FILE *, Node *);
  * Each function here write some HTML code based on the specific Node type.
  */
 
+static void _latex(FILE *file, Node *node) {
+  if (node->code == HASH_LATEX_DISPLAY)
+    fprintf(file, "<span class=\"latex-display\">%s</span>", node->content);
+  else if (node->code == HASH_LATEX_INLINE)
+    fprintf(file, "<span class=\"latex-inline\">%s</span>", node->content);
+  else {
+    assert(false);
+  }
+}
+
 static void _link(FILE *file, Node *node) {
   Node *child;
   Node *text = NULL, *destination = NULL;
@@ -105,6 +115,11 @@ void write_body_main(FILE *file, Node *node) {
     fprintf(file, "<main>\n");
     _children(file, node);
     fprintf(file, "</main>\n");
+    break;
+
+  case HASH_LATEX_DISPLAY:
+  case HASH_LATEX_INLINE:
+    _latex(file, node);
     break;
 
   case HASH_LINK:

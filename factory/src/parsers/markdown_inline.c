@@ -49,13 +49,6 @@ static Node *_emph(const char *source, TSNode ts_node) {
     start = ts_node_end_byte(ts_child);
   }
 
-  // ts_child =
-  //     ts_node_named_child(ts_node, ts_node_named_child_count(ts_node) - 1);
-  // end = ts_node_start_byte(ts_child);
-  // text = extract_text(source, start, end);
-  // child = create_node(HASH_TEXT, text);
-  // add_child(node, child);
-
   return node;
 }
 
@@ -138,6 +131,34 @@ static Node *_inline_link(const char *source, TSNode ts_node) {
   return node;
 }
 
+static Node *_latex_block(const char *source, TSNode ts_node) {
+  char *delimiter;
+  unsigned int start, end, latex_type;
+
+  Node *node;
+  TSNode delimiter_start, delimiter_end;
+
+  assert(ts_node_named_child_count(ts_node) == 2);
+  delimiter_start = ts_node_named_child(ts_node, 0);
+  delimiter_end = ts_node_named_child(ts_node, 1);
+  assert(hash(ts_node_type(delimiter_start)) == HASH_LATEX_SPAN_DELIMITER);
+  assert(hash(ts_node_type(delimiter_end)) == HASH_LATEX_SPAN_DELIMITER);
+
+  delimiter = ts_node_text(source, delimiter_start);
+  if (strcmp(delimiter, "$$") == 0)
+    latex_type = HASH_LATEX_DISPLAY;
+  else if (strcmp(delimiter, "$") == 0)
+    latex_type = HASH_LATEX_INLINE;
+  else
+    assert(false);
+  free(delimiter);
+
+  start = ts_node_end_byte(delimiter_start);
+  end = ts_node_start_byte(delimiter_end);
+  node = create_node(latex_type, extract_text(source, start, end));
+  return node;
+}
+
 static Node *_shortcut_link(const char *source, TSNode ts_node) {
   Node *node, *text;
 
@@ -200,6 +221,10 @@ static Node *_node(const char *source, TSNode ts_node) {
 
   case HASH_INLINE_LINK:
     node = _inline_link(source, ts_node);
+    break;
+
+  case HASH_LATEX_BLOCK:
+    node = _latex_block(source, ts_node);
     break;
 
   case HASH_SHORTCUT_LINK:

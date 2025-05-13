@@ -26,6 +26,7 @@ test_body_main = executable('test-body-main', 'tests/test_body_main.c', sources,
 test('header', test_body_main, args: ['../tests/body_main/header.md', '../tests/body_main/header.html'])
 test('par', test_body_main, args: ['../tests/body_main/paragraph.md', '../tests/body_main/paragraph.html'])
 test('emph', test_body_main, args: ['../tests/body_main/emph.md', '../tests/body_main/emph.html'])
+test('latex', test_body_main, args: ['../tests/body_main/latex.md', '../tests/body_main/latex.html'])
 test('link', test_body_main, args: ['../tests/body_main/link.md', '../tests/body_main/link.html'])
 test('list', test_body_main, args: ['../tests/body_main/list.md', '../tests/body_main/list.html'])
 

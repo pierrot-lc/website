@@ -4,7 +4,7 @@
 
 #include "hash.h"
 
-#define TOTAL_TYPES 36
+#define TOTAL_TYPES 40
 
 int main() {
 
@@ -28,6 +28,10 @@ int main() {
       "inline",
       "inline_link",
       "key",
+      "latex_block",
+      "latex_display",
+      "latex_inline",
+      "latex_span_delimiter",
       "link",
       "link_destination",
       "link_label",
