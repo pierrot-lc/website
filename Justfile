@@ -21,7 +21,11 @@ setup: clean
     cp KaTeX/dist/katex.min.css {{ CONTENT_DIR }}
     cp -r KaTeX/dist/fonts {{ CONTENT_DIR }}
 
+    git clone git@github.com:PrismJS/prism.git
+    cd prism; nix-shell -p nodejs; npm install tsx; npm run build
+
 clean:
     rm -rf "{{ BUILD_DIR }}"
     rm -rf "result"
     rm -rf "KaTeX"
+    rm -rf "prism"
