@@ -4,7 +4,7 @@
 
 #include "hash.h"
 
-#define TOTAL_TYPES 40
+#define TOTAL_TYPES 43
 
 int main() {
 
@@ -16,18 +16,21 @@ int main() {
       "block_mapping_pair",
       "block_node",
       "block_sequence_item",
+      "code_fence_content",
       "code_span",
       "code_span_delimiter",
       "collapsed_reference_link",
       "document",
       "emphasis",
       "emphasis_delimiter",
+      "fenced_code_block",
       "full_reference_link",
       "heading_content",
       "html_block",
       "inline",
       "inline_link",
       "key",
+      "language",
       "latex_block",
       "latex_display",
       "latex_inline",

@@ -22,4 +22,9 @@ char *ts_node_text(const char *, TSNode);
  */
 TSNode ts_tree_root(TSNode);
 
+/* Return the first child with the given hash code. Return a null node if
+ * nothing has been found.
+ */
+TSNode ts_search(const TSNode ts_node, unsigned int hash_code);
+
 #endif

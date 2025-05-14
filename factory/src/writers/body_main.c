@@ -16,11 +16,21 @@ static void _balise(FILE *, Node *, char *);
  */
 static void _children(FILE *, Node *);
 
-/*
+/**
  * *Writers*
  *
  * Each function here write some HTML code based on the specific Node type.
  */
+
+static void _code_block(FILE *file, Node *node) {
+  if (node->content != NULL)
+    fprintf(file, "<pre><code class=\"language-%s\">\n", node->content);
+  else
+    fprintf(file, "<pre><code>\n");
+
+  fprintf(file, "%s", node->children[0]->content);
+  fprintf(file, "</code></pre>\n");
+}
 
 static void _latex(FILE *file, Node *node) {
   if (node->code == HASH_LATEX_DISPLAY)
@@ -115,6 +125,10 @@ void write_body_main(FILE *file, Node *node) {
     fprintf(file, "<main>\n");
     _children(file, node);
     fprintf(file, "</main>\n");
+    break;
+
+  case HASH_FENCED_CODE_BLOCK:
+    _code_block(file, node);
     break;
 
   case HASH_LATEX_DISPLAY:

@@ -4,6 +4,7 @@
 #include <string.h>
 #include <tree_sitter/api.h>
 
+#include "hash.h"
 #include "ts_utils.h"
 
 char *read_file(const char *path) {
@@ -59,4 +60,21 @@ TSNode ts_tree_root(TSNode node) {
     return node;
 
   return ts_tree_root(parent);
+}
+
+TSNode ts_search(const TSNode ts_node, unsigned int hash_code) {
+  TSNode found =
+      ts_node_parent(ts_tree_root(ts_node)); // Init with the null node;
+  assert(ts_node_is_null(found));
+
+  if (hash(ts_node_type(ts_node)) == hash_code)
+    return ts_node;
+
+  for (int i = 0; i < ts_node_named_child_count(ts_node); i++) {
+    found = ts_search(ts_node_named_child(ts_node, i), hash_code);
+    if (!ts_node_is_null(found))
+      return found;
+  }
+
+  return found;
 }

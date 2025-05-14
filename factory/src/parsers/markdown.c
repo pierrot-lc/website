@@ -24,6 +24,25 @@ static void _children(Node *, const char *, TSNode);
  * type of TSNode.
  */
 
+static Node *_code_block(const char *source, TSNode ts_node) {
+  Node *node, *content;
+  TSNode ts_language, ts_content;
+
+  ts_language = ts_search(ts_node, HASH_LANGUAGE);
+  ts_content = ts_search(ts_node, HASH_CODE_FENCE_CONTENT);
+  assert(!ts_node_is_null(ts_content));
+
+  node = create_node(HASH_FENCED_CODE_BLOCK, NULL);
+  if (!ts_node_is_null(ts_language))
+    node->content = ts_node_text(source, ts_language);
+
+  content =
+      create_node(HASH_CODE_FENCE_CONTENT, ts_node_text(source, ts_content));
+  add_child(node, content);
+
+  return node;
+}
+
 static Node *_heading(const char *source, TSNode ts_node) {
   assert(ts_node_named_child_count(ts_node) == 2);
 
@@ -127,6 +146,10 @@ static Node *_node(const char *source, TSNode ts_node) {
   switch (hash(ts_node_type(ts_node))) {
   case HASH_ATX_HEADING:
     node = _heading(source, ts_node);
+    break;
+
+  case HASH_FENCED_CODE_BLOCK:
+    node = _code_block(source, ts_node);
     break;
 
   case HASH_HTML_BLOCK:
