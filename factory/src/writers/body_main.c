@@ -24,10 +24,9 @@ static void _children(FILE *, Node *);
 
 static void _code_block(FILE *file, Node *node) {
   if (node->content != NULL)
-    fprintf(file, "<pre><code class=\"language-%s\">\n", node->content);
+    fprintf(file, "<pre><code class=\"language-%s\">", node->content);
   else
-    fprintf(file, "<pre><code>\n");
-
+    fprintf(file, "<pre><code class=\"language-unknown\">");
   fprintf(file, "%s", node->children[0]->content);
   fprintf(file, "</code></pre>\n");
 }

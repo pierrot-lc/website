@@ -13,6 +13,11 @@ also interested into **Neural Adaptive Computation**, which I think is key to ma
 models to execute an `algorithm`. I love Deep Learning some inline $i = 3$ in general, tinkering with computers and open
 source softwares.
 
+```python
+def a(i):
+    return i ** 2
+```
+
 My PhD is funded by the [DS4H scholarship][ds4h].
 
 $$

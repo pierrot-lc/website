@@ -5,10 +5,12 @@ author: Pierre Pereira
 styles:
   - /main.css
   - /katex.min.css
+  - /prism.css
 
 scripts:
   - /renderLatex.js
   - /katex.min.js
+  - /prism.js
 
 nav:
   home: /index.html
