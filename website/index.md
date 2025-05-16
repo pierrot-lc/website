@@ -18,6 +18,12 @@ def a(i):
     return i ** 2
 ```
 
+```python
+a = "Chanch est un crack"
+
+print(a)
+```
+
 My PhD is funded by the [DS4H scholarship][ds4h].
 
 $$

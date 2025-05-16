@@ -3,8 +3,8 @@
 
   inputs = {
     nixpkgs.url = "nixpkgs/nixos-unstable";
-    prism = {
-      url = "github:PrismJS/prism";
+    highlightjs = {
+      url = "github:highlightjs/highlight.js";
       flake = false;
     };
   };
@@ -25,28 +25,40 @@
       buildInputs = [pkgs.nodePackages.katex];
 
       installPhase = ''
-        mkdir -p $out/katex
-        cp -r ${pkgs.nodePackages.katex}/lib/node_modules/katex/dist/{katex.min.css,katex.min.js,fonts} $out/katex
+        mkdir -p $out
+        cp -r ${pkgs.nodePackages.katex}/lib/node_modules/katex/dist/{katex.min.css,katex.min.js,fonts} $out
       '';
     };
 
     # https://github.com/NixOS/nixpkgs/blob/master/doc/languages-frameworks/javascript.section.md
-    prism = pkgs.buildNpmPackage {
-      pname = "prism";
+    highlightjs = pkgs.buildNpmPackage {
+      pname = "highlightjs";
       version = "git";
 
-      src = inputs.prism;
+      nativeBuildInputs = [pkgs.git];
+
+      src = inputs.highlightjs;
+      patches = [./fix_rev.patch];
       npmDeps = pkgs.importNpmLock {
-        npmRoot = inputs.prism;
+        npmRoot = inputs.highlightjs;
       };
 
       npmConfigHook = pkgs.importNpmLock.npmConfigHook;
-      npmBuildScript = "build";
+      dontNpmBuild = true;
+
+      buildPhase = ''
+        node tools/build.js --no-esm --target browser python
+      '';
+      installPhase = ''
+        mkdir -p $out
+        cp ./build/highlight.min.js $out
+        cp ./src/styles/default.css $out/highlight.css
+      '';
     };
   in {
     packages.${system} = {
       katex = katex;
-      prism = prism;
+      highlightjs = highlightjs;
     };
   };
 }

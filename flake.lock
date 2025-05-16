@@ -1,5 +1,21 @@
 {
   "nodes": {
+    "highlightjs": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1746986094,
+        "narHash": "sha256-OyB+BSU5MQ/rl/+LnnTiaaIaacKUj+bYZ90xpRjapkY=",
+        "owner": "highlightjs",
+        "repo": "highlight.js",
+        "rev": "5744d6c6c747d2e61413c79b07ea77ca06e96fbd",
+        "type": "github"
+      },
+      "original": {
+        "owner": "highlightjs",
+        "repo": "highlight.js",
+        "type": "github"
+      }
+    },
     "nixpkgs": {
       "locked": {
         "lastModified": 1747179050,
@@ -15,26 +31,10 @@
         "type": "indirect"
       }
     },
-    "prism": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1746809009,
-        "narHash": "sha256-oDTXPT/0FdcHoYG3gGvx06ccnYtGed3g/5fPFbm/X1Y=",
-        "owner": "PrismJS",
-        "repo": "prism",
-        "rev": "19f8de66b0f3a79aedbbf096081a4060fc0e80af",
-        "type": "github"
-      },
-      "original": {
-        "owner": "PrismJS",
-        "repo": "prism",
-        "type": "github"
-      }
-    },
     "root": {
       "inputs": {
-        "nixpkgs": "nixpkgs",
-        "prism": "prism"
+        "highlightjs": "highlightjs",
+        "nixpkgs": "nixpkgs"
       }
     }
   },

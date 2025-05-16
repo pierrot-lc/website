@@ -14,18 +14,12 @@ build: clean
         nix-shell -p nodePackages.prettier --run "prettier -w ${file}"; \
     done
 
-setup: clean
-    git clone git@github.com:KaTeX/KaTeX.git
-    cd KaTeX; nix-shell -p yarn-berry --run "yarn"; nix-shell -p yarn-berry --run "yarn build"
-    cp KaTeX/dist/katex.min.js {{ CONTENT_DIR }}
-    cp KaTeX/dist/katex.min.css {{ CONTENT_DIR }}
-    cp -r KaTeX/dist/fonts {{ CONTENT_DIR }}
+    nix build .#highlightjs
+    cp result/* "{{ BUILD_DIR }}"
 
-    git clone git@github.com:PrismJS/prism.git
-    cd prism; nix-shell -p nodejs; npm install tsx; npm run build
+    nix build .#katex
+    cp -r result/* "{{ BUILD_DIR }}"
 
 clean:
     rm -rf "{{ BUILD_DIR }}"
     rm -rf "result"
-    rm -rf "KaTeX"
-    rm -rf "prism"
