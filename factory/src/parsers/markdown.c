@@ -215,11 +215,6 @@ static Node *_node(const char *source, TSNode ts_node) {
     node = _link_reference_definition(source, ts_node);
     break;
 
-  case HASH_LIST:
-    node = create_node(HASH_LIST, NULL);
-    _children(node, source, ts_node);
-    break;
-
   case HASH_LIST_ITEM:
     node = _list_item(source, ts_node);
     break;
@@ -228,19 +223,12 @@ static Node *_node(const char *source, TSNode ts_node) {
     node = _minus_metadata(source, ts_node);
     break;
 
-  case HASH_PARAGRAPH:
-    node = create_node(HASH_PARAGRAPH, NULL);
-    _children(node, source, ts_node);
-    break;
-
-  case HASH_SECTION:
-    node = create_node(HASH_SECTION, NULL);
-    _children(node, source, ts_node);
-    break;
-
-  // Nodes to ignore.
+  // Trivial nodes.
   case HASH_BLOCK_CONTINUATION:
   case HASH_BLOCK_QUOTE_MARKER:
+  case HASH_LIST:
+  case HASH_PARAGRAPH:
+  case HASH_SECTION:
     node = create_node(hash(ts_node_type(ts_node)), NULL);
     _children(node, source, ts_node);
     break;
