@@ -31,6 +31,36 @@ static void _code_block(FILE *file, Node *node) {
   fprintf(file, "</code></pre>\n");
 }
 
+static void _image(FILE *file, Node *node) {
+  Node *child;
+  Node *image = NULL, *desc = NULL;
+
+  for (int i = 0; i < node->child_count; i++) {
+    child = node->children[i];
+
+    switch (child->code) {
+    case HASH_IMAGE_DESCRIPTION:
+      desc = child;
+      break;
+
+    case HASH_LINK_DESTINATION:
+      image = child;
+      break;
+
+    case HASH_LINK_LABEL:
+      image = search_label_destination(tree_root(node), child->content);
+      break;
+    }
+  }
+
+  assert(image != NULL);
+
+  if (desc != NULL)
+    fprintf(file, "<img src=\"%s\" alt=\"%s\">", image->content, desc->content);
+  else
+    fprintf(file, "<img src=\"%s\">", image->content);
+}
+
 static void _latex(FILE *file, Node *node) {
   if (node->code == HASH_LATEX_DISPLAY)
     fprintf(file, "<span class=\"latex-display\">%s</span>", node->content);
@@ -112,6 +142,12 @@ void write_body_main(FILE *file, Node *node) {
     fprintf(file, "\n");
     break;
 
+  case HASH_BLOCK_QUOTE:
+    fprintf(file, "<blockquote>\n");
+    _children(file, node);
+    fprintf(file, "</blockquote>\n");
+    break;
+
   case HASH_CODE_SPAN:
     _balise(file, node, "code");
     break;
@@ -128,6 +164,10 @@ void write_body_main(FILE *file, Node *node) {
 
   case HASH_FENCED_CODE_BLOCK:
     _code_block(file, node);
+    break;
+
+  case HASH_IMAGE:
+    _image(file, node);
     break;
 
   case HASH_LATEX_DISPLAY:
@@ -161,6 +201,8 @@ void write_body_main(FILE *file, Node *node) {
     _children(file, node);
     break;
 
+  case HASH_BLOCK_CONTINUATION:
+  case HASH_BLOCK_QUOTE_MARKER:
   case HASH_LINK_REFERENCE_DEFINITION:
   case HASH_MINUS_METADATA:
   case HASH_STREAM:

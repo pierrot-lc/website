@@ -4,7 +4,7 @@
 
 #include "hash.h"
 
-#define TOTAL_TYPES 43
+#define TOTAL_TYPES 48
 
 int main() {
 
@@ -12,9 +12,12 @@ int main() {
       "atx_h1_marker",
       "atx_h2_marker",
       "atx_heading",
+      "block_continuation",
       "block_mapping",
       "block_mapping_pair",
       "block_node",
+      "block_quote",
+      "block_quote_marker",
       "block_sequence_item",
       "code_fence_content",
       "code_span",
@@ -27,6 +30,8 @@ int main() {
       "full_reference_link",
       "heading_content",
       "html_block",
+      "image",
+      "image_description",
       "inline",
       "inline_link",
       "key",

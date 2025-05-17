@@ -35,16 +35,10 @@
     highlightjs = pkgs.buildNpmPackage {
       pname = "highlightjs";
       version = inputs.highlightjs.shortRev;
-
-      nativeBuildInputs = [pkgs.git];
-
       src = inputs.highlightjs;
-      npmDeps = pkgs.importNpmLock {
-        npmRoot = inputs.highlightjs;
-      };
 
+      npmDeps = pkgs.importNpmLock {npmRoot = inputs.highlightjs;};
       npmConfigHook = pkgs.importNpmLock.npmConfigHook;
-      dontNpmBuild = true;
 
       patchPhase = ''
         # Fix the automatic git rev detection.

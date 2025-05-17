@@ -15,7 +15,7 @@
 const TSLanguage *tree_sitter_markdown(void);
 
 static Node *_node(const char *, TSNode);
-static void _children(Node *, const char *, TSNode);
+static void _children(Node *parent, const char *source, TSNode ts_parent);
 
 /*
  * *Converters*
@@ -23,6 +23,52 @@ static void _children(Node *, const char *, TSNode);
  * Convert TSNode into Node. Each function is specifically made for a certain
  * type of TSNode.
  */
+
+static Node *_blockquote(const char *source, TSNode ts_node) {
+  char *text, *p;
+
+  Node *node, *parsed_text;
+
+  node = create_node(HASH_BLOCK_QUOTE, NULL);
+
+  // The blockquote markers are in the way for the inline parsing. When it
+  // contains multiple lines, some "> " are inserted. We remove all of them and
+  // parse again this part of markdown.
+  text = ts_node_text(source, ts_node);
+
+  // Add a "\n" at the beggining to make the first line appear the same as the
+  // others.
+  text = (char *)realloc(text, strlen(text) + 2);
+  memmove(text + 1, text, strlen(text) + 1);
+  text[0] = '\n';
+
+  // Replace all "\n> " by "\n>".
+  while ((p = strstr(text, "\n> ")) != NULL)
+    memmove(p + 2, p + 3, strlen(p + 3) + 1);
+
+  // Replace all "\n>" by "\n".
+  while ((p = strstr(text, "\n>")) != NULL)
+    memmove(p + 1, p + 2, strlen(p + 2) + 1);
+
+  // Parse the markdown again. Ignore the first "DOCUMENT" and "SECTION" nodes.
+  parsed_text = parse_markdown(text);
+  free(text);
+  assert(parsed_text->code == HASH_DOCUMENT && parsed_text->child_count == 1 &&
+         parsed_text->children[0]->code == HASH_SECTION);
+
+  for (int i = 0; i < parsed_text->children[0]->child_count; i++)
+    add_child(node, parsed_text->children[0]->children[i]);
+
+  if (parsed_text->content != NULL)
+    free(parsed_text->content);
+  if (parsed_text->children[0]->content != NULL)
+    free(parsed_text->children[0]->content);
+
+  free(parsed_text->children[0]);
+  free(parsed_text);
+
+  return node;
+}
 
 static Node *_code_block(const char *source, TSNode ts_node) {
   Node *node, *content;
@@ -148,6 +194,10 @@ static Node *_node(const char *source, TSNode ts_node) {
     node = _heading(source, ts_node);
     break;
 
+  case HASH_BLOCK_QUOTE:
+    node = _blockquote(source, ts_node);
+    break;
+
   case HASH_FENCED_CODE_BLOCK:
     node = _code_block(source, ts_node);
     break;
@@ -185,6 +235,13 @@ static Node *_node(const char *source, TSNode ts_node) {
 
   case HASH_SECTION:
     node = create_node(HASH_SECTION, NULL);
+    _children(node, source, ts_node);
+    break;
+
+  // Nodes to ignore.
+  case HASH_BLOCK_CONTINUATION:
+  case HASH_BLOCK_QUOTE_MARKER:
+    node = create_node(hash(ts_node_type(ts_node)), NULL);
     _children(node, source, ts_node);
     break;
 

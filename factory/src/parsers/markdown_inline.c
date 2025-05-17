@@ -68,11 +68,51 @@ static Node *_full_reference_link(const char *source, TSNode ts_node) {
   return node;
 }
 
-static Node *_inline(const char *source, TSNode ts_node) {
-  Node *node, *child;
+static Node *_image(const char *source, TSNode ts_node) {
+  Node *node = NULL, *image = NULL, *desc = NULL;
   TSNode ts_child;
+
+  node = create_node(HASH_IMAGE, NULL);
+
+  for (int i = 0; i < ts_node_named_child_count(ts_node); i++) {
+    ts_child = ts_node_named_child(ts_node, i);
+
+    switch (hash(ts_node_type(ts_child))) {
+    case HASH_IMAGE_DESCRIPTION:
+      desc =
+          create_node(HASH_IMAGE_DESCRIPTION, ts_node_text(source, ts_child));
+      break;
+
+    case HASH_LINK_DESTINATION:
+      image =
+          create_node(HASH_LINK_DESTINATION, ts_node_text(source, ts_child));
+      break;
+
+    case HASH_LINK_LABEL:
+      image = create_node(HASH_LINK_LABEL, ts_node_text(source, ts_child));
+      break;
+
+    default:
+      fprintf(stderr, "[INLINE IMAGE] Unknown type: %s (%u)",
+              ts_node_type(ts_child), hash(ts_node_type(ts_child)));
+    }
+  }
+
+  if (image != NULL)
+    add_child(node, image);
+
+  if (desc != NULL)
+    add_child(node, desc);
+
+  return node;
+}
+
+static Node *_inline(const char *source, TSNode ts_node) {
   char *text;
   unsigned int start, end;
+
+  Node *node, *child;
+  TSNode ts_child;
 
   node = create_node(HASH_INLINE, NULL);
   start = ts_node_start_byte(ts_node);
@@ -213,6 +253,10 @@ static Node *_node(const char *source, TSNode ts_node) {
 
   case HASH_FULL_REFERENCE_LINK:
     node = _full_reference_link(source, ts_node);
+    break;
+
+  case HASH_IMAGE:
+    node = _image(source, ts_node);
     break;
 
   case HASH_INLINE:
