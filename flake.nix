@@ -19,7 +19,8 @@
     lib = pkgs.lib;
 
     katex = pkgs.stdenv.mkDerivation {
-      name = "katex";
+      pname = "katex";
+      version = pkgs.nodePackages.katex.version;
       unpackPhase = "true";
 
       buildInputs = [pkgs.nodePackages.katex];
@@ -33,12 +34,11 @@
     # https://github.com/NixOS/nixpkgs/blob/master/doc/languages-frameworks/javascript.section.md
     highlightjs = pkgs.buildNpmPackage {
       pname = "highlightjs";
-      version = "git";
+      version = inputs.highlightjs.shortRev;
 
       nativeBuildInputs = [pkgs.git];
 
       src = inputs.highlightjs;
-      patches = [./fix_rev.patch];
       npmDeps = pkgs.importNpmLock {
         npmRoot = inputs.highlightjs;
       };
@@ -46,6 +46,10 @@
       npmConfigHook = pkgs.importNpmLock.npmConfigHook;
       dontNpmBuild = true;
 
+      patchPhase = ''
+        # Fix the automatic git rev detection.
+        sed -i '20,22c\git_sha: "${inputs.highlightjs.shortRev}"' tools/build_browser.js
+      '';
       buildPhase = ''
         node tools/build.js --no-esm --target browser python
       '';
