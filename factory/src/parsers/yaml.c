@@ -10,10 +10,36 @@
 
 const TSLanguage *tree_sitter_yaml(void);
 
-static Node *next_node(const char *source, TSNode ts_node);
 static Node *block_mapping_pair(const char *source, TSNode ts_node);
+static Node *next_node(const char *source, TSNode ts_node);
+static void search_values(const char *source, TSNode ts_node, Node *key);
 
-/* Add all child values to key node. */
+/**
+ * Join lines, remove heading ">-".
+ */
+static Node *block_scalar(const char *source, TSNode ts_node) {
+  char *text, *p;
+
+  text = ts_node_text(source, ts_node);
+
+  assert(text[0] == '>' && text[1] == '-');
+
+  // Remove the starting ">-" characters.
+  memmove(text, text + 2, strlen(text + 2) + 1);
+
+  // Replace "\n  " by " ".
+  while ((p = strstr(text, "\n  ")) != NULL)
+    memmove(p, p + 2, strlen(p + 2) + 1);
+
+  // Remove the starting " ".
+  memmove(text, text + 1, strlen(text + 1) + 1);
+
+  return create_node(HASH_VALUE, text);
+}
+
+/**
+ * Add all child values to key node.
+ */
 static void search_values(const char *source, TSNode ts_node, Node *key) {
   Node *value;
 
@@ -33,6 +59,11 @@ static void search_values(const char *source, TSNode ts_node, Node *key) {
 
   case HASH_PLAIN_SCALAR:
     value = create_node(HASH_VALUE, ts_node_text(source, ts_node));
+    add_child(key, value);
+    break;
+
+  case HASH_BLOCK_SCALAR:
+    value = block_scalar(source, ts_node);
     add_child(key, value);
     break;
 

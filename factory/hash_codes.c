@@ -4,7 +4,7 @@
 
 #include "hash.h"
 
-#define TOTAL_TYPES 48
+#define TOTAL_TYPES 49
 
 int main() {
 
@@ -18,6 +18,7 @@ int main() {
       "block_node",
       "block_quote",
       "block_quote_marker",
+      "block_scalar",
       "block_sequence_item",
       "code_fence_content",
       "code_span",
