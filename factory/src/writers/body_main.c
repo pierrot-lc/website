@@ -7,12 +7,14 @@
 #include "tree.h"
 #include "writers/body_main.h"
 
-/* Place a pair of opening and closing balise and write the children in the
+/**
+ * Place a pair of opening and closing balise and write the children in the
  * middle.
  */
 static void _balise(FILE *, Node *, char *);
 
-/* Write all children of the given node.
+/**
+ * Write all children of the given node.
  */
 static void _children(FILE *, Node *);
 
@@ -26,7 +28,7 @@ static void _code_block(FILE *file, Node *node) {
   if (node->content != NULL)
     fprintf(file, "<pre><code class=\"language-%s\">", node->content);
   else
-    fprintf(file, "<pre><code class=\"language-unknown\">");
+    fprintf(file, "<pre><code>");
   fprintf(file, "%s", node->children[0]->content);
   fprintf(file, "</code></pre>\n");
 }
@@ -116,7 +118,7 @@ static void _list(FILE *file, Node *node) {
   fprintf(file, "</ul>\n");
 }
 
-/*
+/**
  * *Utils*
  */
 
@@ -131,7 +133,7 @@ static void _children(FILE *file, Node *node) {
     write_body_main(file, node->children[i]);
 }
 
-/*
+/**
  * *Main*
  */
 
@@ -154,12 +156,6 @@ void write_body_main(FILE *file, Node *node) {
 
   case HASH_EMPHASIS:
     _balise(file, node, "em");
-    break;
-
-  case HASH_DOCUMENT:
-    fprintf(file, "<main>\n");
-    _children(file, node);
-    fprintf(file, "</main>\n");
     break;
 
   case HASH_FENCED_CODE_BLOCK:
@@ -196,6 +192,7 @@ void write_body_main(FILE *file, Node *node) {
     fprintf(file, "%s", node->content);
     break;
 
+  case HASH_DOCUMENT:
   case HASH_INLINE:
   case HASH_SECTION:
     _children(file, node);

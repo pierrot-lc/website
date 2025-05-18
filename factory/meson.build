@@ -12,6 +12,7 @@ sources = files(
   'src/parsers/yaml.c',
   'src/tree.c',
   'src/ts_utils.c',
+  'src/writers/article_metadata.c',
   'src/writers/body_main.c',
   'src/writers/head.c',
   'src/writers/header.c',
@@ -23,6 +24,7 @@ executable('factory', 'main.c', sources, include_directories : incdir, dependenc
 executable('hash-codes', 'hash_codes.c', 'src/hash.c', include_directories : incdir)
 
 test_body_main = executable('test-body-main', 'tests/test_body_main.c', sources, include_directories : incdir, dependencies : [treesitterdep, grammarsdep])
+test('article-metadata', test_body_main, args: ['../tests/body_main/article_metadata.md', '../tests/body_main/article_metadata.html'])
 test('blockquote', test_body_main, args: ['../tests/body_main/blockquote.md', '../tests/body_main/blockquote.html'])
 test('code-block', test_body_main, args: ['../tests/body_main/code_block.md', '../tests/body_main/code_block.html'])
 test('emph', test_body_main, args: ['../tests/body_main/emph.md', '../tests/body_main/emph.html'])
