@@ -1,5 +1,9 @@
 ---
 title: Home
+
+infos:
+  created: 2024-01-01
+  updated: 2025-01-01
 ---
 
 # Pierre Pereira's Blog
