@@ -14,10 +14,6 @@
 
 static void _meta(FILE *file, char *name, char *content);
 
-static void _charset(FILE *file, Node *node) {
-  fprintf(file, "<meta charset=\"utf-8\">\n\n");
-}
-
 static void _commons_meta(FILE *file, Node *node) {
   Node *author, *description, *illustration, *title;
 
@@ -26,17 +22,15 @@ static void _commons_meta(FILE *file, Node *node) {
   illustration = get_key(node, "illustration");
   title = get_key(node, "title");
 
-  if (title != NULL) {
+  fprintf(file, "<meta charset=\"utf-8\">\n");
+
+  if (title != NULL)
     fprintf(file, "<title>%s</title>\n", title->children[0]->content);
-    fprintf(file, "\n");
-  }
 
   if (author != NULL)
     _meta(file, "author", author->children[0]->content);
   if (description != NULL)
     _meta(file, "description", description->children[0]->content);
-  if (author != NULL || description != NULL)
-    fprintf(file, "\n");
 
   if (title != NULL)
     _meta(file, "og:title", title->children[0]->content);
@@ -44,8 +38,6 @@ static void _commons_meta(FILE *file, Node *node) {
     _meta(file, "og:description", description->children[0]->content);
   if (illustration != NULL)
     _meta(file, "og:image", illustration->children[0]->content);
-  if (title != NULL || description != NULL || illustration != NULL)
-    fprintf(file, "\n");
 
   if (title != NULL)
     _meta(file, "twitter:title", title->children[0]->content);
@@ -91,7 +83,6 @@ static void _meta(FILE *file, char *name, char *content) {
 
 void write_head(FILE *file, Node *tree) {
   fprintf(file, "<head>\n");
-  _charset(file, tree);
   _commons_meta(file, tree);
   _css(file, tree);
   _scripts(file, tree);

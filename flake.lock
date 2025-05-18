@@ -1,5 +1,19 @@
 {
   "nodes": {
+    "factory": {
+      "inputs": {
+        "nixpkgs": "nixpkgs"
+      },
+      "locked": {
+        "path": "./factory",
+        "type": "path"
+      },
+      "original": {
+        "path": "./factory",
+        "type": "path"
+      },
+      "parent": []
+    },
     "highlightjs": {
       "flake": false,
       "locked": {
@@ -18,6 +32,21 @@
     },
     "nixpkgs": {
       "locked": {
+        "lastModified": 1737746512,
+        "narHash": "sha256-nU6AezEX4EuahTO1YopzueAXfjFfmCHylYEFCagduHU=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "825479c345a7f806485b7f00dbe3abb50641b083",
+        "type": "github"
+      },
+      "original": {
+        "id": "nixpkgs",
+        "ref": "nixos-unstable",
+        "type": "indirect"
+      }
+    },
+    "nixpkgs_2": {
+      "locked": {
         "lastModified": 1747179050,
         "narHash": "sha256-qhFMmDkeJX9KJwr5H32f1r7Prs7XbQWtO0h3V0a0rFY=",
         "owner": "NixOS",
@@ -33,8 +62,9 @@
     },
     "root": {
       "inputs": {
+        "factory": "factory",
         "highlightjs": "highlightjs",
-        "nixpkgs": "nixpkgs"
+        "nixpkgs": "nixpkgs_2"
       }
     }
   },

@@ -3,6 +3,8 @@
 
   inputs = {
     nixpkgs.url = "nixpkgs/nixos-unstable";
+
+    factory.url = "./factory";
     highlightjs = {
       url = "github:highlightjs/highlight.js";
       flake = false;
@@ -16,7 +18,8 @@
   }: let
     system = "x86_64-linux";
     pkgs = import nixpkgs {inherit system;};
-    lib = pkgs.lib;
+
+    factory = inputs.factory.packages.${system}.default;
 
     katex = pkgs.stdenv.mkDerivation {
       pname = "katex";
@@ -53,10 +56,42 @@
         cp ./src/styles/default.css $out/highlight.css
       '';
     };
+
+    website = pkgs.stdenv.mkDerivation {
+      pname = "website";
+      version = "git";
+      src = ./website;
+
+      builInputs = [
+        factory
+        highlightjs
+        katex
+        pkgs.nodePackages.prettier
+      ];
+
+      buildPhase = ''
+        cp -r ${katex}/* .
+        cp -r ${highlightjs}/* .
+
+        find "." -name "*md" -type f | while read -r file; do
+            ${factory}/bin/factory --config "./global.yaml" --md "''${file}" > "''${file%.md}.html"
+        done
+
+        find "." -name "*html" -type f | while read -r file; do
+            ${pkgs.nodePackages.prettier}/bin/prettier --write "''${file}"
+        done
+      '';
+
+      installPhase = ''
+        mkdir $out
+        cp -r . $out/
+      '';
+    };
   in {
     packages.${system} = {
-      katex = katex;
       highlightjs = highlightjs;
+      katex = katex;
+      website = website;
     };
   };
 }

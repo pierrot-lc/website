@@ -30,8 +30,6 @@ $$
 n_i^{k+1} = \sum_{j \in \mathcal{N(i)}} W n_j^k
 $$
 
-<!-- <span class="github-icon socials"></span> -->
-<!-- <span class="email-icon socials"></span> -->
 
 [cnrs]:         http://www.cnrs.fr/
 [coati]:        https://team.inria.fr/coati/team-members/
