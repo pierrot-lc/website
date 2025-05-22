@@ -4,4 +4,5 @@ compile_commands.json
 factory
 hash-codes
 result
-tests/examples/*.test
+tests/body/*.test
+tests/head/*.test
