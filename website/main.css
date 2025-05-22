@@ -27,22 +27,17 @@ a:link, a:visited {
   color: darkslategray;
 }
 
+.article-tags {
+  font-size: 15px;
+  font-style: italic;
+
+  li {
+    list-style-type: none;
+  }
+}
+
 header {
   margin: 0 50px;
   overflow: auto;
-
-  ul {
-    align-items: center;
-
-    li {
-      float: right;
-      display: inline;
-      padding: 0 5px;
-    }
-
-    .nav-home {
-      float: left;
-      font-size: 20px;
-    }
-  }
+  font-size: 20px;
 }

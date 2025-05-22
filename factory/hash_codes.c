@@ -4,7 +4,7 @@
 
 #include "hash.h"
 
-#define TOTAL_TYPES 49
+#define TOTAL_TYPES 50
 
 int main() {
 
@@ -25,6 +25,7 @@ int main() {
       "code_span_delimiter",
       "collapsed_reference_link",
       "document",
+      "double_quote_scalar",
       "emphasis",
       "emphasis_delimiter",
       "fenced_code_block",

@@ -64,6 +64,11 @@ static void search_values(const char *source, TSNode ts_node, Node *key) {
     add_child(key, value);
     break;
 
+  case HASH_BLOCK_SCALAR:
+    value = block_scalar(source, ts_node);
+    add_child(key, value);
+    break;
+
   case HASH_BLOCK_SEQUENCE_ITEM:
     value = create_node(HASH_BLOCK_SEQUENCE_ITEM, NULL);
     add_child(key, value);
@@ -72,13 +77,15 @@ static void search_values(const char *source, TSNode ts_node, Node *key) {
       search_values(source, ts_node_named_child(ts_node, i), value);
     break;
 
-  case HASH_PLAIN_SCALAR:
-    value = create_node(HASH_VALUE, ts_node_text(source, ts_node));
+  case HASH_DOUBLE_QUOTE_SCALAR:
+    value = create_node(HASH_VALUE,
+                        extract_text(source, ts_node_start_byte(ts_node) + 1,
+                                     ts_node_end_byte(ts_node) - 1));
     add_child(key, value);
     break;
 
-  case HASH_BLOCK_SCALAR:
-    value = block_scalar(source, ts_node);
+  case HASH_PLAIN_SCALAR:
+    value = create_node(HASH_VALUE, ts_node_text(source, ts_node));
     add_child(key, value);
     break;
 

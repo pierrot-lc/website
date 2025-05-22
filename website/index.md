@@ -1,12 +1,9 @@
 ---
-title: Home
+title: Pierre Pereira's Blog
 
-infos:
-  created: 2024-01-01
-  updated: 2025-01-01
+tags:
+  - 2024-01-01
 ---
-
-# Pierre Pereira's Blog
 
 I am a PhD student in the [COATI team][coati], joint project of [INRIA - Université Côte
 d'Azur][inria] and [I3S lab][i3s] ([CNRS][cnrs]/[UCA][uca]). My PhD will be done under the

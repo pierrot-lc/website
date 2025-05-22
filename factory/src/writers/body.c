@@ -211,8 +211,7 @@ void write_page_info(FILE *file, Node *tree) {
 
   for (int i = 0; i < tags->child_count; i++) {
     node = tags->children[i];
-    value = check_scalar_value(node);
-    fprintf(file, "<li>%s: %s</li>\n", node->content, value);
+    fprintf(file, "<li>%s</li>\n", node->children[0]->content);
   }
 
   fprintf(file, "</ul>\n");
