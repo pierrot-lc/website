@@ -8,37 +8,29 @@ sources = files(
   'src/hash.c',
   'src/parsers/markdown.c',
   'src/parsers/markdown_inline.c',
-  'src/parsers/utils.c',
   'src/parsers/yaml.c',
   'src/tree.c',
   'src/ts_utils.c',
-  'src/writers/article_metadata.c',
-  'src/writers/body_main.c',
+  'src/writers/body.c',
   'src/writers/head.c',
-  'src/writers/header.c',
-  'src/writers/html.c',
-  'src/writers/utils.c',
 )
 
 executable('factory', 'main.c', sources, include_directories : incdir, dependencies : [treesitterdep, grammarsdep])
 executable('hash-codes', 'hash_codes.c', 'src/hash.c', include_directories : incdir)
 
-test_body_main = executable('test-body-main', 'tests/test_body_main.c', sources, include_directories : incdir, dependencies : [treesitterdep, grammarsdep])
-test('article-metadata', test_body_main, args: ['../tests/body_main/article_metadata.md', '../tests/body_main/article_metadata.html'])
-test('blockquote', test_body_main, args: ['../tests/body_main/blockquote.md', '../tests/body_main/blockquote.html'])
-test('code-block', test_body_main, args: ['../tests/body_main/code_block.md', '../tests/body_main/code_block.html'])
-test('emph', test_body_main, args: ['../tests/body_main/emph.md', '../tests/body_main/emph.html'])
-test('heading', test_body_main, args: ['../tests/body_main/heading.md', '../tests/body_main/heading.html'])
-test('image', test_body_main, args: ['../tests/body_main/img.md', '../tests/body_main/img.html'])
-test('latex', test_body_main, args: ['../tests/body_main/latex.md', '../tests/body_main/latex.html'])
-test('link', test_body_main, args: ['../tests/body_main/link.md', '../tests/body_main/link.html'])
-test('list', test_body_main, args: ['../tests/body_main/list.md', '../tests/body_main/list.html'])
-test('par', test_body_main, args: ['../tests/body_main/paragraph.md', '../tests/body_main/paragraph.html'])
+test_body = executable('test-body', 'tests/test_body.c', sources, include_directories : incdir, dependencies : [treesitterdep, grammarsdep])
+test('blockquote', test_body, args: ['../tests/body/blockquote.md', '../tests/body/blockquote.html'])
+test('code-block', test_body, args: ['../tests/body/code_block.md', '../tests/body/code_block.html'])
+test('emph', test_body, args: ['../tests/body/emph.md', '../tests/body/emph.html'])
+test('heading', test_body, args: ['../tests/body/heading.md', '../tests/body/heading.html'])
+test('image', test_body, args: ['../tests/body/img.md', '../tests/body/img.html'])
+test('latex', test_body, args: ['../tests/body/latex.md', '../tests/body/latex.html'])
+test('link', test_body, args: ['../tests/body/link.md', '../tests/body/link.html'])
+test('list', test_body, args: ['../tests/body/list.md', '../tests/body/list.html'])
+test('page-info', test_body, args: ['../tests/body/page_info.md', '../tests/body/page_info.html'])
+test('par', test_body, args: ['../tests/body/paragraph.md', '../tests/body/paragraph.html'])
 
 test_head = executable('test-head', 'tests/test_head.c', sources, include_directories : incdir, dependencies : [treesitterdep, grammarsdep])
 test('commons', test_head, args: ['../tests/head/commons.md', '../tests/head/commons.html'])
 test('css', test_head, args: ['../tests/head/css.md', '../tests/head/css.html'])
 test('script', test_head, args: ['../tests/head/script.md', '../tests/head/script.html'])
-
-test_header = executable('test-header', 'tests/test_header.c', sources, include_directories : incdir, dependencies : [treesitterdep, grammarsdep])
-test('nav', test_header, args: ['../tests/header/nav.yaml', '../tests/header/nav.html'])

@@ -1,0 +1,229 @@
+#include <assert.h>
+#include <stdbool.h>
+#include <stdio.h>
+
+#include "hash.h"
+#include "parsers/markdown.h"
+#include "parsers/yaml.h"
+#include "tree.h"
+#include "writers/body.h"
+
+/**
+ * Write all children of the given node.
+ */
+static void write_children(FILE *file, Node *node) {
+  for (int i = 0; i < node->child_count; i++)
+    write_tree(file, node->children[i]);
+}
+
+/**
+ * Place a pair of opening and closing balise and write the children in the
+ * middle.
+ */
+static void balise(FILE *file, Node *node, char *type) {
+  fprintf(file, "<%s>", type);
+  write_children(file, node);
+  fprintf(file, "</%s>", type);
+}
+
+static void alink(FILE *file, Node *node) {
+  Node *child;
+  Node *text = NULL, *destination = NULL;
+
+  for (int i = 0; i < node->child_count; i++) {
+    child = node->children[i];
+    switch (child->code) {
+    case HASH_LINK_TEXT:
+      text = child;
+      break;
+
+    case HASH_LINK_DESTINATION:
+      destination = child;
+      break;
+
+    case HASH_LINK_LABEL:
+      destination = search_label_destination(tree_root(node), child->content);
+      break;
+
+    default:
+      fprintf(stderr, "[WRITER LINK] Unexpected hash type: %u", child->code);
+      assert(false);
+    }
+  }
+
+  if (destination != NULL)
+    fprintf(file, "<a href=\"%s\">", destination->content);
+  else
+    fprintf(file, "<a>");
+
+  if (text != NULL)
+    write_children(file, text);
+
+  fprintf(file, "</a>");
+}
+
+static void code_block(FILE *file, Node *node) {
+  if (node->content != NULL)
+    fprintf(file, "<pre><code class=\"language-%s\">", node->content);
+  else
+    fprintf(file, "<pre><code>");
+  fprintf(file, "%s", node->children[0]->content);
+  fprintf(file, "</code></pre>\n");
+}
+
+static void image(FILE *file, Node *node) {
+  Node *child;
+  Node *link = NULL, *desc = NULL;
+
+  for (int i = 0; i < node->child_count; i++) {
+    child = node->children[i];
+
+    switch (child->code) {
+    case HASH_IMAGE_DESCRIPTION:
+      desc = child;
+      break;
+
+    case HASH_LINK_DESTINATION:
+      link = child;
+      break;
+
+    case HASH_LINK_LABEL:
+      link = search_label_destination(tree_root(node), child->content);
+      break;
+    }
+  }
+
+  assert(link != NULL);
+
+  if (desc != NULL)
+    fprintf(file, "<img src=\"%s\" alt=\"%s\">", link->content, desc->content);
+  else
+    fprintf(file, "<img src=\"%s\">", link->content);
+}
+
+static void latex(FILE *file, Node *node) {
+  if (node->code == HASH_LATEX_DISPLAY)
+    fprintf(file, "<span class=\"latex-display\">%s</span>", node->content);
+  else if (node->code == HASH_LATEX_INLINE)
+    fprintf(file, "<span class=\"latex-inline\">%s</span>", node->content);
+  else {
+    assert(false);
+  }
+}
+
+static void list(FILE *file, Node *node) {
+  fprintf(file, "<ul>\n");
+  for (int i = 0; i < node->child_count; i++) {
+    balise(file, node->children[i], "li");
+    fprintf(file, "\n");
+  }
+  fprintf(file, "</ul>\n");
+}
+
+void write_tree(FILE *file, Node *node) {
+  switch (node->code) {
+  case HASH_ATX_HEADING:
+    balise(file, node, node->content);
+    fprintf(file, "\n");
+    break;
+
+  case HASH_BLOCK_QUOTE:
+    fprintf(file, "<blockquote>\n");
+    write_children(file, node);
+    fprintf(file, "</blockquote>\n");
+    break;
+
+  case HASH_CODE_SPAN:
+    balise(file, node, "code");
+    break;
+
+  case HASH_EMPHASIS:
+    balise(file, node, "em");
+    break;
+
+  case HASH_FENCED_CODE_BLOCK:
+    code_block(file, node);
+    break;
+
+  case HASH_IMAGE:
+    image(file, node);
+    break;
+
+  case HASH_LATEX_DISPLAY:
+  case HASH_LATEX_INLINE:
+    latex(file, node);
+    break;
+
+  case HASH_LINK:
+    alink(file, node);
+    break;
+
+  case HASH_LIST:
+    list(file, node);
+    break;
+
+  case HASH_PARAGRAPH:
+    balise(file, node, "p");
+    fprintf(file, "\n");
+    break;
+
+  case HASH_STRONG_EMPHASIS:
+    balise(file, node, "strong");
+    break;
+
+  case HASH_TEXT:
+    fprintf(file, "%s", node->content);
+    break;
+
+  case HASH_DOCUMENT:
+  case HASH_INLINE:
+  case HASH_SECTION:
+    write_children(file, node);
+    break;
+
+  case HASH_BLOCK_CONTINUATION:
+  case HASH_BLOCK_QUOTE_MARKER:
+  case HASH_LINK_REFERENCE_DEFINITION:
+  case HASH_MINUS_METADATA:
+  case HASH_STREAM:
+    break;
+
+  default:
+    fprintf(stderr, "[BODY-MAIN] Unknown hash: %u\n", node->code);
+    assert(false);
+  }
+}
+
+void write_page_info(FILE *file, Node *tree) {
+  char *value;
+
+  Node *tags, *title, *node;
+
+  if ((title = get_key(tree, "title")) != NULL) {
+    value = check_scalar_value(title);
+    fprintf(file, "<h1 class=\"article-title\">%s</h1>\n", value);
+  }
+
+  if ((tags = get_key(tree, "tags")) == NULL)
+    return;
+
+  fprintf(file, "<ul class=\"article-tags\">\n");
+
+  for (int i = 0; i < tags->child_count; i++) {
+    node = tags->children[i];
+    value = check_scalar_value(node);
+    fprintf(file, "<li>%s: %s</li>\n", node->content, value);
+  }
+
+  fprintf(file, "</ul>\n");
+}
+
+void write_header(FILE *file, Node *tree) {
+  char *home = check_scalar_value(get_key(tree, "home"));
+
+  fprintf(file, "<header>\n");
+  fprintf(file, "<nav>\n");
+  fprintf(file, "<a href=\"%s\">%s</a>\n", home, "Home");
+  fprintf(file, "</nav>\n");
+  fprintf(file, "</header>\n");
+}

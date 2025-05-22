@@ -6,20 +6,15 @@
 
 #include "hash.h"
 #include "parsers/markdown_inline.h"
-#include "parsers/utils.h"
 #include "tree.h"
 #include "ts_utils.h"
 
 const TSLanguage *tree_sitter_markdown_inline(void);
 
-static Node *_inline(const char *, TSNode);
-static Node *_node(const char *, TSNode);
+static Node *inline_text(const char *, TSNode);
+static Node *next_node(const char *, TSNode);
 
-/*
- * *Converters*
- */
-
-static Node *_emph(const char *source, TSNode ts_node) {
+static Node *emphasis(const char *source, TSNode ts_node) {
   Node *node, *child;
   TSNode ts_child;
   char *text;
@@ -42,7 +37,7 @@ static Node *_emph(const char *source, TSNode ts_node) {
 
     if (hash(ts_node_type(ts_child)) != HASH_EMPHASIS_DELIMITER &&
         hash(ts_node_type(ts_child)) != HASH_CODE_SPAN_DELIMITER) {
-      child = _node(source, ts_child);
+      child = next_node(source, ts_child);
       add_child(node, child);
     }
 
@@ -52,12 +47,12 @@ static Node *_emph(const char *source, TSNode ts_node) {
   return node;
 }
 
-static Node *_full_reference_link(const char *source, TSNode ts_node) {
+static Node *full_reference_link(const char *source, TSNode ts_node) {
   Node *node, *text, *label;
 
   node = create_node(HASH_LINK, NULL);
 
-  text = _inline(source, ts_node_named_child(ts_node, 0));
+  text = inline_text(source, ts_node_named_child(ts_node, 0));
   text->code = HASH_LINK_TEXT;
   add_child(node, text);
 
@@ -68,8 +63,8 @@ static Node *_full_reference_link(const char *source, TSNode ts_node) {
   return node;
 }
 
-static Node *_image(const char *source, TSNode ts_node) {
-  Node *node = NULL, *image = NULL, *desc = NULL;
+static Node *image(const char *source, TSNode ts_node) {
+  Node *node = NULL, *url = NULL, *desc = NULL;
   TSNode ts_child;
 
   node = create_node(HASH_IMAGE, NULL);
@@ -84,12 +79,11 @@ static Node *_image(const char *source, TSNode ts_node) {
       break;
 
     case HASH_LINK_DESTINATION:
-      image =
-          create_node(HASH_LINK_DESTINATION, ts_node_text(source, ts_child));
+      url = create_node(HASH_LINK_DESTINATION, ts_node_text(source, ts_child));
       break;
 
     case HASH_LINK_LABEL:
-      image = create_node(HASH_LINK_LABEL, ts_node_text(source, ts_child));
+      url = create_node(HASH_LINK_LABEL, ts_node_text(source, ts_child));
       break;
 
     default:
@@ -98,8 +92,8 @@ static Node *_image(const char *source, TSNode ts_node) {
     }
   }
 
-  if (image != NULL)
-    add_child(node, image);
+  if (url != NULL)
+    add_child(node, url);
 
   if (desc != NULL)
     add_child(node, desc);
@@ -107,7 +101,7 @@ static Node *_image(const char *source, TSNode ts_node) {
   return node;
 }
 
-static Node *_inline(const char *source, TSNode ts_node) {
+static Node *inline_text(const char *source, TSNode ts_node) {
   char *text;
   unsigned int start, end;
 
@@ -125,7 +119,7 @@ static Node *_inline(const char *source, TSNode ts_node) {
     child = create_node(HASH_TEXT, text);
     add_child(node, child);
 
-    child = _node(source, ts_child);
+    child = next_node(source, ts_child);
     add_child(node, child);
 
     start = ts_node_end_byte(ts_child);
@@ -139,7 +133,7 @@ static Node *_inline(const char *source, TSNode ts_node) {
   return node;
 }
 
-static Node *_inline_link(const char *source, TSNode ts_node) {
+static Node *inline_link(const char *source, TSNode ts_node) {
   Node *node, *text, *destination;
   TSNode child;
 
@@ -150,7 +144,7 @@ static Node *_inline_link(const char *source, TSNode ts_node) {
 
     switch (hash(ts_node_type(child))) {
     case HASH_LINK_TEXT:
-      text = _inline(source, child);
+      text = inline_text(source, child);
       text->code = HASH_LINK_TEXT;
       add_child(node, text);
       break;
@@ -171,7 +165,7 @@ static Node *_inline_link(const char *source, TSNode ts_node) {
   return node;
 }
 
-static Node *_latex_block(const char *source, TSNode ts_node) {
+static Node *latex_block(const char *source, TSNode ts_node) {
   char *delimiter;
   unsigned int start, end, latex_type;
 
@@ -199,19 +193,19 @@ static Node *_latex_block(const char *source, TSNode ts_node) {
   return node;
 }
 
-static Node *_shortcut_link(const char *source, TSNode ts_node) {
+static Node *shortcut_link(const char *source, TSNode ts_node) {
   Node *node, *text;
 
   node = create_node(HASH_LINK, NULL);
 
-  text = _inline(source, ts_node_named_child(ts_node, 0));
+  text = inline_text(source, ts_node_named_child(ts_node, 0));
   text->code = HASH_LINK_TEXT;
   add_child(node, text);
 
   return node;
 }
 
-static Node *_uri_autolink(const char *source, TSNode ts_node) {
+static Node *uri_autolink(const char *source, TSNode ts_node) {
   Node *node, *text, *inline_text, *destination;
   char *url;
 
@@ -233,50 +227,46 @@ static Node *_uri_autolink(const char *source, TSNode ts_node) {
   return node;
 }
 
-/*
- * *Utils*
- */
-
-static Node *_node(const char *source, TSNode ts_node) {
+static Node *next_node(const char *source, TSNode ts_node) {
   Node *node;
   switch (hash(ts_node_type(ts_node))) {
 
   case HASH_COLLAPSED_REFERENCE_LINK:
-    node = _inline_link(source, ts_node);
+    node = inline_link(source, ts_node);
     break;
 
   case HASH_CODE_SPAN:
   case HASH_EMPHASIS:
   case HASH_STRONG_EMPHASIS:
-    node = _emph(source, ts_node);
+    node = emphasis(source, ts_node);
     break;
 
   case HASH_FULL_REFERENCE_LINK:
-    node = _full_reference_link(source, ts_node);
+    node = full_reference_link(source, ts_node);
     break;
 
   case HASH_IMAGE:
-    node = _image(source, ts_node);
+    node = image(source, ts_node);
     break;
 
   case HASH_INLINE:
-    node = _inline(source, ts_node);
+    node = inline_text(source, ts_node);
     break;
 
   case HASH_INLINE_LINK:
-    node = _inline_link(source, ts_node);
+    node = inline_link(source, ts_node);
     break;
 
   case HASH_LATEX_BLOCK:
-    node = _latex_block(source, ts_node);
+    node = latex_block(source, ts_node);
     break;
 
   case HASH_SHORTCUT_LINK:
-    node = _shortcut_link(source, ts_node);
+    node = shortcut_link(source, ts_node);
     break;
 
   case HASH_URI_AUTOLINK:
-    node = _uri_autolink(source, ts_node);
+    node = uri_autolink(source, ts_node);
     break;
 
   default:
@@ -298,14 +288,14 @@ Node *parse_markdown_inline(const char *source) {
   TSTree *ts_tree;
   unsigned int hash_inline;
 
-  ts_tree = parse(source, tree_sitter_markdown_inline());
+  ts_tree = ts_parse(source, tree_sitter_markdown_inline());
   ts_root = ts_tree_root_node(ts_tree);
   hash_inline = hash(ts_node_type(ts_root));
 
   assert(hash_inline == HASH_INLINE);
   assert(ts_node_is_null(ts_node_next_sibling(ts_root)));
 
-  root = _node(source, ts_root);
+  root = next_node(source, ts_root);
   ts_tree_delete(ts_tree);
   return root;
 }

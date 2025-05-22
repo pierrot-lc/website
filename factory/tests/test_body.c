@@ -6,8 +6,7 @@
 #include "parsers/markdown.h"
 #include "tree.h"
 #include "ts_utils.h"
-#include "writers/article_metadata.h"
-#include "writers/body_main.h"
+#include "writers/body.h"
 
 /* Compare a reference HTML file and one converted from a corresponding
  * markdown reference.
@@ -35,8 +34,8 @@ int main(int argc, char *argv[]) {
   sprintf(path, "%s.test", argv[2]);
   file = fopen(path, "w");
   assert(file != NULL);
-  write_article_metadata(file, node);
-  write_body_main(file, node);
+  write_page_info(file, node);
+  write_tree(file, node);
   fclose(file);
 
   code_1 = read_file(argv[2]);

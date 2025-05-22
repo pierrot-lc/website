@@ -3,7 +3,9 @@
 
 #include "tree.h"
 
-/* Convert a markdown inline tree. */
+/**
+ * Parse a markdown inline tree.
+ */
 Node *parse_markdown_inline(const char *);
 
 #endif

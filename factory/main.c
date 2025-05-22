@@ -6,7 +6,8 @@
 #include "parsers/yaml.h"
 #include "tree.h"
 #include "ts_utils.h"
-#include "writers/html.h"
+#include "writers/body.h"
+#include "writers/head.h"
 
 int from_markdown(char *markdown_path, char *config_path) {
   char *source;
@@ -33,7 +34,19 @@ int from_markdown(char *markdown_path, char *config_path) {
   // configuration found in the markdown tree will overwrite the yaml
   // configuration since `get_value` is DFS.
   add_child(markdown, yaml);
-  write_html(stdout, markdown);
+
+  // Generate the page.
+  fprintf(stdout, "<!DOCTYPE html>\n");
+  fprintf(stdout, "<html>\n");
+  write_head(stdout, markdown);
+  fprintf(stdout, "<body>\n");
+  write_header(stdout, markdown);
+  fprintf(stdout, "<main>\n");
+  write_page_info(stdout, markdown);
+  write_tree(stdout, markdown);
+  fprintf(stdout, "</main>\n");
+  fprintf(stdout, "</body>\n");
+  fprintf(stdout, "</html>\n");
 
   free_tree(markdown);
 

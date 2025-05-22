@@ -7,15 +7,28 @@
 #include "hash.h"
 #include "parsers/markdown.h"
 #include "parsers/markdown_inline.h"
-#include "parsers/utils.h"
 #include "parsers/yaml.h"
 #include "tree.h"
 #include "ts_utils.h"
 
 const TSLanguage *tree_sitter_markdown(void);
 
-static Node *_node(const char *, TSNode);
-static void _children(Node *parent, const char *source, TSNode ts_parent);
+static Node *next_node(const char *, TSNode);
+
+/**
+ * Go through all children nodes, parse and add them to the parent node.
+ */
+static void children(Node *parent, const char *source, TSNode ts_parent) {
+  Node *child;
+  TSNode ts_child;
+
+  for (int i = 0; i < ts_node_named_child_count(ts_parent); i++) {
+    ts_child = ts_node_named_child(ts_parent, i);
+    child = next_node(source, ts_child);
+    if (child != NULL)
+      add_child(parent, child);
+  }
+}
 
 /*
  * *Converters*
@@ -24,7 +37,7 @@ static void _children(Node *parent, const char *source, TSNode ts_parent);
  * type of TSNode.
  */
 
-static Node *_blockquote(const char *source, TSNode ts_node) {
+static Node *blockquote(const char *source, TSNode ts_node) {
   char *text, *p;
 
   Node *node, *parsed_text;
@@ -70,7 +83,7 @@ static Node *_blockquote(const char *source, TSNode ts_node) {
   return node;
 }
 
-static Node *_code_block(const char *source, TSNode ts_node) {
+static Node *code_block(const char *source, TSNode ts_node) {
   Node *node, *content;
   TSNode ts_language, ts_content;
 
@@ -89,7 +102,7 @@ static Node *_code_block(const char *source, TSNode ts_node) {
   return node;
 }
 
-static Node *_heading(const char *source, TSNode ts_node) {
+static Node *heading(const char *source, TSNode ts_node) {
   assert(ts_node_named_child_count(ts_node) == 2);
 
   Node *node, *child;
@@ -117,23 +130,13 @@ static Node *_heading(const char *source, TSNode ts_node) {
   node = create_node(HASH_ATX_HEADING, content);
 
   ts_content = ts_node_child(ts_node, 1);
-  child = _node(source, ts_content);
+  child = next_node(source, ts_content);
   if (child != NULL)
     add_child(node, child);
   return node;
 }
 
-static Node *_inline(const char *source, TSNode ts_node) {
-  Node *node;
-  char *source_inline;
-
-  source_inline = ts_node_text(source, ts_node);
-  node = parse_markdown_inline(source_inline);
-  free(source_inline);
-  return node;
-}
-
-static Node *_link_reference_definition(const char *source, TSNode ts_node) {
+static Node *link_reference_definition(const char *source, TSNode ts_node) {
   Node *node, *child;
   char *label, *destination;
 
@@ -147,7 +150,7 @@ static Node *_link_reference_definition(const char *source, TSNode ts_node) {
   return node;
 }
 
-static Node *_list_item(const char *source, TSNode ts_node) {
+static Node *list_item(const char *source, TSNode ts_node) {
   char *source_inline;
 
   TSNode ts_content;
@@ -166,7 +169,17 @@ static Node *_list_item(const char *source, TSNode ts_node) {
   return node;
 }
 
-static Node *_minus_metadata(const char *source, TSNode ts_node) {
+static Node *markdown_inline(const char *source, TSNode ts_node) {
+  Node *node;
+  char *source_inline;
+
+  source_inline = ts_node_text(source, ts_node);
+  node = parse_markdown_inline(source_inline);
+  free(source_inline);
+  return node;
+}
+
+static Node *minus_metadata(const char *source, TSNode ts_node) {
   Node *node, *child;
   char *source_yaml;
 
@@ -180,42 +193,38 @@ static Node *_minus_metadata(const char *source, TSNode ts_node) {
   return node;
 }
 
-/*
- * *Utils*
- *
- * The following functions do not directly convert a TSNode into a Node.
+/**
+ * Choose the right parsing function to use.
  */
-
-/* Choose the right convert function to use. */
-static Node *_node(const char *source, TSNode ts_node) {
+static Node *next_node(const char *source, TSNode ts_node) {
   Node *node = NULL;
   switch (hash(ts_node_type(ts_node))) {
   case HASH_ATX_HEADING:
-    node = _heading(source, ts_node);
+    node = heading(source, ts_node);
     break;
 
   case HASH_BLOCK_QUOTE:
-    node = _blockquote(source, ts_node);
+    node = blockquote(source, ts_node);
     break;
 
   case HASH_FENCED_CODE_BLOCK:
-    node = _code_block(source, ts_node);
+    node = code_block(source, ts_node);
     break;
 
   case HASH_INLINE:
-    node = _inline(source, ts_node);
+    node = markdown_inline(source, ts_node);
     break;
 
   case HASH_LINK_REFERENCE_DEFINITION:
-    node = _link_reference_definition(source, ts_node);
+    node = link_reference_definition(source, ts_node);
     break;
 
   case HASH_LIST_ITEM:
-    node = _list_item(source, ts_node);
+    node = list_item(source, ts_node);
     break;
 
   case HASH_MINUS_METADATA:
-    node = _minus_metadata(source, ts_node);
+    node = minus_metadata(source, ts_node);
     break;
 
   // Trivial nodes.
@@ -225,7 +234,7 @@ static Node *_node(const char *source, TSNode ts_node) {
   case HASH_PARAGRAPH:
   case HASH_SECTION:
     node = create_node(hash(ts_node_type(ts_node)), NULL);
-    _children(node, source, ts_node);
+    children(node, source, ts_node);
     break;
 
   default:
@@ -236,23 +245,6 @@ static Node *_node(const char *source, TSNode ts_node) {
 
   return node;
 }
-
-/* Loop over all children of the TSNode and convert them. */
-static void _children(Node *parent, const char *source, TSNode ts_parent) {
-  Node *child;
-  TSNode ts_child;
-
-  for (int i = 0; i < ts_node_named_child_count(ts_parent); i++) {
-    ts_child = ts_node_named_child(ts_parent, i);
-    child = _node(source, ts_child);
-    if (child != NULL)
-      add_child(parent, child);
-  }
-}
-
-/*
- * *Main*
- */
 
 Node *search_label_destination(Node *node, char *label) {
   Node *found;
@@ -276,7 +268,7 @@ Node *parse_markdown(const char *source) {
   TSTree *ts_tree;
   unsigned int hash_document;
 
-  ts_tree = parse(source, tree_sitter_markdown());
+  ts_tree = ts_parse(source, tree_sitter_markdown());
   ts_root = ts_tree_root_node(ts_tree);
   hash_document = hash(ts_node_type(ts_root));
 
@@ -284,7 +276,7 @@ Node *parse_markdown(const char *source) {
   assert(ts_node_is_null(ts_node_next_sibling(ts_root)));
 
   root = create_node(hash_document, NULL);
-  _children(root, source, ts_root);
+  children(root, source, ts_root);
   ts_tree_delete(ts_tree);
   return root;
 }

@@ -1,9 +1,3 @@
-/*
- * Write the head section based on the YAML nodes.
- *
- * See https://developer.mozilla.org/en-US/docs/Web/HTML/Element/meta/name
- * for examples of meta tags.
- */
 #include <assert.h>
 #include <stdio.h>
 
@@ -12,9 +6,16 @@
 #include "tree.h"
 #include "writers/head.h"
 
-static void _meta(FILE *file, char *name, char *content);
+/**
+ * Write a meta element.
+ *
+ * See https://developer.mozilla.org/en-US/docs/Web/HTML/Element/meta/name.
+ */
+static void meta(FILE *file, char *name, char *content) {
+  fprintf(file, "<meta name=\"%s\" content=\"%s\">\n", name, content);
+}
 
-static void _commons_meta(FILE *file, Node *node) {
+static void commons_meta(FILE *file, Node *node) {
   Node *author, *description, *illustration, *title;
 
   author = get_key(node, "author");
@@ -28,26 +29,26 @@ static void _commons_meta(FILE *file, Node *node) {
     fprintf(file, "<title>%s</title>\n", title->children[0]->content);
 
   if (author != NULL)
-    _meta(file, "author", author->children[0]->content);
+    meta(file, "author", author->children[0]->content);
   if (description != NULL)
-    _meta(file, "description", description->children[0]->content);
+    meta(file, "description", description->children[0]->content);
 
   if (title != NULL)
-    _meta(file, "og:title", title->children[0]->content);
+    meta(file, "og:title", title->children[0]->content);
   if (description != NULL)
-    _meta(file, "og:description", description->children[0]->content);
+    meta(file, "og:description", description->children[0]->content);
   if (illustration != NULL)
-    _meta(file, "og:image", illustration->children[0]->content);
+    meta(file, "og:image", illustration->children[0]->content);
 
   if (title != NULL)
-    _meta(file, "twitter:title", title->children[0]->content);
+    meta(file, "twitter:title", title->children[0]->content);
   if (description != NULL)
-    _meta(file, "twitter:description", description->children[0]->content);
+    meta(file, "twitter:description", description->children[0]->content);
   if (illustration != NULL)
-    _meta(file, "twitter:image", illustration->children[0]->content);
+    meta(file, "twitter:image", illustration->children[0]->content);
 }
 
-static void _css(FILE *file, Node *tree) {
+static void css(FILE *file, Node *tree) {
   Node *styles, *href;
 
   styles = get_key(tree, "styles");
@@ -62,7 +63,7 @@ static void _css(FILE *file, Node *tree) {
   }
 }
 
-static void _scripts(FILE *file, Node *tree) {
+static void scripts(FILE *file, Node *tree) {
   Node *scripts, *src;
 
   scripts = get_key(tree, "scripts");
@@ -77,14 +78,10 @@ static void _scripts(FILE *file, Node *tree) {
   }
 }
 
-static void _meta(FILE *file, char *name, char *content) {
-  fprintf(file, "<meta name=\"%s\" content=\"%s\">\n", name, content);
-}
-
 void write_head(FILE *file, Node *tree) {
   fprintf(file, "<head>\n");
-  _commons_meta(file, tree);
-  _css(file, tree);
-  _scripts(file, tree);
+  commons_meta(file, tree);
+  css(file, tree);
+  scripts(file, tree);
   fprintf(file, "</head>\n");
 }

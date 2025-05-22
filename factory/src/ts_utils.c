@@ -78,3 +78,16 @@ TSNode ts_search(const TSNode ts_node, unsigned int hash_code) {
 
   return found;
 }
+
+TSTree *ts_parse(const char *source, const TSLanguage *language) {
+  TSParser *parser;
+  TSTree *tree;
+
+  parser = ts_parser_new();
+  assert(parser != NULL);
+  ts_parser_set_language(parser, language);
+  tree = ts_parser_parse_string(parser, NULL, source, strlen(source));
+  assert(tree != NULL);
+  ts_parser_delete(parser);
+  return tree;
+}
