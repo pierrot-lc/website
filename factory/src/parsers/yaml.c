@@ -149,33 +149,28 @@ Node *get_key(Node *node, char *key) {
   return NULL;
 }
 
-char *check_scalar_value(Node *key) {
-  if (key == NULL) {
-    perror("Key not found");
+char *get_value_scalar(Node *node) {
+  if (node == NULL) {
+    perror("Node is null");
     exit(EXIT_FAILURE);
   }
 
-  if (key->code != HASH_KEY) {
-    perror("Arg is not a key");
+  if (node->child_count == 0) {
+    perror("Node don't have any child value");
     exit(EXIT_FAILURE);
   }
 
-  if (key->child_count == 0) {
-    perror("Key don't have any child value");
+  if (node->child_count > 1) {
+    perror("Node have multiple children values");
     exit(EXIT_FAILURE);
   }
 
-  if (key->child_count > 1) {
-    perror("Key have multiple children values");
-    exit(EXIT_FAILURE);
-  }
-
-  if (key->children[0]->content == NULL) {
+  if (node->children[0]->content == NULL) {
     perror("Value is null");
     exit(EXIT_FAILURE);
   }
 
-  return key->children[0]->content;
+  return node->children[0]->content;
 }
 
 Node *parse_yaml(const char *source) {

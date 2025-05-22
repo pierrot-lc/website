@@ -1,6 +1,7 @@
 #include <assert.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "hash.h"
 #include "parsers/markdown.h"
@@ -195,14 +196,11 @@ void write_tree(FILE *file, Node *node) {
 }
 
 void write_page_info(FILE *file, Node *tree) {
-  char *value;
-
   Node *tags, *title, *node;
 
-  if ((title = get_key(tree, "title")) != NULL) {
-    value = check_scalar_value(title);
-    fprintf(file, "<h1 class=\"article-title\">%s</h1>\n", value);
-  }
+  if ((title = get_key(tree, "title")) != NULL)
+    fprintf(file, "<h1 class=\"article-title\">%s</h1>\n",
+            get_value_scalar(title));
 
   if ((tags = get_key(tree, "tags")) == NULL)
     return;
@@ -211,18 +209,23 @@ void write_page_info(FILE *file, Node *tree) {
 
   for (int i = 0; i < tags->child_count; i++) {
     node = tags->children[i];
-    fprintf(file, "<li>%s</li>\n", node->children[0]->content);
+    fprintf(file, "<li>%s</li>\n", get_value_scalar(node));
   }
 
   fprintf(file, "</ul>\n");
 }
 
 void write_header(FILE *file, Node *tree) {
-  char *home = check_scalar_value(get_key(tree, "home"));
+  Node *home = get_key(tree, "home");
+
+  if (home == NULL) {
+    perror("'home' configuration not found");
+    exit(EXIT_FAILURE);
+  }
 
   fprintf(file, "<header>\n");
   fprintf(file, "<nav>\n");
-  fprintf(file, "<a href=\"%s\">%s</a>\n", home, "Home");
+  fprintf(file, "<a href=\"%s\">%s</a>\n", get_value_scalar(home), "Home");
   fprintf(file, "</nav>\n");
   fprintf(file, "</header>\n");
 }

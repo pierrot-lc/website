@@ -1,8 +1,5 @@
 ---
 title: Pierre Pereira's Blog
-
-tags:
-  - 2024-01-01
 ---
 
 I am a PhD student in the [COATI team][coati], joint project of [INRIA - Université Côte
@@ -11,26 +8,12 @@ supervision of [Emanuele Natale][ema-natale] and [Frédéric Giroire][fred-giroi
 
 I'm specializing in **Neural Combinatorial Optimization** and **Neural Algorithmic Reasoning**. I'm
 also interested into **Neural Adaptive Computation**, which I think is key to make deep learning
-models to execute an `algorithm`. I love Deep Learning some inline $i = 3$ in general, tinkering with computers and open
+models to execute an algorithm. I love Deep Learning in general, tinkering with computers and open
 source softwares.
-
-```python
-def a(i):
-    return i ** 2
-```
-
-```python
-a = "Chanch est un crack"
-
-print(a)
-```
 
 My PhD is funded by the [DS4H scholarship][ds4h].
 
-$$
-n_i^{k+1} = \sum_{j \in \mathcal{N(i)}} W n_j^k
-$$
-
+## [Papers](/papers.html)
 
 [cnrs]:         http://www.cnrs.fr/
 [coati]:        https://team.inria.fr/coati/team-members/

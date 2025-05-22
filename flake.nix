@@ -60,7 +60,7 @@
     website = pkgs.stdenv.mkDerivation {
       pname = "website";
       version = "git";
-      src = ./website;
+      src = ./supply;
 
       builInputs = [
         factory
@@ -70,11 +70,14 @@
       ];
 
       buildPhase = ''
-        cp -r ${katex}/* .
-        cp -r ${highlightjs}/* .
+        cp ${katex}/katex.min.css ./styles/
+        cp ${katex}/katex.min.js ./scripts/
+
+        cp ${highlightjs}/highlight.css ./styles/
+        cp ${highlightjs}/highlight.min.js ./scripts/
 
         find "." -name "*md" -type f | while read -r file; do
-            ${factory}/bin/factory --config "./global.yaml" --md "''${file}" > "''${file%.md}.html"
+            ${factory}/bin/factory --config "./config.yaml" --md "''${file}" > "''${file%.md}.html"
         done
 
         find "." -name "*html" -type f | while read -r file; do

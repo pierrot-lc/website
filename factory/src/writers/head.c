@@ -26,26 +26,26 @@ static void commons_meta(FILE *file, Node *node) {
   fprintf(file, "<meta charset=\"utf-8\">\n");
 
   if (title != NULL)
-    fprintf(file, "<title>%s</title>\n", title->children[0]->content);
+    fprintf(file, "<title>%s</title>\n", get_value_scalar(title));
 
   if (author != NULL)
-    meta(file, "author", author->children[0]->content);
+    meta(file, "author", get_value_scalar(author));
   if (description != NULL)
-    meta(file, "description", description->children[0]->content);
+    meta(file, "description", get_value_scalar(description));
 
   if (title != NULL)
-    meta(file, "og:title", title->children[0]->content);
+    meta(file, "og:title", get_value_scalar(title));
   if (description != NULL)
-    meta(file, "og:description", description->children[0]->content);
+    meta(file, "og:description", get_value_scalar(description));
   if (illustration != NULL)
-    meta(file, "og:image", illustration->children[0]->content);
+    meta(file, "og:image", get_value_scalar(illustration));
 
   if (title != NULL)
-    meta(file, "twitter:title", title->children[0]->content);
+    meta(file, "twitter:title", get_value_scalar(title));
   if (description != NULL)
-    meta(file, "twitter:description", description->children[0]->content);
+    meta(file, "twitter:description", get_value_scalar(description));
   if (illustration != NULL)
-    meta(file, "twitter:image", illustration->children[0]->content);
+    meta(file, "twitter:image", get_value_scalar(illustration));
 }
 
 static void css(FILE *file, Node *tree) {
