@@ -5,6 +5,7 @@ description: >-
   This is my blog and I like it.
 
 home: /index.html
+favicon: /favicon.ico
 
 styles:
   - /styles/main.css

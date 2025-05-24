@@ -16,12 +16,13 @@ static void meta(FILE *file, char *name, char *content) {
 }
 
 static void commons_meta(FILE *file, Node *node) {
-  Node *author, *description, *illustration, *title;
+  Node *author, *description, *illustration, *title, *favicon;
 
   author = get_key(node, "author");
   description = get_key(node, "description");
   illustration = get_key(node, "illustration");
   title = get_key(node, "title");
+  favicon = get_key(node, "favicon");
 
   fprintf(file, "<meta charset=\"utf-8\">\n");
 
@@ -46,6 +47,10 @@ static void commons_meta(FILE *file, Node *node) {
     meta(file, "twitter:description", get_value_scalar(description));
   if (illustration != NULL)
     meta(file, "twitter:image", get_value_scalar(illustration));
+
+  if (favicon != NULL)
+    fprintf(file, "<link rel=\"icon\" href=\"%s\" type=\"image/x-icon\">\n",
+            get_value_scalar(favicon));
 }
 
 static void css(FILE *file, Node *tree) {

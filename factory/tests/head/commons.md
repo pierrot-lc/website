@@ -7,6 +7,7 @@ description: >-
   on multiple lines.
 illustration: /illustration.png
 author: me
+favicon: /favicon.ico
 ---
 
 # Another title

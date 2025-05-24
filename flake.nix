@@ -66,10 +66,13 @@
         factory
         highlightjs
         katex
+        pkgs.imagemagick
         pkgs.nodePackages.prettier
       ];
 
       buildPhase = ''
+        ${pkgs.imagemagick}/bin/magick favicon.png -resize 32x32 favicon.ico
+
         cp ${katex}/katex.min.css ./styles/
         cp -r ${katex}/fonts ./styles/
         cp ${katex}/katex.min.js ./scripts/
