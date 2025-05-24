@@ -172,6 +172,7 @@ void write_tree(FILE *file, Node *node) {
     balise(file, node, "strong");
     break;
 
+  case HASH_HTML_BLOCK:
   case HASH_TEXT:
     fprintf(file, "%s", node->content);
     break;
@@ -196,7 +197,11 @@ void write_tree(FILE *file, Node *node) {
 }
 
 void write_page_info(FILE *file, Node *tree) {
-  Node *tags, *title, *node;
+  Node *tags, *title, *illustration, *node;
+
+  if ((illustration = get_key(tree, "illustration")) != NULL)
+    fprintf(file, "<img src=\"%s\" class=\"article-illustration\">\n",
+            get_value_scalar(illustration));
 
   if ((title = get_key(tree, "title")) != NULL)
     fprintf(file, "<h1 class=\"article-title\">%s</h1>\n",

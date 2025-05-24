@@ -23,6 +23,7 @@ test('blockquote', test_body, args: ['../tests/body/blockquote.md', '../tests/bo
 test('code-block', test_body, args: ['../tests/body/code_block.md', '../tests/body/code_block.html'])
 test('emph', test_body, args: ['../tests/body/emph.md', '../tests/body/emph.html'])
 test('heading', test_body, args: ['../tests/body/heading.md', '../tests/body/heading.html'])
+test('html-block', test_body, args: ['../tests/body/html_block.md', '../tests/body/html_block.html'])
 test('image', test_body, args: ['../tests/body/img.md', '../tests/body/img.html'])
 test('latex', test_body, args: ['../tests/body/latex.md', '../tests/body/latex.html'])
 test('link', test_body, args: ['../tests/body/link.md', '../tests/body/link.html'])

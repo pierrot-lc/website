@@ -71,6 +71,7 @@
 
       buildPhase = ''
         cp ${katex}/katex.min.css ./styles/
+        cp -r ${katex}/fonts ./styles/
         cp ${katex}/katex.min.js ./scripts/
 
         cp ${highlightjs}/highlight.css ./styles/

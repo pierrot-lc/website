@@ -1,0 +1,5 @@
+---
+title: Posts
+---
+
+- [GNN implementation using JAX](/posts/2024-09-02_tuto-gnn/tuto-gnn.html) - *2024-09-02*

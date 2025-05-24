@@ -30,13 +30,6 @@ static void children(Node *parent, const char *source, TSNode ts_parent) {
   }
 }
 
-/*
- * *Converters*
- *
- * Convert TSNode into Node. Each function is specifically made for a certain
- * type of TSNode.
- */
-
 static Node *blockquote(const char *source, TSNode ts_node) {
   char *text, *p;
 
@@ -136,6 +129,18 @@ static Node *heading(const char *source, TSNode ts_node) {
   return node;
 }
 
+static Node *html_block(const char *source, TSNode ts_node) {
+  char *content;
+
+  Node *node;
+
+  // Ignore last empty line of the block.
+  content = extract_text(source, ts_node_start_byte(ts_node),
+                         ts_node_end_byte(ts_node) - 1);
+  node = create_node(HASH_HTML_BLOCK, content);
+  return node;
+}
+
 static Node *link_reference_definition(const char *source, TSNode ts_node) {
   Node *node, *child;
   char *label, *destination;
@@ -209,6 +214,10 @@ static Node *next_node(const char *source, TSNode ts_node) {
 
   case HASH_FENCED_CODE_BLOCK:
     node = code_block(source, ts_node);
+    break;
+
+  case HASH_HTML_BLOCK:
+    node = html_block(source, ts_node);
     break;
 
   case HASH_INLINE:

@@ -1,30 +1,57 @@
 body {
   font-family: lato;
   line-height: 1.7;
-
   background-color: floralwhite;
-}
 
-main {
-  max-width: 800px;
-  margin: 0 auto;
-}
+  a:link, a:visited {
+    text-decoration: none;
+  }
+  a:hover, a:active {
+    text-decoration: underline;
+  }
 
-p {
-  text-align: justify;
+  header {
+    margin: 0 50px;
+    overflow: auto;
+    font-size: 40px;
 
-  code {
-    background-color: lightgray;
-    font-family: monospace;
+    a:link, a:visited {
+      color: black;
+    }
+  }
 
-    padding: 2px;
-    border-radius: 4px;
+  main {
+    max-width: 800px;
+    margin: 0 auto;
+
+    p {
+      text-align: justify;
+
+      code {
+        background-color: lightgray;
+        font-family: monospace;
+
+        padding: 2px;
+        border-radius: 4px;
+      }
+    }
+
+    a:link, a:visited {
+      color: brown;
+    }
+
+    img {
+      /* Center horizontally. */
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+    }
   }
 }
 
-a:link, a:visited {
-  text-decoration: none;
-  color: darkslategray;
+.article-illustration {
+  width: 100%;
+  height: auto;
 }
 
 .article-tags {
@@ -34,10 +61,4 @@ a:link, a:visited {
   li {
     list-style-type: none;
   }
-}
-
-header {
-  margin: 0 50px;
-  overflow: auto;
-  font-size: 20px;
 }

@@ -13,7 +13,24 @@ source softwares.
 
 My PhD is funded by the [DS4H scholarship][ds4h].
 
-## [Papers](/papers.html)
+<ul class="website-links">
+  <li><a href="/posts.html">Posts</a></li>
+  <li><a href="/papers.html">Papers</a></li>
+</ul>
+
+<style>
+  .website-links {
+    font-size: 25px;
+    text-align: center;
+    list-style: none;
+    padding: 0;
+
+    li {
+      display: inline-block;
+      margin: 0 10px;
+    }
+  }
+</style>
 
 [cnrs]:         http://www.cnrs.fr/
 [coati]:        https://team.inria.fr/coati/team-members/
