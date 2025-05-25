@@ -68,17 +68,22 @@
         katex
         pkgs.imagemagick
         pkgs.nodePackages.prettier
+        pkgs.ubuntu-sans
       ];
 
       buildPhase = ''
         ${pkgs.imagemagick}/bin/magick favicon.png -resize 32x32 favicon.ico
 
+        mkdir -p ./styles/fonts
+
         cp ${katex}/katex.min.css ./styles/
-        cp -r ${katex}/fonts ./styles/
+        cp ${katex}/fonts/* ./styles/fonts/
         cp ${katex}/katex.min.js ./scripts/
 
         cp ${highlightjs}/highlight.css ./styles/
         cp ${highlightjs}/highlight.min.js ./scripts/
+
+        cp ${pkgs.ubuntu-sans}/share/fonts/truetype/ubuntu-sans/* ./styles/fonts
 
         find "." -name "*md" -type f | while read -r file; do
             ${factory}/bin/factory --config "./config.yaml" --md "''${file}" > "''${file%.md}.html"

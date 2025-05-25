@@ -1,5 +1,10 @@
+@font-face {
+  font-family: "Ubuntu";
+  src: url(/styles/fonts/UbuntuSans.ttf) format("truetype");
+}
+
 body {
-  font-family: lato;
+  font-family: Ubuntu;
   line-height: 1.7;
   background-color: floralwhite;
 
