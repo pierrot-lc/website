@@ -16,7 +16,8 @@ pub fn main() {
     wisp_mist.handler(handler, secret_key_base)
     |> mist.new
     |> mist.port(8000)
-    |> mist.start_http
+    |> mist.bind("0.0.0.0")
+    |> mist.start_https("/etc/letsencrypt/live/pierrot-lc.dev/fullchain.pem", "/etc/letsencrypt/live/pierrot-lc.dev/privkey.pem")
 
   process.sleep_forever()
 }
