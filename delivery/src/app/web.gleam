@@ -1,4 +1,3 @@
-import app/context.{type Context}
 import gleam/http/request
 import gleam/string_tree
 import wisp.{type Request, type Response}
@@ -16,7 +15,7 @@ pub fn handle_default_static(
   handler(req)
 }
 
-pub fn handle_request(req: Request, ctx: Context) -> Response {
+pub fn handle_request(req: Request) -> Response {
   let req = wisp.method_override(req)
   use <- wisp.log_request(req)
   use <- wisp.rescue_crashes
