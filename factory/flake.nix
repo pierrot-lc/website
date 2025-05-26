@@ -9,13 +9,11 @@
     self,
     nixpkgs,
   }: let
-    system = "x86_64-linux";
-    pkgs = import nixpkgs {inherit system;};
-    lib = pkgs.lib;
-
     # Compile tree-sitter grammars and generate a proper directory with the
     # resulting libraries such that pkg-config can find them.
-    tree-sitter-grammars = let
+    tree-sitter-grammars = system: let
+      pkgs = import nixpkgs {inherit system;};
+
       grammars = pkgs.tree-sitter.withPlugins (p: [
         p.tree-sitter-markdown
         p.tree-sitter-markdown-inline
@@ -54,7 +52,9 @@
 
     # NOTE: Do not use clangd from `pkgs.clang` as it is poorly integrated with
     # NixOS libc.
-    buildInputs = [
+    buildInputs = system: let
+      pkgs = import nixpkgs {inherit system;};
+    in [
       pkgs.just
       pkgs.lldb
       pkgs.llvmPackages_latest.clang-tools
@@ -62,54 +62,63 @@
       pkgs.ninja
       pkgs.pkg-config
       pkgs.tree-sitter
-      tree-sitter-grammars
+      (tree-sitter-grammars system)
     ];
 
     # NOTE: `pkgs.pkg-config` automatically generate the environment variables
     # in the shell based on the `buildInputs` packages. As long as a package
     # have a 'lib/pkgconfig' directory it gets added to the pkg-config path.
-    shell = pkgs.mkShell {
-      name = "factory";
-      inherit buildInputs;
-      shellHook = ''
-        just setup
-        just tests
-      '';
-    };
-
-    fs = lib.fileset;
-    factory = pkgs.stdenv.mkDerivation {
-      pname = "factory";
-      version = "git";
-      doCheck = true;
-
-      inherit buildInputs;
-
-      # From https://nix.dev/tutorials/working-with-local-files
-      src = fs.toSource {
-        root = ./.;
-        fileset = fs.difference ./. (fs.maybeMissing ./result);
+    shell = system: let
+      pkgs = import nixpkgs {inherit system;};
+    in
+      pkgs.mkShell {
+        name = "factory";
+        buildInputs = buildInputs system;
+        shellHook = ''
+          just setup
+          just tests
+        '';
       };
 
-      configurePhase = ''
-        meson setup builddir
-      '';
+    factory = system: let
+      pkgs = import nixpkgs {inherit system;};
+      fs = pkgs.lib.fileset;
+    in
+      pkgs.stdenv.mkDerivation {
+        pname = "factory";
+        version = "git";
+        doCheck = true;
 
-      buildPhase = ''
-        meson compile -C builddir
-      '';
+        buildInputs = buildInputs system;
 
-      checkPhase = ''
-        meson test -C builddir -v
-      '';
+        # From https://nix.dev/tutorials/working-with-local-files
+        src = fs.toSource {
+          root = ./.;
+          fileset = fs.difference ./. (fs.maybeMissing ./result);
+        };
 
-      installPhase = ''
-        mkdir -p $out/bin
-        cp ./builddir/factory $out/bin/factory
-      '';
-    };
+        configurePhase = ''
+          meson setup builddir
+        '';
+
+        buildPhase = ''
+          meson compile -C builddir
+        '';
+
+        checkPhase = ''
+          meson test -C builddir -v
+        '';
+
+        installPhase = ''
+          mkdir -p $out/bin
+          cp ./builddir/factory $out/bin/factory
+        '';
+      };
   in {
-    devShells.${system}.default = shell;
-    packages.${system}.default = factory;
+    devShells."x86_64-linux".default = shell "x86_64-linux";
+    packages."x86_64-linux".default = factory "x86_64-linux";
+
+    devShells."aarch64-linux".default = shell "aarch64-linux";
+    packages."aarch64-linux".default = factory "aarch64-linux";
   };
 }
