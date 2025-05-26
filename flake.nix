@@ -129,15 +129,12 @@
         '';
 
         installPhase = ''
-          mkdir -p $out/bin $out/lib/delivery
+          mkdir -p $out/bin
 
-          # Patch the delivery's lib locations so that the `priv` directory is
-          # found during runtime.
-          sed "s|${delivery_pkg}|''${out}|g" delivery/bin/delivery > $out/bin/website
-          cp -r delivery/lib/* $out/lib/
-          cp -r pages $out/lib/delivery/priv
-
+          # Add the priv directory as first argument.
+          sed "s|-extra|-extra \"''$out/priv\"|g" delivery/bin/delivery > $out/bin/website
           chmod u+x $out/bin/website
+          cp -r pages $out/priv
         '';
       };
   in {

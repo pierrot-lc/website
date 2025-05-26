@@ -15,15 +15,13 @@ pub fn handle_default_static(
   handler(req)
 }
 
-pub fn handle_request(req: Request) -> Response {
+pub fn handle_request(req: Request, static_dir: String) -> Response {
   let req = wisp.method_override(req)
-  let assert Ok(priv_directory) = wisp.priv_directory("delivery")
-
   use <- wisp.log_request(req)
   use <- wisp.rescue_crashes
   use req <- wisp.handle_head(req)
   use req <- handle_default_static(req)
-  use <- wisp.serve_static(req, under: "", from: priv_directory)
+  use <- wisp.serve_static(req, under: "", from: static_dir)
 
   let body = string_tree.from_string("<h1>Hello, Joe!</h1>")
   wisp.html_response(body, 200)
