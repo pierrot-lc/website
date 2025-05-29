@@ -1,10 +1,18 @@
-FROM nixos/nix:latest
+FROM nixos/nix:latest AS builder
+
+WORKDIR /build
+COPY . /build
+
+RUN echo "experimental-features = nix-command flakes" >> /etc/nix/nix.conf
+RUN nix build .#pages && mkdir static && cp -r result/* static/
+RUN nix bundle --bundler github:DavHau/nix-portable -o bundle ./delivery
+
+FROM bash AS run
+
+WORKDIR /app
+COPY --from=builder /build/static ./static
+COPY --from=builder /build/bundle/bin/delivery .
 
 ARG CERTFILE
 ARG KEYFILE
-
-WORKDIR /website
-COPY . /website
-RUN nix build .#website --experimental-features "nix-command flakes"
-
-CMD nix run .#website --experimental-features "nix-command flakes" -- $CERTFILE $KEYFILE
+CMD ./delivery /app/static $CERTFILE $KEYFILE
