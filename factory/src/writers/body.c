@@ -219,18 +219,3 @@ void write_page_info(FILE *file, Node *tree) {
 
   fprintf(file, "</ul>\n");
 }
-
-void write_header(FILE *file, Node *tree) {
-  Node *home = get_key(tree, "home");
-
-  if (home == NULL) {
-    perror("'home' configuration not found");
-    exit(EXIT_FAILURE);
-  }
-
-  fprintf(file, "<header>\n");
-  fprintf(file, "<nav>\n");
-  fprintf(file, "<a href=\"%s\">%s</a>\n", get_value_scalar(home), "Home");
-  fprintf(file, "</nav>\n");
-  fprintf(file, "</header>\n");
-}

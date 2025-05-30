@@ -4,7 +4,7 @@ author: Pierre Pereira
 description: >-
   This is my blog and I like it.
 
-home: /index.html
+header-file: header.md
 favicon: /favicon.ico
 
 styles:

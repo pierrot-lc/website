@@ -1,3 +1,4 @@
+#include <libgen.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -11,8 +12,9 @@
 
 int from_markdown(char *markdown_path, char *config_path) {
   char *source;
+  char file_path[256];
 
-  Node *yaml, *markdown;
+  Node *yaml, *markdown, *header;
 
   source = read_file(config_path);
   if (source == NULL) {
@@ -35,16 +37,36 @@ int from_markdown(char *markdown_path, char *config_path) {
   // configuration since `get_value` is DFS.
   add_child(markdown, yaml);
 
+  if ((header = get_key(markdown, "header-file")) != NULL) {
+    snprintf(file_path, 256, "%s/%s", dirname(config_path),
+             get_value_scalar(header));
+
+    source = read_file(file_path);
+    if (source == NULL) {
+      fprintf(stderr, "Can't open %s\n", file_path);
+      return -1;
+    }
+    header = parse_markdown(source);
+    free(source);
+  }
+
   // Generate the page.
   fprintf(stdout, "<!DOCTYPE html>\n");
   fprintf(stdout, "<html>\n");
   write_head(stdout, markdown);
   fprintf(stdout, "<body>\n");
-  write_header(stdout, markdown);
+
+  if (header != NULL) {
+    fprintf(stdout, "<header>\n");
+    write_tree(stdout, header);
+    fprintf(stdout, "</header>\n");
+  }
+
   fprintf(stdout, "<main>\n");
   write_page_info(stdout, markdown);
   write_tree(stdout, markdown);
   fprintf(stdout, "</main>\n");
+
   fprintf(stdout, "</body>\n");
   fprintf(stdout, "</html>\n");
 
@@ -82,7 +104,5 @@ int main(int argc, char *argv[]) {
     return 0;
   }
 
-  from_markdown(markdown_path, config_path);
-
-  return 0;
+  return from_markdown(markdown_path, config_path);
 }
