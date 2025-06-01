@@ -20,7 +20,7 @@ My PhD is funded by the [DS4H scholarship][ds4h].
 
 <style>
   .website-links {
-    font-size: 25px;
+    font-size: 2rem;
     text-align: center;
     list-style: none;
     padding: 0;

@@ -6,7 +6,7 @@
 body {
   font-family: Ubuntu;
   line-height: 1.7;
-  background-color: floralwhite;
+  background-color: white;
 
   a:link, a:visited {
     text-decoration: none;
@@ -18,7 +18,7 @@ body {
   header {
     margin: 0 50px;
     overflow: auto;
-    font-size: 40px;
+    font-size: 2.5rem;
 
     a:link, a:visited {
       color: black;
@@ -60,7 +60,7 @@ body {
 }
 
 .article-tags {
-  font-size: 15px;
+  font-size: 0.9rem;
   font-style: italic;
 
   li {
