@@ -1,8 +1,8 @@
 ---
 title: How to Build a Graph Convolutional Network with JAX and Equinox!
 description: >-
-  JAX implementation of graph neural networks. Uses Equinox and shows two
-  different ways of implementing GNNs.
+  JAX implementation of graph neural networks. Uses Equinox and shows two different ways of
+  implementing GNNs.
 illustration: illustration.png
 
 tags:
@@ -23,18 +23,16 @@ So let's dive in. We'll see the simplest implementation first using the adjacenc
 graph. Then, we'll continue with the more complex but modular approach using the edge list
 representation.
 
-## Level 1: Using the Adjacency Matrix
+## With the Adjacency Matrix
 
-Let's first recap how we usually represent a graph. For a list of $N$ nodes, we represent the
-relation between the nodes with an *adjacency matrix* $A \in \mathbb{N}^{N \times N}$ where $a_{i,
-j} \in \{0, 1\}$ represents the edge from node $j$ to node $i$ ($1$ if the edge actually exists, $0$
-otherwise). We use this adjacency matrix to summarize how the nodes are connected to each other.
-
-Each node being represented by some vector of size $H$, we can represent the set of nodes as a
-matrix in $\mathbb{R}^{N \times H}$. This lets us write our first graph convolutional layer:
+The adjacency formulation is pretty straighforward:
 
 ```python
+import equinox as eqx
+import equinox.nn as nn
 import jax.experimental.sparse as jsparse
+from jax import vmap
+from jaxtyping import Array, Float, Int, PRNGKeyArray
 
 
 class GraphConv(eqx.Module):
@@ -52,33 +50,35 @@ class GraphConv(eqx.Module):
         return adjacency @ messages
 ```
 
-Doing this matrix multiplication between the node representation and the adjacency matrix is
-equivalent to the following computation:
+The only thing a bit special here is the usage of JAX's [sparse module][jax-sparse-module]. Sparse
+computations makes graph convolutions highly efficient. You can even extend the layer to the `mean`
+aggregation operation by dividing the result by `adjacency.sum(axis=1)`.
+
+> Note that the sparse module still in experimental.
+
+The code is pretty straighforward. It does the following update:
 
 $$
-n_i^{k+1} = \sum_{j \in \mathcal{N(i)}} W n_j^k
+n_i \leftarrow \sum_{j \in \mathcal{N(i)}} W n_j
 $$
 
-Where $n_i^k \in \mathbb{R}^H$ is the hidden representation of the node $i$ at layer $k$ and
-$\mathcal{N(i)}$ is the set of neighbours of the node $i$.
+The only thing to take care about is how you define your adjacency matrix. In the code above I considered
+that `A[i, j] = 1` if an edge $j \rightarrow i$ exists.
 
-Essentially, each node's representation is updated by taking the sum of its neighbours' after
-applying a linear transformation. You can see how using the adjacency matrix makes it easy.
+Implementing the updates for the `min` or `max` aggregation schemes looks a bit trickier. It is much
+easier to use the edge list data structure.
 
-> To be computationally efficient, we use the [sparse][jax-sparse-module] matrix multiplication of
-> JAX. Note that at the time of writing this article, this module is still experimental.
+## Using the Edge List
 
-## Level 2: Using the Edge List
-
-Even though the adjacency matrix is an efficient and concise way to implement the graph
-convolutional layer, it can be hard (impossible?) to define other classical graph layers. That's why
-we often use another representation of our graph: the *edge list*.
-
-We use a tensor $E \in \mathbb{N}^{M \times 2}$ where $e_k = (j, i)$ indicates that the $k^{th}$
-edge is an edge from node $j$ to node $i$ (for a total of $M$ edges). With this, we can reproduce
-the previous implementation:
+This one took me a while for the first time. Everything clicked once I found out about
+[`jax.ops.segment_max`][segment-ops]:
 
 ```python
+import equinox as eqx
+import equinox.nn as nn
+from jax import vmap
+from jaxtyping import Array, Float, Int, PRNGKeyArray
+
 class GraphConv(eqx.Module):
     linear: nn.Linear
 
@@ -92,7 +92,7 @@ class GraphConv(eqx.Module):
     ) -> Float[Array, "n_nodes hidden_dim"]:
         messages = vmap(self.linear)(nodes)
         messages = messages[edges[:, 0]]  # Shape of [n_edges hidden_dim].
-        messages = jax.ops.segment_sum(
+        messages = jax.ops.segment_max(
             data=messages,
             segment_ids=edges[:, 1],
             num_segments=len(nodes),
@@ -100,71 +100,83 @@ class GraphConv(eqx.Module):
         return messages
 ```
 
-This is much less intuitive! Let's break this down.
+I consider here that `edges[e] = [j, i]` means that the $e$-th edge goes from node $j$ to node $i$.
+This layer apply a basic GNN update using the max aggregation operation:
 
-First, we apply the linear layer to all nodes just as we did previously. Then, the embeddings are
-copied and reordered to align with the sources of the edges. At this point, we have the list of all
-features coming from each source node $j$ of $e_k = (j, i)$. Finally, those features are aggregated
-with respect to the destination nodes $i$.
+$$
+n_i \leftarrow \max_{j \in \mathcal{N(i)}} W n_j
+$$
 
-This last step uses [`jax.ops.segment_sum`][segment-sum], which does exactly what we want and frees
-us from complex `gather` and `scatter` operations. It takes a list of multiple vectors and
-selectively adds them based on the corresponding `segmend_ids` list (the destination ids in our
-case).
+Using [`jax.ops`][jax-ops] is much harder to read when encountered for the first time but it
+basically does exactly what we want. You should be able to tweak this implementation to suit your
+needs.
 
-Once we understand what this function does it becomes easy to read and tweak the code to our needs.
-As an additional example, here is how we could compute the degree of all nodes:
+**Take care of default values!** If a node id is not present in `segment_ids`, it will be filled
+with some default value that depends on the `jax.ops` used. For example, `jax.ops.segment_max` will
+fill missing values with `-inf`. This is probably not what you want!
 
-```py
-ones = jnp.ones(len(edges), dtype=jnp.int32)
-degrees = jax.ops.segment_sum(
-    data=ones,
-    segment_ids=edges[:, 1],
-    num_segments=len(nodes),
-)
+Here's a general aggregation implementation that covers everything:
+
+```python
+from functools import partial
+
+import jax
+import jax.numpy as jnp
+from jaxtyping import Array, Float, Int
+
+@partial(jax.jit, static_argnums=[2, 3, 4])
+def aggregate(
+    messages: Float[Array, "n_edges hidden_dim"],
+    destination_index: Int[Array, " n_edges"],
+    n_nodes: int,
+    aggregation_type: str,
+    default_value: float = 0.0,
+) -> Float[Array, "n_nodes hidden_dim"]:
+    """Aggregate the edge features accross the destination index.
+
+    ---
+    Args:
+        messages: The features to aggregate.
+        destination_index: The id of the destination nodes.
+        n_nodes: Total number of nodes.
+        aggregation_type: The aggregation to apply, either "sum", "mean", "min" or "max".
+        default_value: The default value to use for missing destination nodes.
+
+    ---
+    Returns:
+        The aggregated features.
+    """
+    match aggregation_type:
+        case "sum":
+            segment_fn = jax.ops.segment_sum
+        case "mean":
+            segment_fn = jax.ops.segment_sum
+        case "min":
+            segment_fn = jax.ops.segment_min
+        case "max":
+            segment_fn = jax.ops.segment_max
+        case _:
+            raise ValueError(f"Unknown aggregation type {aggregation_type}")
+
+    # Do the aggregation.
+    messages = segment_fn(messages, segment_ids=destination_index, num_segments=n_nodes)
+
+    # Count the degree of each destination.
+    ones = jnp.ones((len(destination_index), 1), dtype=jnp.int32)
+    degrees = jax.ops.segment_sum(
+        ones, segment_ids=destination_index, num_segments=n_nodes
+    )
+
+    if aggregation_type == "mean":
+        messages = messages / degrees
+
+    # Replace with the default value where degree is 0.
+    messages = jnp.where(degrees == 0, default_value, messages)
+
+    return messages
 ```
 
-This should be easily understandable.
-
-**The significant advantage of this representation is that it allows for more flexibility.**
-
-By looking at the [`jax.ops`][jax-ops] documentation, we can see that we have access to other
-operations such as `segment_min` and `segment_max`. Different segment operations will change the
-aggregation scheme.
-
-Additionally, we can now apply a linear transformation on the edges. By concatenating the source and
-destination features, we can apply the linear layer such that it takes into account both pieces of
-information. If edge features are available, it could be used here as well.
-
-> Note that if an id is not present in the `segment_ids` list, it will be filled with a default
-> value that is specific to the segment operation used. For instance, `segment_sum` will fill any
-> missing destination id with 0s whereas `segment_min` will fill them with `inf` values.
-
-## Training the Models
-
-So to test everything, I've set up a fictive ranking task. Random graphs are generated using
-[`networkx`][networkx] and some score is given to each node according to the
-[`clustering`][networkx-clustering] metric.
-
-Two different GNNs are trained using a ranking loss applied to the nodes. The first model is the
-classical GCN using the adjacency representation. The second is an implementation of
-[GAT][gat-paper], a more complex GNN, implemented using the edge list representation.
-
-You can find the code [here][github-impl]. The two models are trained on 800 random graphs with 100
-nodes and about 600 edges each. They have ~170,000 parameters and are trained for 50 000 steps. On
-my GTX 1080 it took about 40 minutes for the GCN and 50 minutes for the GAT.
-
-So here's how the training went:
-
-![Validation scores on andom graphs](validation-scores.png)
-
-> I use the [Kendall ranking metric][kendall-rank], which measures how much the ranking provided by
-> the models is correlated with the actual ranking of the nodes. A perfectly predicted rank would
-> have a score of $1$.
-
-Sadly, for this fictive task, it looks like the basic GCN is more effective than GAT. Anyway, the
-goal was to have a concise implementation somewhere that I (and you maybe) can reuse for future
-works.
+This code does not use `equinox` so you should be able to use it with any JAX framework.
 
 ## JIT Tips
 
@@ -207,3 +219,4 @@ You can have a look at the whole code used to train the models here: [gnn-tuto][
 [networkx]:             https://networkx.org/
 [reddit-binary]:        https://paperswithcode.com/dataset/reddit-binary
 [segment-sum]:          https://jax.readthedocs.io/en/latest/_autosummary/jax.ops.segment_sum.html
+[segment-ops]:          https://docs.jax.dev/en/latest/jax.ops.html
