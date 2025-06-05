@@ -9,19 +9,12 @@ tags:
   - 2024-09-02
 ---
 
-I've been learning [JAX][jax-docs] for the past few months and for a recent project I needed to
-train a basic Graph Neural Network. Surprisingly, I couldn't find good libraries to easily build
-GNNs. Most of them are [outdated](https://github.com/google-deepmind/jraph) and don't use my DL
-framework of choice ([Equinox!][equinox-docs]). This was the perfect excuse to implement my own GNNs
-from scratch.
+Because I really love using JAX I had to use it for my latest project involving GNNs. On PyTorch you
+have many options to build your own GNNs, most notably [PyTorch Geometric][PyG] and [Deep Graph
+Library][DGL]. But the graph ecosystem is not as developed in JAX, which means that I had to
+implement my own GNNs. *That's where the fun begins!*
 
-> I love the JAX/Equinox combination. In my opinion it is perfect for DL research. It gives the user
-> an approachable low-level API that they can play with and that scales well thanks to its powerful
-> JIT compiler. If you're not already using JAX, have a look at [long live JAX][long-live-jax].
-
-So let's dive in. We'll see the simplest implementation first using the adjacency matrix of the
-graph. Then, we'll continue with the more complex but modular approach using the edge list
-representation.
+I ended up with two approaches, either with the **adjacency matrix** or with the **edge list**.
 
 ## With the Adjacency Matrix
 
@@ -50,28 +43,24 @@ class GraphConv(eqx.Module):
         return adjacency @ messages
 ```
 
-The only thing a bit special here is the usage of JAX's [sparse module][jax-sparse-module]. Sparse
-computations makes graph convolutions highly efficient. You can even extend the layer to the `mean`
-aggregation operation by dividing the result by `adjacency.sum(axis=1)`.
-
-> Note that the sparse module still in experimental.
-
-The code is pretty straighforward. It does the following update:
+The code should be easy to read. It does the following update:
 
 $$
 n_i \leftarrow \sum_{j \in \mathcal{N(i)}} W n_j
 $$
 
-The only thing to take care about is how you define your adjacency matrix. In the code above I considered
-that `A[i, j] = 1` if an edge $j \rightarrow i$ exists.
+I used JAX'[sparse module][jax-sparse-module] to for efficiency. Note that this module still
+experimental.
 
-Implementing the updates for the `min` or `max` aggregation schemes looks a bit trickier. It is much
-easier to use the edge list data structure.
+The only thing to take care about is how you define your adjacency matrix. In the code above I
+considere that `A[i, j] = 1` if an edge $j \rightarrow i$ exists. Implementing the updates for the
+`min` or `max` aggregation schemes looks a bit trickier. It is much easier to use the edge list data
+structure.
 
 ## Using the Edge List
 
 This one took me a while for the first time. Everything clicked once I found out about
-[`jax.ops.segment_max`][segment-ops]:
+[`jax.ops`][jax-ops]:
 
 ```python
 import equinox as eqx
@@ -108,12 +97,13 @@ n_i \leftarrow \max_{j \in \mathcal{N(i)}} W n_j
 $$
 
 Using [`jax.ops`][jax-ops] is much harder to read when encountered for the first time but it
-basically does exactly what we want. You should be able to tweak this implementation to suit your
-needs.
+basically does exactly what we want. We give an array of values to which we want to apply the
+aggregation operation and an array of indices. The aggregation is then computed over the grouped
+values (segments) defined by the indices.
 
-**Take care of default values!** If a node id is not present in `segment_ids`, it will be filled
+**Take care of default values!** If a node index is not present in `segment_ids`, it will be filled
 with some default value that depends on the `jax.ops` used. For example, `jax.ops.segment_max` will
-fill missing values with `-inf`. This is probably not what you want!
+fill missing values with `-inf`, this is probably not what you want!
 
 Here's a general aggregation implementation that covers everything:
 
@@ -178,45 +168,31 @@ def aggregate(
 
 This code does not use `equinox` so you should be able to use it with any JAX framework.
 
-## JIT Tips
+## JIT'ing Graphs
 
-When using JAX, it is crucial to JIT your computations. The way JIT works is that the first time it
-encounters your function, it will compile it and keep a cache of the compilation so that later on
-when you call the same function again it can just use the cached compilation directly.
+Of couse you will need to JIT your computations. JAX's JIT is shape-dependent so you have to make
+sure all of your graphs have the same shape to avoid frequents recompilations. Padding on graphs can
+be done with a fake node and fake edges going to that node. Don't forget to pad both the nodes and
+edges. *You will need to add fake edges to the sparse matrix as well!* JIT's cache relies on the
+number of elements in the sparse matrix.
 
-But the cached version of your function is shape-dependent, meaning that if you pass an argument
-with a different shape, it will need to recompile everything and cache the new result again. This is
-an issue for our graphs because we typically have a variable number of nodes and edges for different
-graphs of our datasets.
-
-It means that in order to avoid recompilation, we need to pad our graphs before feeding them into
-the model. For the adjacency matrix, we can simply fill it with more 0s. For the edge list, we can
-create fictive self-loops to a padded fictive node.
-
-You can have a look at this [explanation][jit-shape-discussion] from a JAX dev for a more in-depth
-understanding of how JIT works under-the-hood.
+It would be too verbose to show the implementation here but feel free to have a look at [my
+repo][github-impl].
 
 ## Final Thoughts
 
-While the adjacency representation makes it easy to define the classical GCN, it is less
-customizable. The second implementation, using the edge list, is flexible and allows for more
-complex GNNs. Nervertheless, keep in mind that the adjacency representation remains more
-computationally efficient and requires less memory.
+I was quite surprised to see that no simple JAX GNN implementation can be found online. The main
+library for manipulating GNNs seems to be [jraph][jraph] but it is unmaintained and pretty hard to
+understand.
 
-You can have a look at the whole code used to train the models here: [gnn-tuto][github-impl].
+I really like the control that JAX gives to the developer and I feel that it will always be more fun
+to implement my own models myself. I know I can rely on JAX's core operations that will be
+efficiently compiled.
 
-
+[DGL]:                  https://www.dgl.ai/
+[PyG]:                  https://pytorch-geometric.readthedocs.io/en/latest/index.html
 [equinox-docs]:         https://docs.kidger.site/equinox/
-[gat-paper]:            https://arxiv.org/abs/1710.10903
 [github-impl]:          https://github.com/pierrot-lc/gnn-tuto
-[jax-docs]:             https://jax.readthedocs.io/en/latest/quickstart.html
 [jax-ops]:              https://jax.readthedocs.io/en/latest/jax.ops.html
 [jax-sparse-module]:    https://jax.readthedocs.io/en/latest/jax.experimental.sparse.html
-[jit-shape-discussion]: https://github.com/google/jax/issues/2521#issuecomment-604759386
-[kendall-rank]:         https://en.wikipedia.org/wiki/kendall_rank_correlation_coefficient
-[long-live-jax]:        https://neel04.github.io/my-website/blog/pytorch_rant/
-[networkx-clustering]:  https://networkx.org/documentation/stable/reference/algorithms/generated/networkx.algorithms.cluster.clustering.html
-[networkx]:             https://networkx.org/
-[reddit-binary]:        https://paperswithcode.com/dataset/reddit-binary
-[segment-sum]:          https://jax.readthedocs.io/en/latest/_autosummary/jax.ops.segment_sum.html
-[segment-ops]:          https://docs.jax.dev/en/latest/jax.ops.html
+[jraph]:                https://github.com/google-deepmind/jraph
