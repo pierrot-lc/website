@@ -4,59 +4,58 @@
 }
 
 body {
-  font-family: Ubuntu;
-  line-height: 1.7;
   background-color: white;
+  font-family: Ubuntu;
+  line-height: 1.5;
+  margin: 0 auto;
+  max-width: 800px;
+}
 
-  a:link, a:visited {
-    text-decoration: none;
-  }
-  a:hover, a:active {
-    text-decoration: underline;
-  }
-
-  header {
-    margin: 0 50px;
-    overflow: auto;
-    font-size: 2.5rem;
-
-    a:link, a:visited {
-      color: black;
-    }
+main {
+  p {
+    text-align: justify;
   }
 
-  main {
-    max-width: 800px;
-    margin: 0 auto;
-
-    p {
-      text-align: justify;
-
-      code {
-        background-color: lightgray;
-        font-family: monospace;
-
-        padding: 2px;
-        border-radius: 4px;
-      }
-    }
-
-    a:link, a:visited {
-      color: brown;
-    }
-
-    img {
-      /* Center horizontally. */
-      display: block;
-      margin-left: auto;
-      margin-right: auto;
-    }
+  img {
+    /* Center horizontally. */
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
   }
 }
 
+header {
+  font-size: 1.3rem;
+  margin: 0 0 10px 0;
+  overflow: auto;
+
+  a:link, a:visited {
+    color: black;
+  }
+}
+
+a:link, a:visited {
+  color: brown;
+  text-decoration: none;
+}
+a:hover, a:active {
+  text-decoration: underline;
+}
+
+p code {
+  background-color: lightgray;
+  border-radius: 4px;
+  font-family: monospace;
+  padding: 2px;
+}
+
+pre code {
+  font-size: 0.8rem;
+}
+
 .article-illustration {
-  width: 100%;
   height: auto;
+  width: 100%;
 }
 
 .article-tags {
