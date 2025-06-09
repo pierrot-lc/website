@@ -1,5 +1,4 @@
 ---
-title: Pierre Pereira's Blog
 author: Pierre Pereira
 description: >-
   This is my blog and I like it.
@@ -8,9 +7,10 @@ header-file: header.md
 favicon: /favicon.ico
 
 styles:
-  - /styles/main.css
   - /styles/katex.min.css
   - /styles/highlight.css
+  - /styles/main.css
+  - /styles/fonts.css
 
 scripts:
   - /scripts/katex.min.js

@@ -75,8 +75,8 @@
           highlightjs_pkg
           katex_pkg
           pkgs.imagemagick
+          pkgs.jetbrains-mono
           pkgs.nodePackages.prettier
-          pkgs.ubuntu-sans
         ];
 
         buildPhase = ''
@@ -91,7 +91,7 @@
           cp ${highlightjs_pkg}/highlight.css ./styles/
           cp ${highlightjs_pkg}/highlight.min.js ./scripts/
 
-          cp ${pkgs.ubuntu-sans}/share/fonts/truetype/ubuntu-sans/* ./styles/fonts
+          cp ${pkgs.jetbrains-mono}/share/fonts/truetype/* ./styles/fonts
 
           find "." -name "*md" -type f | while read -r file; do
               ${factory_pkg}/bin/factory --config "./config.yaml" --md "''${file}" > "''${file%.md}.html"

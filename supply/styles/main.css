@@ -1,12 +1,5 @@
-@font-face {
-  font-family: "Ubuntu";
-  src: url(/styles/fonts/UbuntuSans.ttf) format("truetype");
-}
-
 body {
   background-color: white;
-  font-family: Ubuntu;
-  line-height: 1.5;
   margin: 0 auto;
   max-width: 800px;
 }
@@ -25,7 +18,6 @@ main {
 }
 
 header {
-  font-size: 1.3rem;
   margin: 0 0 10px 0;
   overflow: auto;
 
@@ -45,23 +37,14 @@ a:hover, a:active {
 p code {
   background-color: lightgray;
   border-radius: 4px;
-  font-family: monospace;
   padding: 2px;
-}
-
-pre code {
-  font-size: 0.8rem;
 }
 
 .article-illustration {
   height: auto;
   width: 100%;
 }
-
 .article-tags {
-  font-size: 0.9rem;
-  font-style: italic;
-
   li {
     list-style-type: none;
   }

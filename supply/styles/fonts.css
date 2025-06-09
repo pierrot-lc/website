@@ -1,0 +1,24 @@
+@font-face {
+  font-family: "JetBrains Mono";
+  src: url(/styles/fonts/JetBrainsMono-Light.ttf) format("truetype");
+}
+
+html {
+  font-size: 1vw;
+  font-family: JetBrains Mono, monospace;
+  line-height: 1.4;
+}
+
+header {
+  font-size: 1.3rem;
+  font-weight: bold;
+}
+
+pre code {
+  font-size: 0.8rem;
+}
+
+.article-tags {
+  font-size: 0.9rem;
+  font-style: italic;
+}
