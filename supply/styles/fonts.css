@@ -4,17 +4,27 @@
 }
 
 html {
-  /* Font size is 16px on a 1920 width screen.
+  /* Font size is 18px on a 1920 width screen.
    *
-   * Increases linearly for small screens up to 24px for 320 width screen.
+   * Increases linearly for small screens up to 28px for 320 width screen.
    */
-  font-size: calc(24px - (24 - 16) * ((100vw - 320px) / (1920 - 320)));
+  font-size: clamp(18px, calc(28px - 10 * ((100vw - 320px) / (1920 - 320))), 28px);
   font-family: JetBrains Mono, monospace;
-  line-height: 1.4;
+  line-height: 1.5;
+}
+
+p {
+  font-size: 1rem;
+}
+h1 {
+  font-size: 1.5rem;
+}
+h2 {
+  font-size: 1.2rem;
 }
 
 header {
-  font-size: 1.3rem;
+  font-size: 1.6rem;
   font-weight: bold;
 }
 
