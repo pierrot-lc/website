@@ -207,15 +207,6 @@ void write_page_info(FILE *file, Node *tree) {
     fprintf(file, "<h1 class=\"article-title\">%s</h1>\n",
             get_value_scalar(title));
 
-  if ((tags = get_key(tree, "tags")) == NULL)
-    return;
-
-  fprintf(file, "<ul class=\"article-tags\">\n");
-
-  for (int i = 0; i < tags->child_count; i++) {
-    node = tags->children[i];
-    fprintf(file, "<li>%s</li>\n", get_value_scalar(node));
-  }
-
-  fprintf(file, "</ul>\n");
+  if ((tags = get_key(tree, "tags")) != NULL)
+    fprintf(file, "<p class=\"article-tags\">%s</p>\n", get_value_scalar(tags));
 }

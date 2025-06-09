@@ -5,8 +5,7 @@ description: >-
   implementing GNNs.
 illustration: illustration.png
 
-tags:
-  - 2024-09-02
+tags: "Created: 2024-09-02 | Updated: 2025-06-10"
 ---
 
 Because I really love using JAX I had to use it for my latest project involving GNNs. In PyTorch,

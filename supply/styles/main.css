@@ -44,8 +44,3 @@ p code {
   height: auto;
   width: 100%;
 }
-.article-tags {
-  li {
-    list-style-type: none;
-  }
-}
