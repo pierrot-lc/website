@@ -4,7 +4,11 @@
 }
 
 html {
-  font-size: 1vw;
+  /* Font size is 16px on a 1920 width screen.
+   *
+   * Increases linearly for small screens up to 24px for 320 width screen.
+   */
+  font-size: calc(24px - (24 - 16) * ((100vw - 320px) / (1920 - 320)));
   font-family: JetBrains Mono, monospace;
   line-height: 1.4;
 }
