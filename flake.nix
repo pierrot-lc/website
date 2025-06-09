@@ -10,6 +10,10 @@
       url = "github:highlightjs/highlight.js";
       flake = false;
     };
+    modern-normalize = {
+      url = "github:sindresorhus/modern-normalize";
+      flake = false;
+    };
   };
 
   outputs = inputs @ {
@@ -59,11 +63,28 @@
         '';
       };
 
+    modern-normalize = system: let
+      pkgs = import nixpkgs {inherit system;};
+    in
+      pkgs.stdenv.mkDerivation {
+        pname = "modern-normalize";
+        version = inputs.modern-normalize.shortRev;
+        src = inputs.modern-normalize;
+
+        buildPhase = ''
+        '';
+        installPhase = ''
+          mkdir -p $out
+          cp ./modern-normalize.css $out
+        '';
+      };
+
     pages = system: let
       pkgs = import nixpkgs {inherit system;};
       factory_pkg = inputs.factory.packages.${system}.default;
       highlightjs_pkg = highlightjs system;
       katex_pkg = katex system;
+      modern-normalize_pkg = modern-normalize system;
     in
       pkgs.stdenv.mkDerivation {
         pname = "pages";
@@ -74,6 +95,7 @@
           factory_pkg
           highlightjs_pkg
           katex_pkg
+          modern-normalize_pkg
           pkgs.imagemagick
           pkgs.jetbrains-mono
           pkgs.nodePackages.prettier
@@ -90,6 +112,8 @@
 
           cp ${highlightjs_pkg}/highlight.css ./styles/
           cp ${highlightjs_pkg}/highlight.min.js ./scripts/
+
+          cp ${modern-normalize_pkg}/modern-normalize.css ./styles/
 
           cp ${pkgs.jetbrains-mono}/share/fonts/truetype/* ./styles/fonts
 

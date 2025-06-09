@@ -45,6 +45,22 @@
         "type": "github"
       }
     },
+    "modern-normalize": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1736590245,
+        "narHash": "sha256-whlykIRODly3cedYFy0p5ISpKD5/Visk4vpTfa1oaL0=",
+        "owner": "sindresorhus",
+        "repo": "modern-normalize",
+        "rev": "ba66c6fe35c7ae33954120c73e69d57de4249a0b",
+        "type": "github"
+      },
+      "original": {
+        "owner": "sindresorhus",
+        "repo": "modern-normalize",
+        "type": "github"
+      }
+    },
     "nix-gleam": {
       "locked": {
         "lastModified": 1717670865,
@@ -110,6 +126,7 @@
         "delivery": "delivery",
         "factory": "factory",
         "highlightjs": "highlightjs",
+        "modern-normalize": "modern-normalize",
         "nixpkgs": "nixpkgs_3"
       }
     }

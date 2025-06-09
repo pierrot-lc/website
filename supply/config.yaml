@@ -7,6 +7,7 @@ header-file: header.md
 favicon: /favicon.ico
 
 styles:
+  - /styles/modern-normalize.css
   - /styles/katex.min.css
   - /styles/highlight.css
   - /styles/main.css
