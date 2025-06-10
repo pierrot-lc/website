@@ -1,1 +1,1 @@
-- [GNN implementation using JAX](/posts/2024-09-02_tuto-gnn/tuto-gnn.html) - *2024-09-02*
+- [Graph Neural Networks in JAX](/posts/2024-09-02_jax-gnn/) - *2024-09-02*

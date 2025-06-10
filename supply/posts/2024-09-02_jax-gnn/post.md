@@ -1,23 +1,19 @@
 ---
-title: How to Build a Graph Neural Network with JAX and Equinox!
-description: >-
-  JAX implementation of graph neural networks. Uses Equinox and shows two different ways of
-  implementing GNNs.
 illustration: illustration.png
-
 tags: "Created: 2024-09-02 | Updated: 2025-06-10"
+title: Graph Neural Networks in JAX
 ---
 
 Because I really love using JAX I had to use it for my latest project involving GNNs. In PyTorch,
 you have many options to build your own GNNs, most notably [PyTorch Geometric][PyG] and [Deep Graph
 Library][DGL]. But the graph ecosystem is not as developed in JAX, which means that I had to
-implement my own GNNs.
+implement my own models.
 
-I ended up with two approaches, either with the **adjacency matrix** or with the **edge list**.
+I ended up with two approaches: one using the **adjacency matrix** and one using the **edge list**.
 
-## With the Adjacency Matrix
+## Using the Adjacency Matrix
 
-The adjacency formulation is pretty straighforward:
+The adjacency formulation is pretty straightforward:
 
 ```python
 import equinox as eqx
@@ -48,11 +44,11 @@ $$
 n_i \leftarrow \sum_{j \in \mathcal{N(i)}} W n_j
 $$
 
-I used JAX'[sparse module][jax-sparse-module] for efficiency, which is still experimental. The
+I used JAX's [sparse module][jax-sparse-module] for efficiency, which is still experimental. The
 only thing to take care about is how you define your adjacency matrix. In the code above I consider
 that `A[i, j]` is 1 if an edge $j \rightarrow i$ exists. Implementing the updates for the `min` or
-`max` aggregation schemes looks a bit trickier. It is much easier to use the edge list data
-structure.
+`max` aggregation schemes looks a bit trickier. It is what motivated the use of the (dirty?) edge
+list data structure.
 
 ## Using the Edge List
 
@@ -86,7 +82,7 @@ class GraphConv(eqx.Module):
         return messages
 ```
 
-I consider here the edges as a list of tuples `[j, i]` for every edge $j \rightarrow i$. This layer
+Here, I consider the edges as a list of tuples `[j, i]` for every edge $j \rightarrow i$. This layer
 applies a basic GNN update using the max aggregation operation:
 
 $$
@@ -98,9 +94,9 @@ basically does exactly what we want. We give an array of values to which we want
 aggregation operation and an array of indices. The aggregation is then computed over the grouped
 values (segments) defined by the indices.
 
-**Take care of default values!** If a node index is not present in `segment_ids`, it will be filled
+**Be careful of default values!** If a node index is not present in `segment_ids`, it will be filled
 with some default value that depends on the aggregation used. For example, `jax.ops.segment_max`
-will fill missing values with `-inf`, this is probably not what you want!
+will fill missing values with `-inf`, which is probably not what you want!
 
 Here's a general aggregation implementation that covers everything:
 
@@ -149,8 +145,8 @@ This code does not use `equinox` so you should be able to use it with any JAX fr
 
 ## JIT'ing Graphs
 
-Of couse you will need to JIT your computations. JAX's JIT is shape-dependent so you have to make
-sure all of your graphs have the same shape to avoid frequents recompilations. Padding on graphs can
+Of course you will need to JIT your computations. JAX's JIT is shape-dependent so you have to make
+sure all of your graphs have the same shape to avoid frequent recompilations. Padding on graphs can
 be done with a fake node and fake edges going to that node. Don't forget to pad both the nodes and
 edges. *You will need to add fake edges to the sparse matrix as well!* JIT's cache relies on the
 number of elements in the sparse matrix.
@@ -164,9 +160,9 @@ I was quite surprised to see that no simple JAX GNN implementation can be found 
 library for manipulating GNNs seems to be [jraph][jraph] but it is unmaintained and pretty hard to
 understand.
 
-I really like the control that JAX gives to the developer and I feel that it will always be more fun
-to implement my own models myself. I know I can rely on JAX's core operations that will be
-efficiently compiled.
+I really like the control that JAX gives to the developer and it will always be more fun to
+implement my own models myself. I know I can rely on JAX's core operations that are efficiently
+compiled.
 
 [DGL]:                  https://www.dgl.ai/
 [PyG]:                  https://pytorch-geometric.readthedocs.io/en/latest/index.html

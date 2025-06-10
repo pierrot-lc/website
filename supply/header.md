@@ -1,5 +1,5 @@
-<div class="header-left"><a href="/index.html">Home</a></div>
-<div class="header-right"><a href="/posts.html">Posts</a> / <a href="/papers.html">Papers</a></div>
+<div class="header-left"><a href="/">Home</a></div>
+<div class="header-right"><a href="/posts">Posts</a> / <a href="/papers">Papers</a></div>
 
 <style>
   .header-left {

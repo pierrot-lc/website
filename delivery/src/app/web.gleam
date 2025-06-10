@@ -1,4 +1,5 @@
 import gleam/http/request
+import gleam/string
 import gleam/string_tree
 import wisp.{type Request, type Response}
 
@@ -9,7 +10,14 @@ pub fn handle_default_static(
 ) -> Response {
   let req = case req.path {
     "/" -> request.set_path(req, "/index.html")
+    "/posts" -> request.set_path(req, "/posts.html")
+    "/papers" -> request.set_path(req, "/papers.html")
     _ -> req
+  }
+
+  let req = case string.ends_with(req.path, "/") {
+    True -> req.path |> string.append("/post.html") |> request.set_path(req, _)
+    False -> req
   }
 
   handler(req)

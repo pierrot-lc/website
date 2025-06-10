@@ -17,7 +17,7 @@
       pkgs.mkShell {
         name = "delivery";
         buildInputs = [
-          pkgs.erlang_nox
+          pkgs.beamMinimalPackages.erlang
           pkgs.gleam
           pkgs.just
           pkgs.rebar3
