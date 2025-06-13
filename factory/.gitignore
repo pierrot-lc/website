@@ -1,0 +1,8 @@
+.cache/
+builddir/
+compile_commands.json
+factory
+hash-codes
+result
+tests/body/*.test
+tests/head/*.test

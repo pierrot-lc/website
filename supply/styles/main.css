@@ -1,0 +1,46 @@
+body {
+  background-color: white;
+  margin: 0 auto;
+  max-width: 800px;
+}
+
+main {
+  p {
+    text-align: justify;
+  }
+
+  img {
+    /* Center horizontally. */
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+header {
+  margin: 10px 0 20px 0;
+  overflow: auto;
+
+  a:link, a:visited {
+    color: black;
+  }
+}
+
+a:link, a:visited {
+  color: brown;
+  text-decoration: none;
+}
+a:hover, a:active {
+  text-decoration: underline;
+}
+
+p code {
+  background-color: lightgray;
+  border-radius: 4px;
+  padding: 2px;
+}
+
+.article-illustration {
+  height: auto;
+  width: 100%;
+}

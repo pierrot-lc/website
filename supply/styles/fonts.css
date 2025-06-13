@@ -1,0 +1,38 @@
+@font-face {
+  font-family: "JetBrains Mono";
+  src: url(/styles/fonts/JetBrainsMono-Light.ttf) format("truetype");
+}
+
+html {
+  /* Font size is 16px on a 1920 width screen.
+   *
+   * Increases linearly for small screens up to 25px for 320 width screen.
+   */
+  font-size: clamp(16px, calc(25px - 9 * ((100vw - 320px) / (1920 - 320))), 25px);
+  font-family: JetBrains Mono, monospace;
+  line-height: 1.5;
+}
+
+p, li {
+  font-size: 1rem;
+}
+h1 {
+  font-size: 1.4rem;
+}
+h2 {
+  font-size: 1.2rem;
+}
+
+header {
+  font-size: 1.4rem;
+  font-weight: bold;
+}
+
+pre code {
+  font-size: 0.8rem;
+}
+
+.article-tags {
+  font-size: 0.9rem;
+  font-style: italic;
+}

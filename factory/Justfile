@@ -1,0 +1,15 @@
+tests:
+    meson test -C builddir -v
+
+compile:
+    meson compile -C builddir
+    rm -f factory hash-codes
+    ln -s builddir/factory factory
+    ln -s builddir/hash-codes hash-codes
+
+setup: clean
+    meson setup builddir
+    ln -s builddir/compile_commands.json compile_commands.json
+
+clean:
+    rm -rf builddir .cache compile_commands.json tests/outs factory hash-codes

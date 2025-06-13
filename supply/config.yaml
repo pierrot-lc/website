@@ -1,0 +1,20 @@
+---
+author: Pierre Pereira
+description: >-
+  This is my blog and I like it.
+
+header-file: header.md
+favicon: /favicon.ico
+
+styles:
+  - /styles/modern-normalize.css
+  - /styles/katex.min.css
+  - /styles/highlight.css
+  - /styles/main.css
+  - /styles/fonts.css
+
+scripts:
+  - /scripts/katex.min.js
+  - /scripts/highlight.min.js
+  - /scripts/renderLatex.js
+  - /scripts/renderCode.js

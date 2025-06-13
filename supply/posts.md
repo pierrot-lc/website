@@ -1,0 +1,1 @@
+- [Graph Neural Networks in JAX](/posts/2024-09-02_jax-gnn/) - *2024-09-02*

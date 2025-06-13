@@ -1,13 +1,4 @@
-serve:
-  bundle exec jekyll serve --livereload
-clean:
-  bundle exec jekyll clean
+BUILD_DIR := "delivery/priv"
 
-install:
-  bundle install
-
-doctor:
-  bundle exec jekyll doctor
-
-lock:
-  bundle lock
+build:
+    nix build .#pages --out-link "{{ BUILD_DIR }}"
