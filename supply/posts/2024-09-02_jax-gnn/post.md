@@ -1,6 +1,7 @@
 ---
 illustration: illustration.png
-tags: "Created: 2024-09-02 | Updated: 2025-06-10"
+tags: >-
+  Created: 2024-09-02 | Updated: 2025-06-10 | Code available <a href="https://github.com/pierrot-lc/jax-gnn">here</a>
 title: Graph Neural Networks in JAX
 ---
 
@@ -167,7 +168,7 @@ compiled.
 [DGL]:                  https://www.dgl.ai/
 [PyG]:                  https://pytorch-geometric.readthedocs.io/en/latest/index.html
 [equinox-docs]:         https://docs.kidger.site/equinox/
-[github-impl]:          https://github.com/pierrot-lc/gnn-tuto
+[github-impl]:          https://github.com/pierrot-lc/jax-gnn
 [jax-ops]:              https://jax.readthedocs.io/en/latest/jax.ops.html
 [jax-sparse-module]:    https://jax.readthedocs.io/en/latest/jax.experimental.sparse.html
 [jraph]:                https://github.com/google-deepmind/jraph
