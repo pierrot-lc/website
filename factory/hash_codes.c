@@ -4,7 +4,7 @@
 
 #include "hash.h"
 
-#define TOTAL_TYPES 50
+#define TOTAL_TYPES 51
 
 int main() {
 
@@ -12,6 +12,7 @@ int main() {
       "atx_h1_marker",
       "atx_h2_marker",
       "atx_heading",
+      "backslash_escape",
       "block_continuation",
       "block_mapping",
       "block_mapping_pair",

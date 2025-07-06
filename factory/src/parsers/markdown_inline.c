@@ -14,6 +14,16 @@ const TSLanguage *tree_sitter_markdown_inline(void);
 static Node *inline_text(const char *, TSNode);
 static Node *next_node(const char *, TSNode);
 
+static Node *backslash_escape(const char *source, TSNode ts_node) {
+  Node *node;
+  unsigned int start, end;
+
+  start = ts_node_start_byte(ts_node) + 1;
+  end = ts_node_end_byte(ts_node);
+  node = create_node(HASH_TEXT, extract_text(source, start, end));
+  return node;
+}
+
 static Node *emphasis(const char *source, TSNode ts_node) {
   Node *node, *child;
   TSNode ts_child;
@@ -230,6 +240,10 @@ static Node *uri_autolink(const char *source, TSNode ts_node) {
 static Node *next_node(const char *source, TSNode ts_node) {
   Node *node;
   switch (hash(ts_node_type(ts_node))) {
+
+  case HASH_BACKSLASH_ESCAPE:
+    node = backslash_escape(source, ts_node);
+    break;
 
   case HASH_COLLAPSED_REFERENCE_LINK:
     node = inline_link(source, ts_node);
