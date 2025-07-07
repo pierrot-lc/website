@@ -52,12 +52,14 @@ def write_file(files: list[tuple[Path, str, str]], out: Path):
     3. Replace "/posts.html" by "/".
     4. Rename their type to be .html.
     """
-    files = list(sorted(files, key=lambda f: f[2], reverse=True))
-    files = [(f[0].relative_to(out.parent), f[1], f[2]) for f in files]
-    files = [(f[0].with_suffix(".html"), f[1], f[2]) for f in files]
-    files = [(str(f[0]), f[1], f[2]) for f in files]
-    files = [(f[0].replace("/post.html", "/"), f[1], f[2]) for f in files]
-    content = [f"- [{title}]({filepath}) - *{date}*" for filepath, title, date in files]
+    content = []
+
+    for filepath, title, date in sorted(files, key=lambda f: f[2], reverse=True):
+        filepath = filepath.relative_to(out.parent)
+        filepath = filepath.with_suffix(".html")
+        filepath = str(filepath).replace("/post.html", "/")
+        content.append(f"- [{title}]({filepath}) - *{date}*")
+
     content = "\n".join(content)
     out.write_text(content)
 
