@@ -1,5 +1,6 @@
 ---
 title: Using NixOS for Deep Learning Projects
+date: 2025-07-07
 tags: >-
   2025-07-07
 ---

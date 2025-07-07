@@ -10,8 +10,10 @@ pub fn handle_default_static(
 ) -> Response {
   let req = case req.path {
     "/" -> request.set_path(req, "/index.html")
-    "/posts" -> request.set_path(req, "/posts.html")
+    "/journal" -> request.set_path(req, "/journal.html")
     "/papers" -> request.set_path(req, "/papers.html")
+    "/posts" -> request.set_path(req, "/combined.html")
+    "/reviews" -> request.set_path(req, "/reviews.html")
     _ -> req
   }
 

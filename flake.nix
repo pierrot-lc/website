@@ -4,8 +4,9 @@
   inputs = {
     nixpkgs.url = "nixpkgs/nixos-unstable";
 
-    factory.url = "./factory";
     delivery.url = "./delivery";
+    factory.url = "./factory";
+    library.url = "./library";
     highlightjs = {
       url = "github:highlightjs/highlight.js";
       flake = false;
@@ -85,6 +86,7 @@
       highlightjs_pkg = highlightjs system;
       katex_pkg = katex system;
       modern-normalize_pkg = modern-normalize system;
+      library_pkg = inputs.library.packages.${system}.default;
     in
       pkgs.stdenv.mkDerivation {
         pname = "pages";
@@ -95,6 +97,7 @@
           factory_pkg
           highlightjs_pkg
           katex_pkg
+          library_pkg
           modern-normalize_pkg
           pkgs.imagemagick
           pkgs.jetbrains-mono
@@ -102,6 +105,16 @@
         ];
 
         buildPhase = ''
+          ${library_pkg}/bin/library --directory ./posts --out ./posts.md
+          ${library_pkg}/bin/library --directory ./phd-journal --out ./journal.md
+          ${library_pkg}/bin/library --directory ./paper-reviews --out ./reviews.md
+
+          echo "## Posts" > ./combined.md
+          cat ./posts.md >> ./combined.md
+          echo "" >> ./combined.md
+          echo "## Paper Reviews" >> ./combined.md
+          cat ./reviews.md >> ./combined.md
+
           ${pkgs.imagemagick}/bin/magick favicon.png -resize 32x32 favicon.ico
 
           mkdir -p ./styles/fonts
