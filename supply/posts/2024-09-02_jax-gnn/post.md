@@ -1,5 +1,6 @@
 ---
 title: Graph Neural Networks in JAX
+date: 2024-09-02
 tags: >-
   Created: 2024-09-02 | Updated: 2025-06-10 | Code available <a href="https://github.com/pierrot-lc/jax-gnn">here</a>
 illustration: illustration.png

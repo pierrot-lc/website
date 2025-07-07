@@ -28,6 +28,11 @@ header {
   font-weight: bold;
 }
 
+p code {
+  font-weight: normal;
+  font-size: 0.9rem;
+}
+
 pre code {
   font-size: 0.8rem;
 }

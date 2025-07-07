@@ -45,6 +45,20 @@
         "type": "github"
       }
     },
+    "library": {
+      "inputs": {
+        "nixpkgs": "nixpkgs_3"
+      },
+      "locked": {
+        "path": "./library",
+        "type": "path"
+      },
+      "original": {
+        "path": "./library",
+        "type": "path"
+      },
+      "parent": []
+    },
     "modern-normalize": {
       "flake": false,
       "locked": {
@@ -108,6 +122,21 @@
     },
     "nixpkgs_3": {
       "locked": {
+        "lastModified": 1751792365,
+        "narHash": "sha256-J1kI6oAj25IG4EdVlg2hQz8NZTBNYvIS0l4wpr9KcUo=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "1fd8bada0b6117e6c7eb54aad5813023eed37ccb",
+        "type": "github"
+      },
+      "original": {
+        "id": "nixpkgs",
+        "ref": "nixos-unstable",
+        "type": "indirect"
+      }
+    },
+    "nixpkgs_4": {
+      "locked": {
         "lastModified": 1749285348,
         "narHash": "sha256-frdhQvPbmDYaScPFiCnfdh3B/Vh81Uuoo0w5TkWmmjU=",
         "owner": "NixOS",
@@ -126,8 +155,9 @@
         "delivery": "delivery",
         "factory": "factory",
         "highlightjs": "highlightjs",
+        "library": "library",
         "modern-normalize": "modern-normalize",
-        "nixpkgs": "nixpkgs_3"
+        "nixpkgs": "nixpkgs_4"
       }
     }
   },
