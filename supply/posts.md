@@ -1,1 +1,2 @@
+- [NixOS & Deep Learning](/posts/2025-07-07_nixos-deep-learning/) - *2025-07-07*
 - [Graph Neural Networks in JAX](/posts/2024-09-02_jax-gnn/) - *2024-09-02*

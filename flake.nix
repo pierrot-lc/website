@@ -54,7 +54,7 @@
           sed -i '20,22c\git_sha: "${inputs.highlightjs.shortRev}"' tools/build_browser.js
         '';
         buildPhase = ''
-          node tools/build.js --no-esm --target browser python
+          node tools/build.js --no-esm --target browser python nix
         '';
         installPhase = ''
           mkdir -p $out
