@@ -44,6 +44,10 @@ p code {
   padding: 2px;
 }
 
+pre code mark {
+  background-color: yellow;
+}
+
 .article-illustration {
   height: auto;
   width: 100%;
