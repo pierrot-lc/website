@@ -45,7 +45,7 @@ p code {
 }
 
 pre code mark {
-  background-color: yellow;
+  background-color: lightgray;
 }
 
 .article-illustration {

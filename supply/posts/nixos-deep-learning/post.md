@@ -136,24 +136,26 @@ have almost everything we need to setup our PyTorch environment. Here's the new 
     system = "x86_64-linux";
     pkgs = import nixpkgs {
       inherit system;
-      config.allowUnfree = true;  # CUDA is not free.
+      # CUDA is sadly not free.
+      config.allowUnfree = true;  # mark-line
     };
 
     packages = [
-      pkgs.gnumake  # For PyTorch's compilation.
+      # For PyTorch's compilation.
+      pkgs.gnumake  # mark-line
       pkgs.python313Packages.venvShellHook
       pkgs.uv
     ];
 
     libs = [
-      pkgs.cudaPackages.cudatoolkit
-      pkgs.cudaPackages.cudnn
+      pkgs.cudaPackages.cudatoolkit  # mark-line
+      pkgs.cudaPackages.cudnn  # mark-line
       pkgs.stdenv.cc.cc.lib
       pkgs.zlib
 
       # Where your local "lib/libcuda.so" lives. If you're not on NixOS,
       # you should provide the right path (likely another one).
-      "/run/opengl-driver"
+      "/run/opengl-driver"  # mark-line
     ];
 
     shell = pkgs.mkShell {
@@ -165,8 +167,8 @@ have almost everything we need to setup our PyTorch environment. Here's the new 
         LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath libs;
 
         # For PyTorch's compilation.
-        CC = "${pkgs.gcc}/bin/gcc";
-        TRITON_LIBCUDA_PATH = "/run/opengl-driver/lib";
+        CC = "${pkgs.gcc}/bin/gcc";  # mark-line
+        TRITON_LIBCUDA_PATH = "/run/opengl-driver/lib";  # mark-line
       };
 
       venvDir = "./.venv";
@@ -202,24 +204,25 @@ Everything we did for PyTorch applies to JAX. Here's the flake's outputs:
     system = "x86_64-linux";
     pkgs = import nixpkgs {
       inherit system;
-      config.allowUnfree = true;
+      config.allowUnfree = true;  # mark-line
     };
 
-    cudaPackages = pkgs.cudaPackages_12_8;
-    pythonPackages = pkgs.python313Packages;
+    cudaPackages = pkgs.cudaPackages_12_8;  # mark-line
 
     packages = [
+      # Add ptxas to PATH.
+      cudaPackages.cudatoolkit  # mark-line
+      pkgs.python313Packages.venvShellHook
       pkgs.uv
-      pythonPackages.venvShellHook
     ];
 
     libs = [
-      cudaPackages.cudatoolkit
-      cudaPackages.cudnn
+      cudaPackages.cudatoolkit  # mark-line
+      cudaPackages.cudnn  # mark-line
       pkgs.stdenv.cc.cc.lib
       pkgs.zlib
 
-      "/run/opengl-driver"
+      "/run/opengl-driver"  # mark-line
     ];
 
     shell = pkgs.mkShell {
@@ -228,12 +231,11 @@ Everything we did for PyTorch applies to JAX. Here's the flake's outputs:
 
       env = {
         LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath libs;
-        XLA_FLAGS = "--xla_gpu_cuda_data_dir=${cudaPackages.cudatoolkit}";
+        XLA_FLAGS = "--xla_gpu_cuda_data_dir=${cudaPackages.cudatoolkit}";  # mark-line
       };
 
       venvDir = "./.venv";
       postShellHook = ''
-        export PATH="$PATH:${cudaPackages.cudatoolkit}/bin"  # Add ptxas to PATH.
         uv sync --group jax-local
       '';
     };
