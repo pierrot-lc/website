@@ -1,5 +1,9 @@
-I'm Pierre Pereira, a PhD student in the [COATI team][coati], joint project of [INRIA - Université
-Côte d'Azur][inria] and [I3S lab][i3s] ([CNRS][cnrs]/[UCA][uca]). My PhD will be done under the
+---
+title: Pierre Pereira
+---
+
+I'm a PhD student in the [COATI team][coati], joint project of [INRIA - Université Côte
+d'Azur][inria] and [I3S lab][i3s] ([CNRS][cnrs]/[UCA][uca]). My PhD will be done under the
 supervision of [Emanuele Natale][ema-natale] and [Frédéric Giroire][fred-giroire].
 
 I'm specializing in **Neural Combinatorial Optimization** and **Neural Algorithmic Reasoning**. I'm

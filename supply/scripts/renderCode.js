@@ -1,5 +1,3 @@
-hljs.highlightAll();
-
 // Replace lines marked by a comment 'mark-line' with encapsulated <mark>line</mark>.
 // From https://github.com/highlightjs/highlight.js/issues/740#issuecomment-1298487876
 hljs.addPlugin({
@@ -12,3 +10,5 @@ hljs.addPlugin({
         }
     }
 });
+
+hljs.highlightAll();
