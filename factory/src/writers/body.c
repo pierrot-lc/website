@@ -197,7 +197,7 @@ void write_tree(FILE *file, Node *node) {
 }
 
 void write_page_info(FILE *file, Node *tree) {
-  Node *tags, *title, *illustration, *node;
+  Node *date, *tags, *title, *illustration;
 
   if ((illustration = get_key(tree, "illustration")) != NULL)
     fprintf(file, "<img src=\"%s\" class=\"article-illustration\">\n",
@@ -207,6 +207,21 @@ void write_page_info(FILE *file, Node *tree) {
     fprintf(file, "<h1 class=\"article-title\">%s</h1>\n",
             get_value_scalar(title));
 
-  if ((tags = get_key(tree, "tags")) != NULL)
-    fprintf(file, "<p class=\"article-tags\">%s</p>\n", get_value_scalar(tags));
+  tags = get_key(tree, "tags");
+  date = get_key(tree, "date");
+  if (tags != NULL || date != NULL) {
+    fprintf(file, "<ul class=\"article-tags\">\n");
+
+    if (date != NULL)
+      fprintf(file, "<li>%s</li>\n", get_value_scalar(date));
+
+    if (tags != NULL)
+      for (int i = 0; i < tags->child_count; i++) {
+        assert(tags->children[i]->code == HASH_BLOCK_SEQUENCE_ITEM);
+        assert(tags->children[i]->children[0] != NULL);
+        fprintf(file, "<li>%s</li>\n", tags->children[i]->children[0]->content);
+      }
+
+    fprintf(file, "</ul>\n");
+  }
 }

@@ -1,8 +1,6 @@
 ---
 title: NixOS & Deep Learning
 date: 2025-07-08
-tags: >-
-  2025-07-08
 ---
 
 [NixOS][nix-pills] has changed the way I think about software. Once everything is setup, you get a

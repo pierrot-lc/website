@@ -1,8 +1,9 @@
 ---
 title: Complexity Scaling Laws for Neural Models using Combinatorial Optimization
 date: 2025-07-07
-tags: >-
-  <a href="https://arxiv.org/abs/2506.12932">arXiv link</a> | preprint
+tags:
+  - <a href="https://arxiv.org/abs/2506.12932">arXiv link</a>
+  - preprint
 illustration: illustration.png
 ---
 

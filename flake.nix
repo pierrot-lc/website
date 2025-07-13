@@ -101,7 +101,6 @@
           modern-normalize_pkg
           pkgs.imagemagick
           pkgs.jetbrains-mono
-          pkgs.nodePackages.prettier
         ];
 
         buildPhase = ''
@@ -132,10 +131,6 @@
 
           find "." -name "*md" -type f | while read -r file; do
               ${factory_pkg}/bin/factory --config "./config.yaml" --md "''${file}" > "''${file%.md}.html"
-          done
-
-          find "." -name "*html" -type f | while read -r file; do
-              ${pkgs.nodePackages.prettier}/bin/prettier --write "''${file}"
           done
         '';
 

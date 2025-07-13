@@ -48,6 +48,20 @@ pre code mark {
   background-color: lightgray;
 }
 
+.article-tags {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+
+  li {
+    display: inline;
+  }
+
+  li:not(:last-child):after {
+    content: " | ";
+  }
+}
+
 .article-illustration {
   height: auto;
   width: 100%;
