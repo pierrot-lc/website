@@ -42,14 +42,19 @@
         };
 
         buildPhase = ''
-          echo "#!${python_pkg}/bin/python3" > library
-          cat ./main.py >> library
-          chmod u+x library
+          echo "#!${python_pkg}/bin/python3" > listing
+          cat ./listing.py >> listing
+          chmod u+x listing
+
+          echo "#!${python_pkg}/bin/python3" > feed
+          cat ./feed.py >> feed
+          chmod u+x feed
         '';
 
         installPhase = ''
           mkdir -p $out/bin
-          cp ./library $out/bin/library
+          cp ./listing $out/bin/listing
+          cp ./feed $out/bin/feed
         '';
       };
   in {

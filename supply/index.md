@@ -13,7 +13,7 @@ source softwares.
 
 My PhD is funded by the [DS4H scholarship][ds4h].
 
-<p class="socials"><a href="https://github.com/pierrot-lc/">Repos</a> / <a href="mailto:pierrot-lc.website@proton.me">Mail</a></p>
+<p class="socials"><a href="https://github.com/pierrot-lc/">GitHub</a> / <a href="mailto:pierrot-lc.website@proton.me">Mail</a> / <a href="https://pierrot-lc.dev/feed.xml">RSS</a></p>
 <style>
   .socials {
     text-align: right;
