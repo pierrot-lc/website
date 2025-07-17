@@ -36,7 +36,7 @@ def list_items(directory: Path) -> list[Item]:
     for filepath in paths:
         data = extract_yaml_from_markdown(filepath.read_text())
 
-        if data is None or "title" not in data or "data" not in data:
+        if data is None or "title" not in data or "date" not in data:
             continue
 
         items.append((filepath, data["title"], data["date"]))
