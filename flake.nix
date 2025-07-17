@@ -104,10 +104,12 @@
         ];
 
         buildPhase = ''
-          ${library_pkg}/bin/library --directory ./posts --out ./posts.md
-          ${library_pkg}/bin/library --directory ./phd-journal --out ./journal.md
-          ${library_pkg}/bin/library --directory ./paper-reviews --out ./reviews.md
+          # List the different articles into a dedicated page.
+          ${library_pkg}/bin/listing --directory ./posts --out ./posts.md
+          ${library_pkg}/bin/listing --directory ./phd-journal --out ./journal.md
+          ${library_pkg}/bin/listing --directory ./paper-reviews --out ./reviews.md
 
+          # Merge posts and paper reviews.
           echo "## Posts" > ./combined.md
           cat ./posts.md >> ./combined.md
           echo "" >> ./combined.md
@@ -132,6 +134,9 @@
           find "." -name "*md" -type f | while read -r file; do
               ${factory_pkg}/bin/factory --config "./config.yaml" --md "''${file}" > "''${file%.md}.html"
           done
+
+          ${library_pkg}/bin/feed --name "Pierrot's Posts" --description "All my posts" --root . --config ./config.yaml --out ./feed.xml ./posts ./paper-reviews
+          ${library_pkg}/bin/feed --name "Pierrot's Journal" --description "Weekly PhD Journal" --root . --config ./config.yaml --out ./phd-journal/feed.xml ./phd-journal
         '';
 
         installPhase = ''

@@ -1,5 +1,7 @@
 ---
 author: Pierre Pereira
+mail: pierrot-lc.website@proton.me
+base-url: https://pierrot-lc.dev
 
 header-file: header.md
 favicon: /favicon.ico
