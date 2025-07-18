@@ -1,9 +1,9 @@
+import time
 from html.parser import HTMLParser
-from xml.sax.saxutils import escape as e
-from urllib.parse import urljoin
 from pathlib import Path
 from typing import override
-import time
+from urllib.parse import urljoin
+from xml.sax.saxutils import escape as e
 
 import yaml
 
