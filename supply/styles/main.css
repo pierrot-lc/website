@@ -1,10 +1,12 @@
 body {
   background-color: white;
-  margin: 0 auto;
   max-width: 800px;
+  margin: 0 auto;
 }
 
 main {
+  margin-inline: 20px;
+
   p {
     text-align: justify;
   }
@@ -22,12 +24,16 @@ main {
 }
 
 header {
-  margin: 10px 0 20px 0;
+  margin: 10px 20px 20px 20px;
   overflow: auto;
 
   a:link, a:visited {
     color: black;
   }
+}
+
+footer {
+  margin-inline: 20px;
 }
 
 a:link, a:visited {

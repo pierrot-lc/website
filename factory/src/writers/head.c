@@ -26,6 +26,8 @@ static void commons_meta(FILE *file, Node *node) {
   favicon = get_key(node, "favicon");
 
   fprintf(file, "<meta charset=\"utf-8\">\n");
+  fprintf(file, "<meta name=\"viewport\" content=\"width=device-width, "
+                "initial-scale=1.0\">\n");
 
   if (title != NULL)
     fprintf(file, "<title>%s</title>\n", get_value_scalar(title));

@@ -4,11 +4,11 @@
 }
 
 html {
-  /* Font size is 16px on a 1920 width screen.
+  /* Font size is 16px on a 1600 width screen.
    *
-   * Increases linearly for small screens up to 22px for 320 width screen.
+   * Decreases linearly for small screens down to 12px for 320 width screen.
    */
-  font-size: clamp(16px, calc(22px - 9 * ((100vw - 320px) / (1920 - 320))), 22px);
+  font-size: clamp(12px, calc(12px + 4 * (100vw - 320px) / (1600 - 320)), 16px);
   font-family: JetBrains Mono, monospace;
   line-height: 1.5;
 }
