@@ -6,11 +6,18 @@ Here are all the files used to produce my blog at [pierrot-lc.dev](https://pierr
 projects work exactly as other static site generators work. I convert markdown files to HTML and
 then use a simple static server pointing to the directory where HTML files can be found.
 
+## How it works
+
 The repo is organized as follows:
 
 - `supply/` contains all markdown files, as well as other static files such as the css files
 - `factory/` is the program converting the markdown files into HTML files
+- `library/` generates the list of posts as a new markdown file before conversion, and the RSS feed after conversion
 - `delivery/` is the web server
+
+![Website Schema](./.figs/website.png)
+
+## Build
 
 The whole project can be build using `nix`. `flake.nix` will tie everything together. It builds the
 `factory` and `delivery` program as well as some JS dependencies and uses `factory` to convert my
