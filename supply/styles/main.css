@@ -54,6 +54,12 @@ pre code mark {
   background-color: lightgray;
 }
 
+blockquote {
+  background-color: #F3F3F3;  /* Same background as code blocks. */
+  border-radius: 4px;
+  padding-inline: 10px;
+}
+
 .article-tags {
   list-style-type: none;
   padding: 0;
