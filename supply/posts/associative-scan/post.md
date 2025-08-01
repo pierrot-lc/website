@@ -2,7 +2,8 @@
 title: So What is the Associative Scan?
 date: 2025-08-01
 tags:
-  - <a href="https://github.com/pierrot-lc/website/blob/associative-scan/supply/posts/associative-scan/example.py">code</a>
+  - JAX
+  - <a href="https://github.com/pierrot-lc/website/blob/913f585a36d27f828ee0730a4a22fd2b6939a041/supply/posts/associative-scan/example.py">code</a>
 description: >-
   In which I try to explain what is an associative scan and how to use it to compute
   the discounted sum of rewards.
