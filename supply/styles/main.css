@@ -7,7 +7,7 @@ body {
 main {
   margin-inline: 20px;
 
-  p {
+  p, li {
     text-align: justify;
   }
 
