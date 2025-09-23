@@ -30,6 +30,7 @@ test('link', test_body, args: ['../tests/body/link.md', '../tests/body/link.html
 test('list', test_body, args: ['../tests/body/list.md', '../tests/body/list.html'])
 test('page-info', test_body, args: ['../tests/body/page_info.md', '../tests/body/page_info.html'])
 test('par', test_body, args: ['../tests/body/paragraph.md', '../tests/body/paragraph.html'])
+test('thematic-break', test_body, args: ['../tests/body/thematic_break.md', '../tests/body/thematic_break.html'])
 
 test_head = executable('test-head', 'tests/test_head.c', sources, include_directories : incdir, dependencies : [treesitterdep, grammarsdep])
 test('commons', test_head, args: ['../tests/head/commons.md', '../tests/head/commons.html'])

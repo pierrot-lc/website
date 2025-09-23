@@ -177,6 +177,10 @@ void write_tree(FILE *file, Node *node) {
     fprintf(file, "%s", node->content);
     break;
 
+  case HASH_THEMATIC_BREAK:
+    fprintf(file, "<hr />\n");
+    break;
+
   case HASH_DOCUMENT:
   case HASH_INLINE:
   case HASH_SECTION:

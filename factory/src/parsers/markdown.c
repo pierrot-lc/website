@@ -242,6 +242,7 @@ static Node *next_node(const char *source, TSNode ts_node) {
   case HASH_LIST:
   case HASH_PARAGRAPH:
   case HASH_SECTION:
+  case HASH_THEMATIC_BREAK:
     node = create_node(hash(ts_node_type(ts_node)), NULL);
     children(node, source, ts_node);
     break;

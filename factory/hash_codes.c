@@ -4,7 +4,7 @@
 
 #include "hash.h"
 
-#define TOTAL_TYPES 51
+#define TOTAL_TYPES 52
 
 int main() {
 
@@ -58,6 +58,7 @@ int main() {
       "stream",
       "strong_emphasis",
       "text",
+      "thematic_break",
       "uri_autolink",
       "value",
   };
