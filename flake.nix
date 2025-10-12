@@ -180,6 +180,7 @@
       katex = katex "x86_64-linux";
       pages = pages "x86_64-linux";
       website = website "x86_64-linux";
+      default = website "x86_64-linux";
     };
 
     packages."aarch64-linux" = {
@@ -187,6 +188,7 @@
       katex = katex "aarch64-linux";
       pages = pages "aarch64-linux";
       website = website "aarch64-linux";
+      default = website "aarch64-linux";
     };
   };
 }
