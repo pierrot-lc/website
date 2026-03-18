@@ -4,13 +4,15 @@
 
 #include "hash.h"
 
-#define TOTAL_TYPES 52
+#define TOTAL_TYPES 54
 
 int main() {
 
   char *node_types[TOTAL_TYPES] = {
       "atx_h1_marker",
       "atx_h2_marker",
+      "atx_h3_marker",
+      "atx_h4_marker",
       "atx_heading",
       "backslash_escape",
       "block_continuation",

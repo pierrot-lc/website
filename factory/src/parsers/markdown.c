@@ -104,6 +104,8 @@ static Node *heading(const char *source, TSNode ts_node) {
 
   const char *h1 = "h1";
   const char *h2 = "h2";
+  const char *h3 = "h3";
+  const char *h4 = "h4";
   const char *h;
 
   ts_marker = ts_node_child(ts_node, 0);
@@ -113,6 +115,12 @@ static Node *heading(const char *source, TSNode ts_node) {
     break;
   case HASH_ATX_H2_MARKER:
     h = h2;
+    break;
+  case HASH_ATX_H3_MARKER:
+    h = h3;
+    break;
+  case HASH_ATX_H4_MARKER:
+    h = h4;
     break;
   default:
     assert(false);
