@@ -135,5 +135,61 @@ We generate random instances by sampling points uniformly on the unit square $x_
 generate the optimal solution using `Concorde`. For each training dataset, we generate and solve 1M
 instances. Final performance is measured on 128 new instances of the same size.
 
+<style type="text/css">
+.tg  {border-collapse:collapse;border-spacing:0;}
+.tg td{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
+  overflow:hidden;padding:10px 5px;word-break:normal;}
+.tg th{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
+  font-weight:normal;overflow:hidden;padding:10px 5px;word-break:normal;}
+.tg .tg-baqh{text-align:center;vertical-align:top}
+.tg .tg-0lax{text-align:left;vertical-align:top}
+.tg .tg-0pky{border-color:inherit;text-align:left;vertical-align:top}
+</style>
+<table class="tg"><thead>
+  <tr>
+    <th class="tg-0lax"></th>
+    <th class="tg-baqh" colspan="2">10 steps</th>
+    <th class="tg-baqh" colspan="2">100 steps</th>
+    <th class="tg-baqh" colspan="2">1000 steps</th>
+  </tr></thead>
+<tbody>
+  <tr>
+    <td class="tg-0pky">Model</td>
+    <td class="tg-0pky">euler</td>
+    <td class="tg-0lax">dopri5</td>
+    <td class="tg-0pky">euler</td>
+    <td class="tg-0lax">dopri5</td>
+    <td class="tg-0pky">euler</td>
+    <td class="tg-0lax">dopri5</td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">TSP-20</td>
+    <td class="tg-0pky">4.84</td>
+    <td class="tg-0lax">2.09</td>
+    <td class="tg-0pky">2.17</td>
+    <td class="tg-0lax">2.01</td>
+    <td class="tg-0pky">2.02</td>
+    <td class="tg-0lax">2.01</td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">TSP-50</td>
+    <td class="tg-0pky">12.62</td>
+    <td class="tg-0lax">5.20</td>
+    <td class="tg-0pky">4.59</td>
+    <td class="tg-0lax">3.41</td>
+    <td class="tg-0pky">3.74</td>
+    <td class="tg-0lax">3.41</td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">TSP-100</td>
+    <td class="tg-0pky">70.13</td>
+    <td class="tg-0lax">20.78</td>
+    <td class="tg-0pky">12.21</td>
+    <td class="tg-0lax">10.43</td>
+    <td class="tg-0pky">10.59</td>
+    <td class="tg-0lax">10.20</td>
+  </tr>
+</tbody></table>
+
 ## Conclusion
 
