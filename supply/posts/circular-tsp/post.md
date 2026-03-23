@@ -1,46 +1,54 @@
-# Encoding the TSP Solution on a Circle
+---
+title: Encoding the TSP Solution on a Circle
+date: 2026-03-23
+tags:
+  - Research blogpost
+  - TSP & NCO
+
+illustration: solution-example.png
+---
+
 Neural Combinatorial Optimization (NCO) aims at simplifying the design of combinatorial optimization
-solvers by training neural solvers. Its an exciting area of research with many real applications, as
-we can expect learning-driven heuristics to outperform manually designed ones. We focus in this work
-on the Traveling Salesman Problem (TSP), one of the most famous NCO problem, and propose to encode
-the solution onto a circle. This representation is continuous and non-ambiguously decodes to a
-single solution. We show how a simple modification to RoPE, which we called CircularRoPE, makes our
-neural solver invariant to rotations of the circle. Finally we experiment with flow matching and
-compare the solution qualities when a variable amount of NFEs are used. Crucially, we can generate
-solutions in less NFEs than the number of nodes in the instance.
+solvers using neural networks. Its an exciting area of research with many real applications, as we
+expect learning-driven heuristics to outperform manually designed ones. We focus in this work on the
+Traveling Salesman Problem (TSP), one of the most famous NCO problem, and propose to encode the
+solution onto a circle. This representation is continuous and non-ambiguously decodes to a single
+solution, allowing us to use flow matching to train our solver. We show how a simple modification to
+RoPE, which we called CircularRoPE, makes our neural solver invariant to rotations of the circle.
+Crucially, we can generate solutions in less NFEs than the number of nodes in the instance.
 
 ## Motivation
-NCO allows us to think at a high level of the solver design. Here are the questions one might ask
-when designing a neural solver:
-1. What invariances should my neural network have?
-2. How is the information processed?
-3. What is the 
+**About autoregressive solvers.** State-of-the-art solvers like BQ-NCO or INViT predict the solution
+step by step, by choosing an starting point and unroll the model as many times as there are nodes in
+the instance. This starting point is arbitrary and not an inner part of the TSP definition. The
+neural solver is biased by this initial starting city and further carry that bias along the whole
+solving process. Furthermore, such solvers can't solve an instance with less iterations than the
+number of cities in the instance to solve, an important characteristic if we want to tradeoff
+solution quality with solving time.
 
-One of the promise of NCO is to replace all handmade heuristics with neural ones, putting the
-practitioner at a higher level of choosing the neural solver characteristics. Many neural solvers
-are autoregressives, tying their generation to all previous predictions and requiring as many
-iterations as the size of the instance to solve. Another type of neural solvers predict a
-probability heatmap over candidate variables. They consider the whole solution at once but they
-require an additional search algorithm to generate a solution. One of the most famous and simple NCO
-problem is the TSP, for which the best neural solvers are either based on a step-by-step
-constructive approach or on a heatmap probability. We find those two approaches unsatisfying for the
-following reason:
-1. The constructive approaches are autoregressives, which means they must decide on an unatural
-   starting point, which might unnecessary bias the final solution. Moreover, the solver requires at
-   least $O(N)$ NFEs to generate a single solution.
-2. Solvers that generate a heatmap are end-to-end and require a good search algorithm on top of the
-   predicted edge probabilities to generate a good solution. This blurs the quality of the neural
-solver and makes it hard to compare against the other neural solvers. It also rely on some other
-sets of searching heuristics (ex: MCTS), making it harder to use.
+**About heatmap solvers.** Heatmap solvers like DIFUSCO consider the whole solution at once by
+predicting the probability for each edge to belong to the optimal solution. They require a decoding
+search algorithm to generate the final solution to respect the cycle constraint (ex: MCTS). Search
+space is large as all $N \times N$ edges can be considered. In practice some additional assumptions
+are made to sparsify the graph, for example by considering only the edges that belong to the k
+nearest neighbours only, but this further adds a bias to the solving process.
 
-We propose in this work a neural solver that predicts the TSP solution as a whole. We represent the
-solution with nodes being laid out on a circle. A solution is obtained by taking the order of the
-nodes on the circle. We argue this representation allow for a more flexible generative framework and
-train a solver using flow matching as an example.
+Ideally, only a strict minimum set of inductive biases are embedded within the solver and the rest
+should be handled by the neural network. That's why in this work we propose to embed the cycle
+constraint within a circle: the tour is given by a sequence of angles. The neural solver predict $N$
+angles and the solution directly read by sorting the nodes following their order on the circle. This
+continuous representation additionally unlocks generative frameworks such as the ones used by image
+generators. We take as example flow matching and apply it to this specific solution representation.
+Our resulting solver considers the solution as a whole, removes the choice of a starting point and
+the necessity to tie the iterations with the number of cities in the instance. Furthermore,
+generating solutions do not require a complex search algorithm to be generated as we only require a
+ODE solver.
 
-Our contributions are as follow:
-1. We propose a new TSP solution representation and design compatible neural network architecture.
-2. Using this new representation, we train a simple neural solver using flow matching.
+In summary, our contributions are the following:
+1. We propose a new TSP solution representation that characterize a TSP solution in a continuous and
+   non-ambiguous fashion.
+2. We design a dedicated neural architecture using CircularRoPE and use an adequate flow matching
+   objective that takes into account this specific representation.
 3. We show that flow matching allows us to generate solutions in less NFEs than the autoregressive
    neural solvers while being fully end-to-end.
 
@@ -78,6 +86,12 @@ representation is continuous which makes it compatible with many generative meth
 we use flow matching to progressively move the nodes around the circle.
 
 ## Circular Flow Matching
+
+<figure class="image">
+  <img src="tsp-20_solving.gif" alt="Circular flow matching">
+  <figcaption>Example of a TSP-20 instance being solved using flow matching.</figcaption>
+</figure>
+
 We cast the generative process of predicting the angles using flow matching. The neural network
 progressively moves the nodes towards their optimal angles, from $t = 0$ to $t = 1$. At $t = 0$, the
 angles are randomly initialized following the uniform distribution $U[0, 2\pi]$. We define the flow
@@ -93,10 +107,25 @@ where $a(t) \in \mathbb{R^N}$ is the vector of cities angles at time $t$, $X \in
 is the matrix of cities coordinates in the euclidean space, and $\theta$ are the learnable
 parameters of the neural network.
 
+The optimal solution on the circle is invariant to angular shifts, so it would be inefficient to ask
+for the model to predict a particular angle absolute configuration. Instead, we characterize the
+solution predicted by the model compared to the optimal solution. Precisely, we apply the flow
+predicted by the model and compute the resulting pairwise relative distances of the nodes on the
+circle. Those distances are compared to the ones of the optimal solutions:
+
+$$
+  \hat{a} = a(t) + (1 - t) f(a(t), t, X; \theta), \\
+  loss(\hat{a}, a^*; \theta) = || D(\hat{a}) - D(a^*) ||_2,
+$$
+
+Where $D \in \mathbb{R}^{N \times N \times 2}$ is the matrix of pairwise signed distances, such that
+$D(a)_{i, j} = (cos(a_i) - cos(a_j), sin(a_i) - sin(a_j))$. This loss is circular invariant,
+respecting the invariances of the TSP solutions.
+
 ## Neural Network Architecture
-We now present our neural network model. The TSP can be modeled by a complete graph, we thus use a
-transformer where each city is represented by a token. A token is initialized by concatenating the
-current timestep $t$ with its corresponding coordinates.
+TSP can be modeled by a complete graph, we thus use a transformer where each city is represented by
+a token. A token is initialized by concatenating the current timestep $t$ with its corresponding
+coordinates.
 
 To properly encode the solution, we want our model to be invariant to circular shifts of the angles.
 To do so, our model must perceive the angles relatively to each other. RoPE is a powerful choice to
@@ -132,8 +161,10 @@ We name such positional encoding **CircularRoPE** to denote its circular invaria
 
 ## Experiments
 We generate random instances by sampling points uniformly on the unit square $x_i \in [0, 1]^2$ and
-generate the optimal solution using `Concorde`. For each training dataset, we generate and solve 1M
-instances. Final performance is measured on 128 new instances of the same size.
+generate the optimal solution using `Concorde`. For each training dataset, we generate 1M training
+instances. Final performance is always measured on 128 new instances of the same size.
+
+### Main Results
 
 <style type="text/css">
 .tg  {border-collapse:collapse;border-spacing:0;}
@@ -190,6 +221,50 @@ instances. Final performance is measured on 128 new instances of the same size.
     <td class="tg-0lax">10.20</td>
   </tr>
 </tbody></table>
+
+We first show our mains results in Table 1. For each specific TSP size, we trained a dedicated
+model. Flow matching allow us to natively trade compute for precision by varying the number of ODE
+solver steps. We further compare the results between two solvers: Euler and Dopri5. Euler is a basic
+ODE solver that evaluates the flow only once per steps, whereas Dopri5 evaluates at most 7 times per
+steps to have a better flow estimate.
+
+Let's first have a look at how the number of steps impact the solution quality.
+
+Now let's focus on the two evaluated solvers.
+
+As expected, the specific ODE solver is important to get both better solutions and to produce them
+faster.
+
+
+### Ablations
+We evaluate in this section the importance of using CircularRoPE and our circular invariant loss.
+
+We compare models trained on TSP-50 using CircularRoPE, RoPE and absolute angles.
+
+We now compare our model trained with our invariant loss to a model with the standard flow matching
+objective: $L(\theta) = || f(a(t), t, X; \theta) - \text{flow}(a(0), a(1)) ||_2$.
+
+We can conclude that it is important to respect the invariances induced by representing the TSP
+solution on a circle.
+
+### Weighted Loss
+We noticed that uniformly sampling $t \sim U[0, 1]$ during training is not the most efficient
+strategy as it puts a lot of weights to the earliest timesteps, where the task is the hardest. This
+makes the model trade some of its capabilities later for a better flow estimate at the beginning. We
+noticed a decrease in solution quality when sampling uniformly compared to biased sampling where
+later timesteps are sampled more often. To bias the sampling, we use a beta distribution
+parameterized by $\alpha$ and $\beta$. We performed a random searched on TSP-20 instances where both
+values where sampled between 0.5 and 9. Our results suggest that taking a value of $5.3$ and $1.5$
+for $\alpha$ and $\beta$ respectively improves both training efficiency and final solution quality.
+
+![!Alpha-beta sweep](alpha-beta_parallel-coordinates.png)
+
+### Problem-size Generalization
+
+We train a model on a varying size of instances, from 128 to 256, and evaluate how it generalizes on
+larger instances. We compare this model to other state-of-the-art NCO solvers.
+
+Sadly, our model does not outperform other solvers, specifically the autoregressive ones.
 
 ## Conclusion
 
