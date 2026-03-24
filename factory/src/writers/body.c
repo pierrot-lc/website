@@ -121,26 +121,45 @@ static void list(FILE *file, Node *node) {
   fprintf(file, "</ul>\n");
 }
 
+static void table(FILE *file, Node *node) {
+  fprintf(file, "<table>\n");
+  assert(node->child_count >= 1); // Header.
+  fprintf(file, "<thead>\n");
+  fprintf(file, "<tr>\n");
+  write_children(file, node->children[0]);
+  fprintf(file, "</tr>\n");
+  fprintf(file, "</thead>\n");
+  fprintf(file, "<tbody>\n");
+  for (int i = 1; i < node->child_count; i++) {
+    fprintf(file, "<tr>\n");
+    write_children(file, node->children[i]);
+    fprintf(file, "</tr>\n");
+  }
+  fprintf(file, "</tbody>\n");
+  fprintf(file, "</table>\n");
+}
+
 static void table_cell(FILE *file, Node *node) {
   char *alignment = node->content;
   assert(alignment != NULL);
 
-  const char *header = "th";
-  const char *cell = "td";
   const char *type;
+  const char *scope;
 
   switch (node->code) {
   case HASH_PIPE_TABLE_CELL:
-    type = cell;
+    type = "td";
+    scope = "";
     break;
   case HASH_PIPE_TABLE_HEADER:
-    type = header;
+    type = "th";
+    scope = "scope=\"col\"";
     break;
   default:
     assert(false);
   }
 
-  fprintf(file, "<%s class=\"align-%s\">", type, alignment);
+  fprintf(file, "<%s %s class=\"align-%s\">", type, scope, alignment);
   write_children(file, node);
   fprintf(file, "</%s>\n", type);
 }
@@ -193,9 +212,7 @@ void write_tree(FILE *file, Node *node) {
     break;
 
   case HASH_PIPE_TABLE:
-    fprintf(file, "<table>\n");
-    write_children(file, node);
-    fprintf(file, "</table>\n");
+    table(file, node);
     break;
 
   case HASH_PIPE_TABLE_ROW:
