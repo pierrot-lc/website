@@ -101,6 +101,7 @@
           modern-normalize_pkg
           pkgs.imagemagick
           pkgs.jetbrains-mono
+          pkgs.prettier
         ];
 
         buildPhase = ''
@@ -134,6 +135,7 @@
 
           find "." -name "*md" -type f | while read -r file; do
               ${factory_pkg}/bin/factory --config "./config.yaml" --md "''${file}" > "''${file%.md}.html"
+              ${pkgs.prettier}/bin/prettier --write "''${file%.md}.html"
           done
 
           ${library_pkg}/bin/feed --name "Pierrot's Posts" --description "All my posts" --root . --config ./config.yaml --out ./feed.xml ./posts ./paper-reviews
