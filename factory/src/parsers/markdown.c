@@ -206,6 +206,127 @@ static Node *minus_metadata(const char *source, TSNode ts_node) {
   return node;
 }
 
+static Node *pipe_table_cell(const char *source, TSNode ts_node, Node *node) {
+  unsigned long start, end;
+  char *source_inline, *source_inline_stripped;
+  Node *node_inline;
+
+  const char *empty_cell = "&nbsp;";
+
+  assert(ts_node_named_child_count(ts_node) == 0);
+  source_inline = ts_node_text(source, ts_node);
+
+  // Remove leading and ending spaces of the cell. Those spaces are typically
+  // used for pretty formatting within markdown.
+  for (start = 0; start < strlen(source_inline); start++)
+    if (source_inline[start] != ' ')
+      break;
+  for (end = strlen(source_inline) - 1; end >= start; end--)
+    if (source_inline[end] != ' ')
+      break;
+
+  source_inline_stripped = source_inline + start;
+  source_inline_stripped[end + 1] = '\0';
+
+  if (strlen(source_inline_stripped) == 0) {
+    free(source_inline);
+    source_inline = (char *)malloc(sizeof(char *) * (strlen(empty_cell)));
+    strcpy(source_inline, empty_cell);
+    source_inline_stripped = source_inline;
+  }
+
+  node_inline = parse_markdown_inline(source_inline_stripped);
+  free(source_inline);
+
+  add_child(node, node_inline);
+  return node;
+}
+
+static Node *pipe_table(const char *source, TSNode ts_node) {
+  int nrows;
+  Node *node, *headers, *row, *cell;
+  TSNode ts_headers, ts_delimiters, ts_row, ts_child;
+
+  const char *center = "center";
+  const char *left = "left";
+  const char *right = "right";
+  const char *unknown = "unknown";
+  const char *a;
+  char **alignments;
+
+  // At least headers and delimiters.
+  assert(ts_node_named_child_count(ts_node) >= 2);
+
+  node = create_node(HASH_PIPE_TABLE, NULL);
+  ts_headers = ts_node_named_child(ts_node, 0);
+  ts_delimiters = ts_node_named_child(ts_node, 1);
+  assert(hash(ts_node_type(ts_headers)) == HASH_PIPE_TABLE_HEADER);
+  assert(hash(ts_node_type(ts_delimiters)) == HASH_PIPE_TABLE_DELIMITER_ROW);
+
+  nrows = ts_node_named_child_count(ts_headers);
+  assert(ts_node_named_child_count(ts_delimiters) == nrows);
+  alignments = (char **)malloc(sizeof(char *) * nrows);
+  for (int i = 0; i < nrows; i++) {
+    ts_child = ts_node_named_child(ts_delimiters, i);
+    assert(hash(ts_node_type(ts_child)) == HASH_PIPE_TABLE_DELIMITER_CELL);
+
+    switch (ts_node_named_child_count(ts_child)) {
+    case 0:
+      a = unknown;
+      break;
+    case 1:
+      ts_child = ts_node_named_child(ts_child, 0);
+      switch (hash(ts_node_type(ts_child))) {
+      case HASH_PIPE_TABLE_ALIGN_LEFT:
+        a = left;
+        break;
+      case HASH_PIPE_TABLE_ALIGN_RIGHT:
+        a = right;
+        break;
+      default:
+        assert(false);
+      }
+      break;
+    case 2:
+      a = center;
+      assert(hash(ts_node_type(ts_node_named_child(ts_child, 0))) ==
+             HASH_PIPE_TABLE_ALIGN_LEFT);
+      assert(hash(ts_node_type(ts_node_named_child(ts_child, 1))) ==
+             HASH_PIPE_TABLE_ALIGN_RIGHT);
+      break;
+    default:
+      assert(false);
+    }
+
+    alignments[i] = (char *)malloc(sizeof(char *) * (strlen(a) + 1));
+    strcpy(alignments[i], a);
+  }
+
+  headers = create_node(HASH_PIPE_TABLE_ROW, NULL);
+  for (int i = 0; i < nrows; i++) {
+    ts_child = ts_node_named_child(ts_headers, i);
+    cell = create_node(HASH_PIPE_TABLE_HEADER, alignments[i]);
+    pipe_table_cell(source, ts_child, cell);
+    add_child(headers, cell);
+  }
+  add_child(node, headers);
+
+  for (int i = 2; i < ts_node_named_child_count(ts_node); i++) {
+    ts_row = ts_node_named_child(ts_node, i);
+    row = create_node(HASH_PIPE_TABLE_ROW, NULL);
+    for (int j = 0; j < nrows; j++) {
+      ts_child = ts_node_named_child(ts_row, j);
+      cell = create_node(HASH_PIPE_TABLE_CELL, alignments[j]);
+      pipe_table_cell(source, ts_child, cell);
+      add_child(row, cell);
+    }
+    add_child(node, row);
+  }
+
+  free(alignments);
+  return node;
+}
+
 /**
  * Choose the right parsing function to use.
  */
@@ -242,6 +363,10 @@ static Node *next_node(const char *source, TSNode ts_node) {
 
   case HASH_MINUS_METADATA:
     node = minus_metadata(source, ts_node);
+    break;
+
+  case HASH_PIPE_TABLE:
+    node = pipe_table(source, ts_node);
     break;
 
   // Trivial nodes.

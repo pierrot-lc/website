@@ -4,7 +4,7 @@
 
 #include "hash.h"
 
-#define TOTAL_TYPES 54
+#define TOTAL_TYPES 65
 
 int main() {
 
@@ -31,6 +31,7 @@ int main() {
       "double_quote_scalar",
       "emphasis",
       "emphasis_delimiter",
+      "entity_reference",
       "fenced_code_block",
       "full_reference_link",
       "heading_content",
@@ -54,6 +55,16 @@ int main() {
       "list_item",
       "minus_metadata",
       "paragraph",
+      "pipe_table",
+      "pipe_table_align_center",
+      "pipe_table_align_left",
+      "pipe_table_align_right",
+      "pipe_table_align_unknown",
+      "pipe_table_cell",
+      "pipe_table_delimiter_cell",
+      "pipe_table_delimiter_row",
+      "pipe_table_header",
+      "pipe_table_row",
       "plain_scalar",
       "section",
       "shortcut_link",

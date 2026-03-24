@@ -1,7 +1,7 @@
 #include <assert.h>
 #include <stdbool.h>
 #include <stdio.h>
-#include <stdlib.h>
+#include <string.h>
 
 #include "hash.h"
 #include "parsers/markdown.h"
@@ -121,6 +121,30 @@ static void list(FILE *file, Node *node) {
   fprintf(file, "</ul>\n");
 }
 
+static void table_cell(FILE *file, Node *node) {
+  char *alignment = node->content;
+  assert(alignment != NULL);
+
+  const char *header = "th";
+  const char *cell = "td";
+  const char *type;
+
+  switch (node->code) {
+  case HASH_PIPE_TABLE_CELL:
+    type = cell;
+    break;
+  case HASH_PIPE_TABLE_HEADER:
+    type = header;
+    break;
+  default:
+    assert(false);
+  }
+
+  fprintf(file, "<%s class=\"align-%s\">", type, alignment);
+  write_children(file, node);
+  fprintf(file, "</%s>\n", type);
+}
+
 void write_tree(FILE *file, Node *node) {
   switch (node->code) {
   case HASH_ATX_HEADING:
@@ -168,17 +192,37 @@ void write_tree(FILE *file, Node *node) {
     fprintf(file, "\n");
     break;
 
+  case HASH_PIPE_TABLE:
+    fprintf(file, "<table>\n");
+    write_children(file, node);
+    fprintf(file, "</table>\n");
+    break;
+
+  case HASH_PIPE_TABLE_ROW:
+    fprintf(file, "<tr>\n");
+    write_children(file, node);
+    fprintf(file, "</tr>\n");
+    break;
+
+  case HASH_PIPE_TABLE_CELL:
+  case HASH_PIPE_TABLE_HEADER:
+    table_cell(file, node);
+    break;
+
+  case HASH_PIPE_TABLE_DELIMITER_ROW:
+    break;
+
   case HASH_STRONG_EMPHASIS:
     balise(file, node, "strong");
+    break;
+
+  case HASH_THEMATIC_BREAK:
+    fprintf(file, "<hr />\n");
     break;
 
   case HASH_HTML_BLOCK:
   case HASH_TEXT:
     fprintf(file, "%s", node->content);
-    break;
-
-  case HASH_THEMATIC_BREAK:
-    fprintf(file, "<hr />\n");
     break;
 
   case HASH_DOCUMENT:

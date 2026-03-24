@@ -182,9 +182,10 @@ static Node *latex_block(const char *source, TSNode ts_node) {
   Node *node;
   TSNode delimiter_start, delimiter_end;
 
-  assert(ts_node_named_child_count(ts_node) == 2);
+  assert(ts_node_named_child_count(ts_node) >= 2);
   delimiter_start = ts_node_named_child(ts_node, 0);
-  delimiter_end = ts_node_named_child(ts_node, 1);
+  delimiter_end =
+      ts_node_named_child(ts_node, ts_node_named_child_count(ts_node) - 1);
   assert(hash(ts_node_type(delimiter_start)) == HASH_LATEX_SPAN_DELIMITER);
   assert(hash(ts_node_type(delimiter_end)) == HASH_LATEX_SPAN_DELIMITER);
 
@@ -263,6 +264,7 @@ static Node *next_node(const char *source, TSNode ts_node) {
     node = image(source, ts_node);
     break;
 
+  case HASH_ENTITY_REFERENCE:
   case HASH_INLINE:
     node = inline_text(source, ts_node);
     break;
