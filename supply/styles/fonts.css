@@ -41,3 +41,7 @@ pre code {
   font-size: 0.9rem;
   font-style: italic;
 }
+
+.latex-display {
+  font-size: 1.1rem;
+}

@@ -1,0 +1,27 @@
+table {
+  margin: 2rem auto;
+  width: auto;        /* Table only takes as much space as it needs. */
+  max-width: 100%;    /* But never goes wider than the screen/container. */
+
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+thead th {
+  font-weight: bold;
+  border-bottom: 2px solid #DEE2E6;
+}
+
+th, td {
+  padding: 12px 15px;
+  border-bottom: 1px solid #EDF2F7;
+}
+
+/* Subtle hover effect for readability. */
+tbody tr:hover {
+  background-color: #F3F3F3;
+}
+
+.align-left   { text-align: left; }
+.align-center { text-align: center; }
+.align-right  { text-align: right; }
