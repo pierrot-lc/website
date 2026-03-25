@@ -11,6 +11,7 @@ styles:
   - /styles/katex.min.css
   - /styles/highlight.css
   - /styles/main.css
+  - /styles/table.css
   - /styles/fonts.css
 
 scripts:
