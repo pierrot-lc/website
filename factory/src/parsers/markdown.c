@@ -126,8 +126,7 @@ static Node *heading(const char *source, TSNode ts_node) {
     assert(false);
   }
 
-  content = (char *)malloc((strlen(h) + 1) * sizeof(char));
-  strcpy(content, h);
+  content = strdup(h);
   node = create_node(HASH_ATX_HEADING, content);
 
   ts_content = ts_node_child(ts_node, 1);
@@ -207,8 +206,9 @@ static Node *minus_metadata(const char *source, TSNode ts_node) {
 }
 
 static Node *pipe_table_cell(const char *source, TSNode ts_node, Node *node) {
-  unsigned long start, end;
-  char *source_inline, *source_inline_stripped;
+  unsigned long start;
+  int end;
+  char *source_inline;
   Node *node_inline;
 
   const char *empty_cell = "&nbsp;";
@@ -221,21 +221,18 @@ static Node *pipe_table_cell(const char *source, TSNode ts_node, Node *node) {
   for (start = 0; start < strlen(source_inline); start++)
     if (source_inline[start] != ' ')
       break;
-  for (end = strlen(source_inline) - 1; end >= start; end--)
+  for (end = (int)strlen(source_inline) - 1; end >= start; end--)
     if (source_inline[end] != ' ')
       break;
+  source_inline[end + 1] = '\0';
 
-  source_inline_stripped = source_inline + start;
-  source_inline_stripped[end + 1] = '\0';
-
-  if (strlen(source_inline_stripped) == 0) {
+  if (strlen(source_inline + start) == 0) {
     free(source_inline);
-    source_inline = (char *)malloc(sizeof(char *) * (strlen(empty_cell)));
-    strcpy(source_inline, empty_cell);
-    source_inline_stripped = source_inline;
+    source_inline = strdup(empty_cell);
+    start = 0;
   }
 
-  node_inline = parse_markdown_inline(source_inline_stripped);
+  node_inline = parse_markdown_inline(source_inline + start);
   free(source_inline);
 
   add_child(node, node_inline);
@@ -298,14 +295,13 @@ static Node *pipe_table(const char *source, TSNode ts_node) {
       assert(false);
     }
 
-    alignments[i] = (char *)malloc(sizeof(char *) * (strlen(a) + 1));
-    strcpy(alignments[i], a);
+    alignments[i] = strdup(a);
   }
 
   headers = create_node(HASH_PIPE_TABLE_ROW, NULL);
   for (int i = 0; i < nrows; i++) {
     ts_child = ts_node_named_child(ts_headers, i);
-    cell = create_node(HASH_PIPE_TABLE_HEADER, alignments[i]);
+    cell = create_node(HASH_PIPE_TABLE_HEADER, strdup(alignments[i]));
     pipe_table_cell(source, ts_child, cell);
     add_child(headers, cell);
   }
@@ -316,13 +312,17 @@ static Node *pipe_table(const char *source, TSNode ts_node) {
     row = create_node(HASH_PIPE_TABLE_ROW, NULL);
     for (int j = 0; j < nrows; j++) {
       ts_child = ts_node_named_child(ts_row, j);
-      cell = create_node(HASH_PIPE_TABLE_CELL, alignments[j]);
+      cell = create_node(HASH_PIPE_TABLE_CELL, strdup(alignments[j]));
       pipe_table_cell(source, ts_child, cell);
       add_child(row, cell);
     }
     add_child(node, row);
   }
 
+  // Each aligments have been duplicated previously to prevent double-free
+  // issues when freeing the tree. We can free the main one now.
+  for (int i = 0; i < nrows; i++)
+    free(alignments[i]);
   free(alignments);
   return node;
 }
