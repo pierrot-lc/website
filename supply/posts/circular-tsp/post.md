@@ -34,15 +34,14 @@ are made to sparsify the graph, for example by considering only the edges that b
 nearest neighbours only, but this further adds a bias to the solving process.
 
 Ideally, only a strict minimum set of inductive biases are embedded within the solver and the rest
-should be handled by the neural network. That's why in this work we propose to embed the cycle
-constraint within a circle: the tour is given by a sequence of angles. The neural solver predict $N$
-angles and the solution is directly read by sorting the nodes following their order on the circle.
-This continuous representation additionally unlocks generative frameworks such as the ones used by
-image generators. We illustrate how to train solvers on this particular solution representation
-using flow matching. Our solvers consider the TSP solution as a whole, remove the choice of a
-starting point and the necessity to tie the iterations with the number of cities of the instance.
-Furthermore, generating solutions do not require a complex search algorithm to be generated as we
-only require a ODE solver.
+should be handled by the neural network. In this work we propose to embed the cycle constraint
+within a circle: the tour is given by a sequence of angles. The neural solver predict $N$ angles and
+the solution is directly read by sorting the nodes following their order on the circle. This
+continuous representation additionally unlocks generative frameworks such as the ones used by image
+generators. We illustrate how to train solvers on this particular solution representation using flow
+matching. Our solvers consider the TSP solution as a whole, remove the choice of a starting point
+and the necessity to tie the iterations with the number of cities of the instance. Furthermore,
+generating solutions do not require a complex search algorithm as we only require a ODE solver.
 
 In summary, our contributions are the following:
 1. We propose a new TSP solution representation that characterize a TSP solution that is continuous
@@ -92,17 +91,17 @@ matching to progressively move the nodes around the circle.
 We cast the generative process of predicting the angles using flow matching. The neural network
 progressively moves the nodes towards their optimal angles, from $t = 0$ to $t = 1$. At $t = 0$, the
 angles are randomly initialized following the uniform distribution $U[0, 2\pi]$. We define the flow
-to be the shortest movement between the initial angles $a(t = 0)$ and the final angles $a(t = 1)$,
-thus using the optimal transport formulation of the flow matching framework. The neural network
-is involved in the following ODE:
+to be the shortest movement between the initial angles $a(t = 0)$ and the final angles $a(t = 1) =
+a^*$, thus using the optimal transport formulation of the flow matching framework. The neural
+network is involved in the following ODE:
 
 $$
-  \frac{da(t)}{dt} = f(a(t), t, X; \theta),
+  \frac{da(t)}{dt} = f_\theta(a(t), t, X),
 $$
 
-where $a(t) \in \mathbb{R^N}$ is the vector of cities angles at time $t$, $X \in \mathbb{ R^{N \times 2} }$
-is the matrix of cities coordinates in the euclidean space, and $\theta$ are the learnable
-parameters of the neural network.
+where $a(t) \in \mathbb{R^N}$ is the vector of cities angles at time $t$, $X \in \mathbb{ R^{N
+\times 2} }$ is the matrix of cities coordinates in the euclidean space, and $\theta$ are the
+learnable parameters of the neural network.
 
 The optimal solution on the circle is invariant to angular shifts, so it would be inefficient to ask
 for the model to predict a particular angle absolute configuration. Instead, we characterize the
@@ -111,7 +110,7 @@ predicted by the model and compute the resulting pairwise relative distances of 
 circle. Those distances are compared to the ones of the optimal solutions:
 
 $$
-  \mathcal{L}(\theta) = || D(\hat{a}) - D(a^*) ||_2, \quad \hat{a} = a(t) + (1 - t) f(a(t), t, X; \theta)
+  \mathcal{L_{\text{cycle}}}(\theta) = || D(\hat{a}) - D(a^*) ||_2, \quad \hat{a} = a(t) + (1 - t) f_\theta(a(t), t, X)
 $$
 
 where $D \in \mathbb{R}^{N \times N \times 2}$ is the matrix of pairwise signed distances, such that
@@ -121,7 +120,7 @@ circular invariant, respecting the invariances of the TSP solutions.
 ## Neural Network Architecture
 TSP can be modeled by a complete graph, we thus use a transformer where each city is represented by
 a token. A token is initialized by concatenating the current timestep $t$ with its corresponding
-coordinates.
+city euclidean coordinates.
 
 To properly encode the solution, we want our model to be invariant to circular shifts of the angles.
 To do so, our model must perceive the angles relatively to each other. RoPE is a powerful choice to
@@ -147,7 +146,7 @@ values. Following the usual exponential decay of the bases, we set our bases to 
 exponentially:
 
 $$
-  (\theta_n)_1^N = \text{round}[ \text{exp}( \text{log}(K_{ \text{max} }) \frac{ n }{N - 1} ) ],
+  (\theta_i)_1^N = \text{round}[ e^{ \text{log}(K_{ \text{max} }) \frac{ i }{N - 1} } ],
 $$
 
 with $N$ the number of bases and $K_{\text{max}}$ set to $5$ in our experiments. We name such
@@ -172,30 +171,32 @@ $$
 
 **Initial experiment.** We first train three models for three different TSP sizes: 20, 50 and 100.
 Models are trained for 100k iterations with a batch size of 256. They have 700k, 6M and 25M
-parameters for the model TSP-20, TSP-50 and TSP-100 respectively. Once trained, we can use the Euler
-ODE solver and specify the number of solver steps.
+parameters for the model TSP-20, TSP-50 and TSP-100 respectively. Once trained, we use the Euler ODE
+solver and specify the number of solver steps.
 
-| Instance | 1 step | 10 steps | 100 steps | 1000 steps |
-|:---------|:------:|:--------:|:---------:|:----------:|
-| TSP-20   | 43.50  | 1.29     | 0.83      | 0.82       |
-| TSP-50   | 69.03  | 3.01     | 2.34      | 2.31       |
-| TSP-100  | 204.52 | 10.76    | 4.14      | 4.24       |
+| Instance | 1 step  |        | 10 steps |        | 100 steps |        | 1000 steps |        |
+|:---------|:-------:|:------:|:--------:|:------:|:---------:|:------:|:----------:|:------:|
+|          | _Gap_   | _Time_ | _Gap_    | _Time_ | _Gap_     | _Time_ | _Gap_      | _Time_ |
+| TSP-20   | 20.92   | 0.9m   | 0.35     | 0.9m   | 0.26      | 1.0m   | 0.26       | 1.6m   |
+| TSP-50   | 74.21   | 1.2m   | 3.77     | 1.2m   | 2.97      | 1.4m   | 2.89       | 1.8m   |
+| TSP-100  | 167.21  | 1.1m   | 7.73     | 1.2m   | 5.05      | 1.2m   | 4.83       | 1.8m   |
 
-As expected, increasing the number of solving steps both increase solution quality and solving time.
-Flow matching naturally handle the tradeoff between computation time and solution quality. We can
-see for example that TSP-50 can reach a pretty good solution in only 10 ODE steps (10 NFEs), but
-that going up to 1000 steps further improve the solution.
+As expected, increasing the number of steps both increase solution quality and solving time. Flow
+matching naturally handle the tradeoff between computation time and solution quality. We can see for
+example that TSP-50 can reach a pretty good solution in only 10 ODE steps (10 NFEs), but that going
+up to 1000 steps further improve the solution.
 
 **Problem-size Generalization.** In a second example, we train a 25M parameters neural solver on
 training instances of sizes between 128 and 256. The variable training TSP sizes enhance the solver
 ability to generalize to larger instances.
 
-| Model      | TSP-100 | TSP-250 | TSP-500 |
-|:-----------|:-------:|:-------:|:-------:|
-| Our (100)  | 5.63    | 10.27   | 28.59   |
-| Our (1000) | 5.46    | 8.93    | 25.87   |
-| BQ-NCO     | 0.31    | 0.67    | 1.17    |
-| INViT-3V   | 4.95    | 5.92    | 6.30    |
+| Model      | TSP-100 |        |TSP-250 |        | TSP-500 |        |
+|:-----------|:-------:|:------:|:------:|:------:|:-------:|:------:|
+|            | _Gap_   | _Time_ | _Gap_  | _Time_ | Gap     | _Time_ |
+| Our (100)  | 5.67    | 1.4m   | 11.01  | 1.8m   | 29.00   | 1.3m   |
+| Our (1000) | 5.28    | 2.4m   | 9.76   | 3.1m   | 27.95   | 3.6m   |
+| BQ-NCO     | 0.31    | 0.6m   | 0.67   | 1.5m   | 1.17    | 3.8m   |
+| INViT-3V   | 4.95    | 1.0m   | 5.92   | 2.8m   | 6.30    | 5.9m   |
 
 We report the performance of our neural solver when using 100 and 1000 ODE solver steps. We compare
 against two well-known baselines, BQ-NCO and INViT. Sadly, we can see that our model is not
@@ -207,8 +208,8 @@ CircularRoPE, we compare the TSP-100 model against a baseline that does not roun
 angles.
 
 <figure class="image">
-  <img src="ablations_circular-rope.png" alt="CircularRoPE training dynamic comparison against a RoPE baseline and direct input baseline.">
-  <figcaption>Comparison </figcaption>
+  <img src="ablations_circular-rope-loss.png" alt="CircularRoPE training dynamic comparison against a RoPE baseline and direct input baseline.">
+  <figcaption>CircularRoPE and RoPE have very similar training dynamics, and are faster to train comparably to the input baseline.</figcaption>
 </figure>
 
 We can see that CircularRoPE and RoPE are slightly faster to train compared to the third baseline,
@@ -217,25 +218,35 @@ against the classical RoPE, probably because RoPE is already almost circular inv
 rounding error).
 
 We now evaluate our circular invariant flow loss. We compare against the usual flow matching loss:
-$\mathcal{L}(\theta) = || f(a(t), t, X; \theta) - \text{flow}(a(0), a(1)) ||_2$. We also validate
-the beta-distribution sampling of our timesteps by replacing it by the usual uniform sampling: $t
-\sim U[0, 1]$.
+$\mathcal{L}(\theta) = || f_\theta(a(t), t, X) - \text{flow}(a(0), a(1)) ||_2$. We also validate the
+beta distribution sampling of our timesteps by replacing it by the usual uniform sampling: $t \sim
+U[0, 1]$.
 
-| Model                 | TSP-100 |
-|:----------------------|:-------:|
-| Baseline              | 5.63    |
-| + $\text{Beta}(5, 1)$ | 17.36   |
-| + inv. flow loss      | 0.31    |
+| Model                                  | TSP-100 |
+|:---------------------------------------|:-------:|
+| Baseline                               | 10.45   |
+| + $\mathcal{L}_{\text{cycle}}(\theta)$ |         |
+| + $\text{Beta}(5, 1)$                  | 5.05    |
 
 The original flow loss imposes for the model to predict exactly where the final angles must be. This
 imposes a non-necessary constraint and is also impossible for the model to guess. Adding our
 specific loss improves from $17.36\%$ to $10.00\%$. Finally, biasing the training sampling of $t$ to
-follow the $\beta(5, 1)$ distribution forces the solver to focus on later stages of the solving
-process and further boost performances to $5\%$.
+follow the $\text{Beta}(5, 1)$ distribution forces the solver to focus on later stages of the
+solving process and further boost performances to $5\%$.
 
 ## Analysis
 We experimentally saw a performance ceiling on TSP-100 instances. Even when training larger models
 our performance would not improve. This suggests a deeper issue, maybe linked to our specific
 training procedure. Improvements like our biased sampling and the invariant flow loss greatly helped
-our models (going from 20% to 4% of optimality gap on TSP-100). There might be a similar issue that
+our models (going from 10% to 5% of optimality gap on TSP-100). There might be a similar issue that
 prevent our models from going further.
+
+<figure class="image">
+  <img src="tsp-100_best.gif" alt="Circular flow matching">
+  <figcaption>Good example.</figcaption>
+</figure>
+
+<figure class="image">
+  <img src="tsp-100_worst.gif" alt="Circular flow matching">
+  <figcaption>Bad example.</figcaption>
+</figure>
