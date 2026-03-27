@@ -60,6 +60,10 @@ blockquote {
   padding-inline: 10px;
 }
 
+figcaption {
+  text-align: center;
+}
+
 .article-tags {
   list-style-type: none;
   padding: 0;
