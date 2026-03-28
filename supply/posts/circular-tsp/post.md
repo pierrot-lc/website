@@ -8,78 +8,70 @@ tags:
 illustration: solution-example.png
 ---
 
-Neural Combinatorial Optimization (NCO) aims at simplifying the design of combinatorial optimization
-solvers using neural networks. Its an exciting area of research as we expect learning-driven
-heuristics to outperform manually designed ones. We focus in this work on the Traveling Salesman
-Problem (TSP), one of the most famous NCO problem, and propose to encode the solution onto a circle.
-Our motivation is to provide a flexible and straightforward way to represent the solution. As
-example, we use flow matching to generate the solutions by moving the points on the circle. We show
-how a simple modification to RoPE, called CircularRoPE, makes our neural solver invariant to
-rotations of the circle. While our results are not on par with the state-of-the-art, we hope this
-post will motivate future similar research directions.
+Neural Combinatorial Optimization (NCO) aims to simplify the design of combinatorial optimization
+solvers by leveraging neural networks. It's an exciting area of research because learning-driven
+heuristics have the potential to outperform manually designed ones. In this post, we focus on the
+Traveling Salesman Problem (TSP), one of the most famous NCO problem, and propose to encode the
+solution onto a circle. Our motivation is to provide a flexible and straightforward way to represent
+the solution. As example, we use **flow matching** to generate the solutions by "sliding" the points
+on the circle. We also introduce **CircularRoPE**, a simple modification to Rotary Positional
+Embedding that ensures our neural solver remains invariant to circle's rotation. While our results
+are not on par with the state-of-the-art, we hope this post will motivate future similar research
+directions.
 
 ## Motivation
-**About autoregressive solvers.** State-of-the-art solvers like BQ-NCO or INViT predict the solution
-step by step. Starting from an initial city, the solver is repeatedly called to select the next city
-to visit. This starting point is arbitrary and not an inner part of the TSP definition. This can
-bias the solver which further carry that bias along the whole solving process. Furthermore, such
-solvers can't generate a solution with less iterations than the number of cities in the instance to
-solve, an important characteristic if we want to tradeoff solution quality for solving time.
+Most NCO solvers fall into two categories: autoregressive and heatmap-based solvers.
 
-**About heatmap solvers.** Heatmap solvers like DIFUSCO consider the whole solution at once by
-predicting the probability for each edge to belong to the optimal solution. They require a decoding
-search algorithm to generate the final solution to respect the cycle constraint (ex: MCTS). Search
-space is large as all $N \times N$ edges can be considered. In practice some additional assumptions
-are made to sparsify the graph, for example by considering only the edges that belong to the k
-nearest neighbours only, but this further adds a bias to the solving process.
+**About autoregressive solvers.** State-of-the-art solvers like BQ-NCO or INViT treat the TSP
+solution as a sequence prediction. Starting from an initial city, the solver is repeatedly called to
+select the next city to visit. This starting point is arbitrary forces the model to learn that many
+different sequences represent the same optimal tour. The arbitrary choice of initial city can bias
+the whole solution generation. In addition, the number of forward passes is tied to the instance
+size $N$. You cannot easily trade off inference time for solution quality.
+
+**About heatmap solvers.** Heatmap-based approaches, like DIFUSCO, avoid sequential bias by
+predicting an $N \times N$ edge adjacency matrix. While these methods consider the solution as a
+whole, the heatmap is not a tour. These solvers require a search algorithm (e.g. MCTS) to project
+the heatmap onto the space of Hamiltonian cycles. This creates a gap between what the neural network
+optimizes and what the final solver produces. Furthermore, they have to keep the search space
+manageable and often restrict the search within the $k$-nearest neighbor graphs. This introduces a
+manual inductive bias that may exclude the true optimal edges.
 
 Ideally, only a strict minimum set of inductive biases are embedded within the solver and the rest
-should be handled by the neural network. In this work we propose to embed the cycle constraint
-within a circle: the tour is given by a sequence of angles. The neural solver predict $N$ angles and
-the solution is directly read by sorting the nodes following their order on the circle. This
-continuous representation additionally unlocks generative frameworks such as the ones used by image
-generators. We illustrate how to train solvers on this particular solution representation using flow
-matching. Our solvers consider the TSP solution as a whole, remove the choice of a starting point
-and the necessity to tie the iterations with the number of cities of the instance. Furthermore,
-generating solutions do not require a complex search algorithm as we only require a ODE solver.
+should be handled by the neural network. We argue that a solver should embed the cyclic nature of
+the TSP directly into its output space. By mapping the $N$ cities onto a unit circle, we represent
+the tour as a sequences of angles $(a_i)_1^N$. The tour is recovered simply by sorting the cities by
+their angular position. This approach offers three distinct advantages:
 
-In summary, our contributions are the following:
-1. We propose a new TSP solution representation that characterize a TSP solution that is continuous
-   and easy to decode.
-2. We design a dedicated neural architecture using CircularRoPE and use an adequate flow matching
-   objective that takes into account this specific representation.
-3. We show that flow matching allows us to generate solutions in less NFEs than the autoregressive
-   neural solvers while being fully end-to-end.
+1. **Direct Decoding:** Our representation is always valid. Any set of $N$ distinct angles defines a
+   valid Hamiltonian cycle, removing the need for complex post-processing.
+2. **Generative Flexibility:** Because the representation is continuous, we can leverage **Flow
+   Matching** to treat solving as an ODE-based refinement process. We design a specific loss that
+   takes into account the circular invariances of our solution representation.
+3. **Variable NFEs:** By using an ODE solver, we decouple the solving effort from the number of
+   cities. We can refine a solution using 10, 100 or 1000 Number of Function Evaluations (NFEs),
+   allowing for a dynamic trade-off between speed and optimality gap.
 
 ## Solution Representation
-TSP is defined by a set of $N$ cities to visit, where each city has 2D euclidean coordinates
-$(x_i)_1^N \in \mathbb{R}^2$. The goal is to find the shortest hamiltonian cycle, a tour that visits
-every cities such that the total euclidean distance is minimized. We denote the tour by a
-permutation $(p_i)_1^N$ and the cost of a solution is computed by:
+A TSP instance is defined by a set of $N$ cities with coordinates $X = \{x_i\}_1^N \in \mathbb{R}^{N
+\times 2}$. The objective is to find a permutation $p$ of the indices $\{1, \dots, N\}$ that
+minimizes the Hamiltonian cycle cost:
 
 $$
-  \sum_{i = 1}^{N - 1} d_{p_i, p_{i+1}} + d_{p_N, p_1},
+  \sum_{i = 1}^{N - 1} ||x_{p_i} - x_{p_{i+1}}||_2 + ||x_{p_N} - x_{p_1}||_2.
 $$
 
-where $d_{i, j} = ||x_i - x_j||_2$ is the euclidean distance between city $i$ and $j$.
+**We consider the cyclic nature of the solution and places the cities onto the unit circle.** Each
+city $i$ is assigned to an angular coordinate $a_i \in [0, 2\pi)$. The set of all angles $a = (a_1,
+\dots, a_N)$ implicitly defines a tour: the sequence is recovered by sorting cities according to
+their angular positions.
 
-**We consider the cyclic nature of the solution and places the cities on a circle.** Each city is
-assigned to an angle $a_i$ and the solution is given by following the order of the nodes along this
-circle. Given an optimal tour $p^*$, we place the nodes uniformly around the circle:
+To train our models, we must map an optimal permutation $p^*$ to a target angular configuration. We
+distribute the cities in the optimal tour uniformly along the circle:
 
 $$
-a_{p_i^*} = \frac{2 p_i^* \pi}{N}.
+  a_{p_i^*} = \frac{2 \pi i}{N} \quad \forall i \in \{1, \dots, N\}.
 $$
-
-The neural solver is asked to predict the angles based on the euclidean position of the cities.
-
-Compared to autoregressive solvers, we do not define any starting or ending node. The solution is
-considered altogether and the model modify the current solution simply by moving the nodes around
-the circle. Compared to heatmap solvers, our representation always defines a valid tour. The neural
-network do not have to rely on an additional search algorithm to generate a solution. In general, we
-found this representation to be more aligned with the TSP constraints. Finally, our representation
-is continuous which makes it compatible with many generative methods. In this work, we use flow
-matching to progressively move the nodes around the circle.
 
 ## Circular Flow Matching
 
@@ -88,77 +80,95 @@ matching to progressively move the nodes around the circle.
   <figcaption>Example of a TSP-20 instance being solved using flow matching.</figcaption>
 </figure>
 
-We cast the generative process of predicting the angles using flow matching. The neural network
-progressively moves the nodes towards their optimal angles, from $t = 0$ to $t = 1$. At $t = 0$, the
-angles are randomly initialized following the uniform distribution $U[0, 2\pi]$. We define the flow
-to be the shortest movement between the initial angles $a(t = 0)$ and the final angles $a(t = 1) =
-a^*$, thus using the optimal transport formulation of the flow matching framework. The neural
-network is involved in the following ODE:
+We cast the generation of the tour as a Flow Matching problem. The goal is to learn a time-dependent
+vector field $f_\theta$ that transports a distribution of random initial angles toward the target
+optimal configuration. At $t = 0$, the angles are randomly initialized following the uniform
+distribution $a(0) \sim U[0, 2\pi]^N$. The target state $a(1) = a^*$ are the angles corresponding to
+the optimal tour. Using the optimal transport formulation, the flow is defined as the shortest path
+between $a(0)$ and $a(1)$. The neural network is involved in the Ordinary Differential Equation
+(ODE)
 
 $$
-  \frac{da(t)}{dt} = f_\theta(a(t), t, X),
+  \frac{da(t)}{dt} = f_\theta(a(t), t, X).
 $$
-
-where $a(t) \in \mathbb{R^N}$ is the vector of cities angles at time $t$, $X \in \mathbb{ R^{N
-\times 2} }$ is the matrix of cities coordinates in the euclidean space, and $\theta$ are the
-learnable parameters of the neural network.
 
 The optimal solution on the circle is invariant to angular shifts, so it would be inefficient to ask
 for the model to predict a particular angle absolute configuration. Instead, we characterize the
-solution predicted by the model compared to the optimal solution. Precisely, we apply the flow
-predicted by the model and compute the resulting pairwise relative distances of the nodes on the
-circle. Those distances are compared to the ones of the optimal solutions:
+solution predicted by the model compared to the optimal solution. Precisely, we project the
+predicted state at $t = 1$ and compare the pairwise angular distances between the predicted solution
+and the optimal one:
 
 $$
-  \mathcal{L_{\text{cycle}}}(\theta) = || D(\hat{a}) - D(a^*) ||_2, \quad \hat{a} = a(t) + (1 - t) f_\theta(a(t), t, X)
+  \mathcal{L_{\text{cycle}}}(\theta) = || D(\hat{a}) - D(a^*) ||_2^2, \quad \hat{a} = a(t) + (1 - t) f_\theta(a(t), t, X)
 $$
 
-where $D \in \mathbb{R}^{N \times N \times 2}$ is the matrix of pairwise signed distances, such that
-$D(a)_{i, j} = (\text{cos}(a_i) - \text{cos}(a_j), \text{sin}(a_i) - \text{sin}(a_j))$. This loss is
-circular invariant, respecting the invariances of the TSP solutions.
+where $D \in \mathbb{R}^{N \times N \times 2}$ is the matrix of pairwise signed distances:
+
+$$
+D(a)_{i, j} = (\text{cos}(a_i) - \text{cos}(a_j), \text{sin}(a_i) - \text{sin}(a_j)).
+$$
+
+This loss is rotationally invariant.
 
 ## Neural Network Architecture
-TSP can be modeled by a complete graph, we thus use a transformer where each city is represented by
-a token. A token is initialized by concatenating the current timestep $t$ with its corresponding
-city euclidean coordinates.
+We treat the TSP instance as a complete graph where each city $i$ is represented as a token of a
+Transformer neural network. Each token is initialized by projecting the concatenation of the city's
+coordinates $x_i$ and the current flow timestep $t$ into the dimension of the model
+$d_\text{model}$.
 
-To properly encode the solution, we want our model to be invariant to circular shifts of the angles.
-To do so, our model must perceive the angles relatively to each other. RoPE is a powerful choice to
-embed relative relationships between our tokens and so we use it where the token's position is
-defined by its angle on the circle:
+To properly encode the current state of the solution, we design the model to be invariant to global
+rotations of the circle. To do so, our model must perceive the angles relatively to each other. We
+adapt Rotary Positional Embeddings (RoPE), which encodes the relative distance between discrete
+positions $m$ and $n$. We instead define the position of a token as its continuous angle $a_i \in
+[0, 2\pi)$. The transformation of the query $q$ and key $k$ vectors is defined as:
 
 $$
-  \hat{q} = \text{RoPE}(q, a) = \text{Re}[q e^{i a \theta}] \\
-  \hat{k} = \text{RoPE}(k, a) = \text{Re}[k e^{i a \theta}] \\
+  \hat{q} = \text{RoPE}(q, a) = \text{Re}[q e^{i a \theta}], \quad
+  \hat{k} = \text{RoPE}(k, a) = \text{Re}[k e^{i a \theta}]
+$$
+
+The resulting attention score is proportional to the cosine of the angular difference:
+
+$$
   \hat{q}_m \hat{k}_n^T \propto \text{cos}((a_m - a_n) \theta).
 $$
 
-This ensure that only relative differences in the angles are taken into account. Finally, we set the
-basis $\theta$ to make the interaction rotation invariant:
+For the model to be invariant, an angular shift of $2\pi$ must leave the representation unchanged:
 
 $$
-  \text{cos}[(a_m - a_n + 2k\pi) \theta] = \text{cos}[(a_m - a_n) \theta] \quad \forall k \in \mathbb{Z} \\
-  \implies \theta \in \mathbb{Z}.
+  \text{cos}\left( (a_m - a_n + 2k\pi) \theta \right) = \text{cos}\left( (a_m - a_n) \theta \right), \quad \forall k \in \mathbb{Z}
 $$
 
-Hence, we make RoPE invariant to circular shifts of the angles by fixing its basis to integer
-values. Following the usual exponential decay of the bases, we set our bases to increase
-exponentially:
+This condition is satisfied if and only if the frequency basis $\theta$ consists of integers. In
+standard RoPE, these frequencies are typically real-valued and follow an exponential decay. To
+satisfy the circular constraint while maintaining a multi-scale representation of the circle, we
+introduce **CircularRoPE**. We define a set of integer frequencies $(\theta_j)_{j = 1}^{d / 2}$ as
+follows:
 
 $$
-  (\theta_i)_1^N = \text{round}[ e^{ \text{log}(K_{ \text{max} }) \frac{ i }{N - 1} } ],
+  \theta_j = \left\lfloor \text{exp}\left( \text{log}(K_{ \text{max} }) \frac{ j }{N - 1} \right) \right\rceil,
 $$
 
-with $N$ the number of bases and $K_{\text{max}}$ set to $5$ in our experiments. We name such
-positional encoding **CircularRoPE** to denote its circular invariance.
+where $d$ is the embedding dimension and $K_\text{max}$ controls the highest frequency (we use
+$K_\text{max} = 5$). By rounding the frequencies to the nearest integer, we ensure that every head
+in the attention mechanism respects the periodic topology of the solution. This makes the entire
+architecture naturally invariant to global rotations of the current input solution.
 
-## Weighted Loss
-We noticed that uniformly sampling $t \sim U[0, 1]$ during training is not the most efficient
-strategy as it puts a lot of weights to the earliest timesteps, where the task is the hardest. This
-makes the model trade some of its capabilities later for a better flow estimate at the beginning. To
-bias the sampling, we use a beta distribution $\text{Beta}(\alpha, \beta)$ and find experimentally
-that $\alpha$ and $\beta$ fixed to 5 and 1 respectively improves training efficiency and the final
-solver quality.
+## Timestep Sampling and the Refinement Bias
+In standard Flow Matching, the timestep $t$ is typically sampled from a uniform distribution, $t
+\sim \mathcal{U}[0, 1]$, ensuring that the model learns to estimate the vector field equally well at
+all stages of the trajectory. However, we observed that for the TSP, the task difficulty is
+non-uniformly distributed across time.
+
+At the beggining of the flow $t \approx 0$, the cities' angles are near-random making the flow
+prediction much harder. When trained with uniform sampling, the model tends to exhaust its capacity
+trying to minimize error in these early stages, at the expense of precision in the final refinement
+phase ($t \approx 1$).
+
+To prioritize those refinement steps, we sample timesteps from a **Beta distribution** $t \sim
+\text{Beta}(\alpha, \beta)$. By setting $\alpha = 5$ and $\beta = 1$, the sampling density is
+heavily biased toward $t = 1$, which forces the neural network to focus on the end of the solving
+process.
 
 ## Experiments
 All instances are randomly generated by sampling points uniformly on the unit square and using
