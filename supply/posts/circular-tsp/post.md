@@ -11,28 +11,28 @@ illustration: solution-example.png
 Neural Combinatorial Optimization (NCO) aims to simplify the design of combinatorial optimization
 solvers by leveraging neural networks. It's an exciting area of research because learning-driven
 heuristics have the potential to outperform manually designed ones. In this post, we focus on the
-Traveling Salesman Problem (TSP), one of the most famous NCO problem, and propose to encode the
-solution onto a circle. Our motivation is to provide a flexible and straightforward way to represent
-the solution. As example, we use **flow matching** to generate the solutions by "sliding" the points
-on the circle. We also introduce **CircularRoPE**, a simple modification to Rotary Positional
-Embedding that ensures our neural solver remains invariant to circle's rotation. While our results
-are not on par with the state-of-the-art, we hope this post will motivate future similar research
-directions.
+Traveling Salesman Problem (TSP), one of the most famous NCO problem, and propose to **encode the
+solution onto a circle**. Our motivation is to provide a flexible and straightforward way to
+represent the solution. As example, we use **flow matching** to generate the solutions by "sliding"
+the points on the circle. We also introduce **CircularRoPE**, a simple modification to Rotary
+Positional Embedding that ensures our neural solver remains invariant to circle's rotation. While
+our results are not on par with the state-of-the-art, we hope this post will motivate future similar
+research directions.
 
 ## Motivation
 Most NCO solvers fall into two categories: autoregressive and heatmap-based solvers.
 
 **About autoregressive solvers.** State-of-the-art solvers like BQ-NCO or INViT treat the TSP
 solution as a sequence prediction. Starting from an initial city, the solver is repeatedly called to
-select the next city to visit. This starting point is arbitrary forces the model to learn that many
-different sequences represent the same optimal tour. The arbitrary choice of initial city can bias
-the whole solution generation. In addition, the number of forward passes is tied to the instance
-size $N$. You cannot easily trade off inference time for solution quality.
+select the next city to visit. This starting point forces the model to learn that many different
+sequences represent the same optimal tour and the arbitrary choice of initial city can bias the
+whole solution generation. In addition, the number of forward passes is tied to the instance size
+$N$, preventing from easily trading inference time for solution quality.
 
 **About heatmap solvers.** Heatmap-based approaches, like DIFUSCO, avoid sequential bias by
 predicting an $N \times N$ edge adjacency matrix. While these methods consider the solution as a
-whole, the heatmap is not a tour. These solvers require a search algorithm (e.g. MCTS) to project
-the heatmap onto the space of Hamiltonian cycles. This creates a gap between what the neural network
+whole, the heatmap is not a tour and they require a search algorithm (e.g. MCTS) to project the
+heatmap onto the space of Hamiltonian cycles. This creates a gap between what the neural network
 optimizes and what the final solver produces. Furthermore, they have to keep the search space
 manageable and often restrict the search within the $k$-nearest neighbor graphs. This introduces a
 manual inductive bias that may exclude the true optimal edges.
@@ -76,11 +76,11 @@ $$
 ## Circular Flow Matching
 
 <figure class="image">
-  <img src="tsp-20_solving.gif" alt="Circular flow matching">
-  <figcaption>Example of a TSP-20 instance being solved using flow matching.</figcaption>
+  <img src="tsp-20_solving.gif" alt="Circular flow matching" width="500">
+  <figcaption>Example of a TSP-20 instance being solved using flow matching. The optimal sequence is visualized using contiguous colors.</figcaption>
 </figure>
 
-We cast the generation of the tour as a Flow Matching problem. The goal is to learn a time-dependent
+We cast the generation of the tour as a flow matching problem. The goal is to learn a time-dependent
 vector field $f_\theta$ that transports a distribution of random initial angles toward the target
 optimal configuration. At $t = 0$, the angles are randomly initialized following the uniform
 distribution $a(0) \sim U[0, 2\pi]^N$. The target state $a(1) = a^*$ are the angles corresponding to
@@ -94,9 +94,8 @@ $$
 
 The optimal solution on the circle is invariant to angular shifts, so it would be inefficient to ask
 for the model to predict a particular angle absolute configuration. Instead, we characterize the
-solution predicted by the model compared to the optimal solution. Precisely, we project the
-predicted state at $t = 1$ and compare the pairwise angular distances between the predicted solution
-and the optimal one:
+generated solution: we project the predicted state at $t = 1$ and compare the pairwise angular
+distances between the predicted solution and the optimal one. Our loss is as follows:
 
 $$
   \mathcal{L_{\text{cycle}}}(\theta) = || D(\hat{a}) - D(a^*) ||_2^2, \quad \hat{a} = a(t) + (1 - t) f_\theta(a(t), t, X)
@@ -117,8 +116,8 @@ coordinates $x_i$ and the current flow timestep $t$ into the dimension of the mo
 $d_\text{model}$.
 
 To properly encode the current state of the solution, we design the model to be invariant to global
-rotations of the circle. To do so, our model must perceive the angles relatively to each other. We
-adapt Rotary Positional Embeddings (RoPE), which encodes the relative distance between discrete
+rotations of the circle. To do so, our model must perceive the angles relatively to each other: we
+adapt Rotary Positional Embeddings (RoPE) which encodes the relative distance between discrete
 positions $m$ and $n$. We instead define the position of a token as its continuous angle $a_i \in
 [0, 2\pi)$. The transformation of the query $q$ and key $k$ vectors is defined as:
 
@@ -149,15 +148,15 @@ $$
   \theta_j = \left\lfloor \text{exp}\left( \text{log}(K_{ \text{max} }) \frac{ j }{N - 1} \right) \right\rceil,
 $$
 
-where $d$ is the embedding dimension and $K_\text{max}$ controls the highest frequency (we use
+where $d$ is the head dimension and $K_\text{max}$ controls the highest frequency (we use
 $K_\text{max} = 5$). By rounding the frequencies to the nearest integer, we ensure that every head
 in the attention mechanism respects the periodic topology of the solution. This makes the entire
 architecture naturally invariant to global rotations of the current input solution.
 
 ## Timestep Sampling and the Refinement Bias
-In standard Flow Matching, the timestep $t$ is typically sampled from a uniform distribution, $t
+In standard flow matching, the timestep $t$ is typically sampled from a uniform distribution, $t
 \sim \mathcal{U}[0, 1]$, ensuring that the model learns to estimate the vector field equally well at
-all stages of the trajectory. However, we observed that for the TSP, the task difficulty is
+all stages of the trajectory. However, we observed that for the TSP the task difficulty is
 non-uniformly distributed across time.
 
 At the beggining of the flow $t \approx 0$, the cities' angles are near-random making the flow
@@ -166,9 +165,8 @@ trying to minimize error in these early stages, at the expense of precision in t
 phase ($t \approx 1$).
 
 To prioritize those refinement steps, we sample timesteps from a **Beta distribution** $t \sim
-\text{Beta}(\alpha, \beta)$. By setting $\alpha = 5$ and $\beta = 1$, the sampling density is
-heavily biased toward $t = 1$, which forces the neural network to focus on the end of the solving
-process.
+\text{Beta}(\alpha, \beta)$. By setting $\alpha = 5$ and $\beta = 1$ the sampling density is heavily
+biased toward $t = 1$, which forces the neural network to focus on the end of the solving process.
 
 ## Experiments
 All instances are randomly generated by sampling points uniformly on the unit square and using
@@ -180,9 +178,9 @@ $$
 $$
 
 **Initial experiment.** We first train three models for three different TSP sizes: 20, 50 and 100.
-Models are trained for 100k iterations with a batch size of 256. They have 700k, 6M and 25M
-parameters for the model TSP-20, TSP-50 and TSP-100 respectively. Once trained, we use the Euler ODE
-solver and specify the number of solver steps.
+Models are trained for 100k iterations with a batch size of 256. Models are similar to BQ-NCO and
+have 3M parameters. Once trained, we use the Euler ODE solver and specify the number of solver
+steps.
 
 | Instance | 1 step  |        | 10 steps |        | 100 steps |        | 1000 steps |        |
 |:---------|:-------:|:------:|:--------:|:------:|:---------:|:------:|:----------:|:------:|
@@ -191,31 +189,30 @@ solver and specify the number of solver steps.
 | TSP-50   | 74.21   | 1.2m   | 3.77     | 1.2m   | 2.97      | 1.4m   | 2.89       | 1.8m   |
 | TSP-100  | 167.21  | 1.1m   | 7.73     | 1.2m   | 5.05      | 1.2m   | 4.83       | 1.8m   |
 
-As expected, increasing the number of steps both increase solution quality and solving time. Flow
-matching naturally handle the tradeoff between computation time and solution quality. We can see for
-example that TSP-50 can reach a pretty good solution in only 10 ODE steps (10 NFEs), but that going
-up to 1000 steps further improve the solution.
+Flow matching naturally handle the tradeoff between computation time and solution quality. We can
+see for example that TSP-50 can reach a pretty good solution in only 10 ODE steps (10 NFEs), but
+that going up to 1000 steps further improve the solution.
 
 **Problem-size Generalization.** In a second example, we train a 25M parameters neural solver on
 training instances of sizes between 128 and 256. The variable training TSP sizes enhance the solver
 ability to generalize to larger instances.
 
-| Model      | TSP-100 |        |TSP-250 |        | TSP-500 |        |
-|:-----------|:-------:|:------:|:------:|:------:|:-------:|:------:|
-|            | _Gap_   | _Time_ | _Gap_  | _Time_ | Gap     | _Time_ |
-| Our (100)  | 5.67    | 1.4m   | 11.01  | 1.8m   | 29.00   | 1.3m   |
-| Our (1000) | 5.28    | 2.4m   | 9.76   | 3.1m   | 27.95   | 3.6m   |
-| BQ-NCO     | 0.31    | 0.6m   | 0.67   | 1.5m   | 1.17    | 3.8m   |
-| INViT-3V   | 4.95    | 1.0m   | 5.92   | 2.8m   | 6.30    | 5.9m   |
+| Model               | TSP-100 |        |TSP-250 |        | TSP-500 |        |
+|:--------------------|:-------:|:------:|:------:|:------:|:-------:|:------:|
+|                     | _Gap_   | _Time_ | _Gap_  | _Time_ | Gap     | _Time_ |
+| Ours *(100 steps)*  | 5.67    | 1.4m   | 11.01  | 1.8m   | 29.00   | 1.3m   |
+| Ours *(1000 steps)* | 5.28    | 2.4m   | 9.76   | 3.1m   | 27.95   | 3.6m   |
+| BQ-NCO              | 0.31    | 0.6m   | 0.67   | 1.5m   | 1.17    | 3.8m   |
+| INViT-3V            | 4.95    | 1.0m   | 5.92   | 2.8m   | 6.30    | 5.9m   |
 
 We report the performance of our neural solver when using 100 and 1000 ODE solver steps. We compare
-against two well-known baselines, BQ-NCO and INViT. Sadly, we can see that our model is not
-competitive with the state-of-the-art.
+against two well-known baselines, BQ-NCO and INViT. As expected, our solutions generated with only
+100 NFEs are much faster to produce, but sadly even with 1000 NFEs our model is not competitive.
 
 **Ablations.** We now evaluate the pertinence of CircularRoPE and our flow matching loss. For
 CircularRoPE, we compare the TSP-100 model against a baseline that does not round the basis $\theta$
 (RoPE) and a third baseline that simply initialize the transformer tokens with their corresponding
-angles.
+angles (Input Features).
 
 <figure class="image">
   <img src="ablations_circular-rope-loss.png" alt="CircularRoPE training dynamic comparison against a RoPE baseline and direct input baseline.">
@@ -234,29 +231,58 @@ U[0, 1]$.
 
 | Model                                  | TSP-100 |
 |:---------------------------------------|:-------:|
-| Baseline                               | 10.45   |
-| + $\mathcal{L}_{\text{cycle}}(\theta)$ |         |
-| + $\text{Beta}(5, 1)$                  | 5.05    |
+| Baseline                               | 8.35    |
+| + $\mathcal{L}_{\text{cycle}}(\theta)$ | 7.42    |
+| + $t \sim \text{Beta}(5, 1)$           | 5.05    |
 
-The original flow loss imposes for the model to predict exactly where the final angles must be. This
-imposes a non-necessary constraint and is also impossible for the model to guess. Adding our
-specific loss improves from $17.36\%$ to $10.00\%$. Finally, biasing the training sampling of $t$ to
-follow the $\text{Beta}(5, 1)$ distribution forces the solver to focus on later stages of the
-solving process and further boost performances to $5\%$.
+The original flow loss imposes a non-necessary constraint where the model has to predict the
+absolute angular positions. Adding our specific loss improves from $8.35\%$ to $7.42\%$. Finally,
+biasing the training sampling of $t$ to follow the $\text{Beta}(5, 1)$ distribution forces the
+solver to focus on later stages of the solving process and further boost performances to $5.05\%$.
 
 ## Analysis
-We experimentally saw a performance ceiling on TSP-100 instances. Even when training larger models
-our performance would not improve. This suggests a deeper issue, maybe linked to our specific
-training procedure. Improvements like our biased sampling and the invariant flow loss greatly helped
-our models (going from 10% to 5% of optimality gap on TSP-100). There might be a similar issue that
-prevent our models from going further.
+We experimentally saw a performance ceiling on TSP-100 instances, even when training larger models.
+This suggests that there is a fondamental issue with our approach.
 
-<figure class="image">
-  <img src="tsp-100_best.gif" alt="Circular flow matching">
-  <figcaption>Good example.</figcaption>
-</figure>
+<div class=figure-container>
+  <figure>
+    <img src="tsp-100_best.gif" alt="Circular flow matching">
+    <figcaption>Good example.</figcaption>
+  </figure>
 
-<figure class="image">
-  <img src="tsp-100_worst.gif" alt="Circular flow matching">
-  <figcaption>Bad example.</figcaption>
-</figure>
+  <figure>
+    <img src="tsp-100_worst.gif" alt="Circular flow matching">
+    <figcaption>Bad example.</figcaption>
+  </figure>
+</div>
+
+<style>
+  .figure-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+  }
+  .figure-container figure {
+    flex: 1 1 300px;
+    margin: 0;
+    max-width: 100%;
+  }
+  .figure-container img {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 8px;
+  }
+</style>
+
+We believe one issue with OT flow matching is that early on trajectory mistakes are costly to
+correct. The transport cost of moving those points to the right region of the circle makes it highly
+unlikely to appear within our optimal transport training dataset. That's why we can see in our bad
+example multiple sets of points that are locally well ordered while being in the wrong global region
+of the circle.
+
+Improvements like our biased sampling and the invariant flow loss helped to go from 8.35% to 5.05%,
+similar ideas might be necessary to make it competitive with other state-of-the-art methods. We hope
+for this post to inspire other researchers to create NCO solvers with the least inductive biases as
+possible.
