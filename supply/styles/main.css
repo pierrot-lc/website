@@ -62,6 +62,8 @@ blockquote {
 
 figcaption {
   text-align: center;
+  font-style: italic;
+  margin-top: 8px;
 }
 
 .article-tags {
