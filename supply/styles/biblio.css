@@ -1,0 +1,18 @@
+#bibliography {
+  padding: 10em 5em 5em 2em;
+}
+
+#bibliography li {
+  margin-bottom: 1em;
+  padding-left: 0.5em;
+  line-height: 1.5;
+}
+
+#bibliography .title {
+  font-weight: bold;
+}
+
+#bibliography .aux {
+  font-style: italic;
+  font-size: 0.9rem;
+}

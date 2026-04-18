@@ -1,8 +1,10 @@
+#include <assert.h>
 #include <libgen.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
+#include "parsers/bibtex.h"
 #include "parsers/markdown.h"
 #include "parsers/yaml.h"
 #include "tree.h"
@@ -14,7 +16,7 @@ int from_markdown(char *markdown_path, char *config_path) {
   char *source;
   char file_path[256];
 
-  Node *yaml, *markdown, *header;
+  Node *yaml, *markdown, *header, *bibliography;
 
   source = read_file(config_path);
   if (source == NULL) {
@@ -50,6 +52,20 @@ int from_markdown(char *markdown_path, char *config_path) {
     free(source);
   }
 
+  if ((bibliography = get_key(markdown, "bibliography")) != NULL) {
+    assert(bibliography->child_count == 1);
+    snprintf(file_path, 256, "%s/%s", dirname(markdown_path),
+             get_value_scalar(bibliography));
+    source = read_file(file_path);
+    if (source == NULL) {
+      fprintf(stderr, "Can't open %s\n", file_path);
+      return -1;
+    }
+    bibliography = parse_bibtex(source);
+    free(source);
+    add_child(markdown, bibliography);
+  }
+
   // Generate the page.
   fprintf(stdout, "<!DOCTYPE html>\n");
   fprintf(stdout, "<html>\n");
@@ -65,6 +81,7 @@ int from_markdown(char *markdown_path, char *config_path) {
   fprintf(stdout, "<main>\n");
   write_page_info(stdout, markdown);
   write_tree(stdout, markdown);
+  write_bibliography(stdout, markdown);
   fprintf(stdout, "</main>\n");
 
   fprintf(stdout, "</body>\n");

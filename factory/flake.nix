@@ -15,6 +15,7 @@
       pkgs = import nixpkgs {inherit system;};
 
       grammars = pkgs.tree-sitter.withPlugins (p: [
+        p.tree-sitter-bibtex
         p.tree-sitter-markdown
         p.tree-sitter-markdown-inline
         p.tree-sitter-yaml

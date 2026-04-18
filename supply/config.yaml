@@ -13,6 +13,7 @@ styles:
   - /styles/main.css
   - /styles/table.css
   - /styles/fonts.css
+  - /styles/biblio.css
 
 scripts:
   - /scripts/katex.min.js

@@ -1,9 +1,12 @@
 #include <assert.h>
+#include <libgen.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
+#include "parsers/bibtex.h"
 #include "parsers/markdown.h"
+#include "parsers/yaml.h"
 #include "tree.h"
 #include "ts_utils.h"
 #include "writers/body.h"
@@ -16,7 +19,7 @@ int main(int argc, char *argv[]) {
   char path[100];
 
   FILE *file;
-  Node *node;
+  Node *node, *bibliography, *key;
 
   if (argc < 3) {
     printf("Usage: %s MD_FILE HTML_FILE\n", argv[0]);
@@ -30,12 +33,23 @@ int main(int argc, char *argv[]) {
   node = parse_markdown(code_1);
   free(code_1);
 
+  if ((key = get_key(node, "bibliography")) != NULL) {
+    assert(key->child_count == 1);
+    sprintf(path, "%s/%s", dirname(argv[1]), get_value_scalar(key));
+    code_1 = read_file(path);
+    assert(code_1 != NULL);
+    bibliography = parse_bibtex(code_1);
+    free(code_1);
+    add_child(node, bibliography);
+  }
+
   // Convert our tree into HTML.
   sprintf(path, "%s.test", argv[2]);
   file = fopen(path, "w");
   assert(file != NULL);
   write_page_info(file, node);
   write_tree(file, node);
+  write_bibliography(file, node);
   fclose(file);
 
   code_1 = read_file(argv[2]);

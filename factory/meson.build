@@ -6,6 +6,7 @@ grammarsdep = dependency('tree-sitter-grammars', method : 'pkg-config')
 incdir = include_directories('include')
 sources = files(
   'src/hash.c',
+  'src/parsers/bibtex.c',
   'src/parsers/markdown.c',
   'src/parsers/markdown_inline.c',
   'src/parsers/yaml.c',
@@ -19,6 +20,7 @@ executable('factory', 'main.c', sources, include_directories : incdir, dependenc
 executable('hash-codes', 'hash_codes.c', 'src/hash.c', include_directories : incdir)
 
 test_body = executable('test-body', 'tests/test_body.c', sources, include_directories : incdir, dependencies : [treesitterdep, grammarsdep])
+test('biblio', test_body, args: ['../tests/body/biblio.md', '../tests/body/biblio.html'])
 test('blockquote', test_body, args: ['../tests/body/blockquote.md', '../tests/body/blockquote.html'])
 test('code-block', test_body, args: ['../tests/body/code_block.md', '../tests/body/code_block.html'])
 test('emph', test_body, args: ['../tests/body/emph.md', '../tests/body/emph.html'])

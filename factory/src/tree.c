@@ -46,15 +46,30 @@ void free_tree(Node *root) {
 
 void _print_node(Node *node, unsigned int offset) {
   for (int i = 0; i < offset; i++)
-    printf(" ");
+    fprintf(stderr, " ");
 
   if (node->content != NULL)
-    printf("%s ", node->content);
+    fprintf(stderr, "%s ", node->content);
 
-  printf("(%u)\n", node->code);
+  fprintf(stderr, "(%u)\n", node->code);
 
   for (int i = 0; i < node->child_count; i++)
     _print_node(node->children[i], offset + 2);
 }
 
 void print_tree(Node *root) { _print_node(root, 0); }
+
+Node *search_node(Node *node, unsigned int hash_code) {
+  Node *found;
+
+  if (node->code == hash_code)
+    return node;
+
+  for (int i = 0; i < node->child_count; i++) {
+    found = search_node(node->children[i], hash_code);
+    if (found != NULL)
+      return found;
+  }
+
+  return NULL;
+}
