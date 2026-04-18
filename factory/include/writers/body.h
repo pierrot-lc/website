@@ -18,6 +18,13 @@ void write_tree(FILE *file, Node *tree);
 void write_page_info(FILE *file, Node *tree);
 
 /**
+ * Write the bibliography marked entries, if any.
+ *
+ * Do not write anything if there's no bibtex document detected.
+ */
+void write_bibliography(FILE *file, Node *tree);
+
+/**
  * Write the header section of the page.
  */
 void write_header(FILE *file, Node *tree);

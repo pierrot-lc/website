@@ -114,7 +114,6 @@ static Node *image(const char *source, TSNode ts_node) {
 static Node *inline_text(const char *source, TSNode ts_node) {
   char *text;
   unsigned int start, end;
-
   Node *node, *child;
   TSNode ts_child;
 
@@ -205,14 +204,26 @@ static Node *latex_block(const char *source, TSNode ts_node) {
 }
 
 static Node *shortcut_link(const char *source, TSNode ts_node) {
-  Node *node, *text;
+  Node *node, *text, *destination;
+  TSNode ts_child;
 
   node = create_node(HASH_LINK, NULL);
+
+  // Entries that start with '@' are expected to be bibliography citations.
+  // They do not have any text associated to the link.
+  if (source[ts_node_start_byte(ts_node) + 1] == '@') {
+    ts_child = ts_node_named_child(ts_node, 0);
+    destination =
+        create_node(HASH_LINK_BIBLIOGRAPHY,
+                    extract_text(source, ts_node_start_byte(ts_child) + 1,
+                                 ts_node_end_byte(ts_child)));
+    add_child(node, destination);
+    return node;
+  }
 
   text = inline_text(source, ts_node_named_child(ts_node, 0));
   text->code = HASH_LINK_TEXT;
   add_child(node, text);
-
   return node;
 }
 

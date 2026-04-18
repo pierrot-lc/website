@@ -4,10 +4,13 @@
 #include <string.h>
 
 #include "hash.h"
+#include "parsers/bibtex.h"
 #include "parsers/markdown.h"
 #include "parsers/yaml.h"
 #include "tree.h"
 #include "writers/body.h"
+
+static void bibliography_cite(FILE *, Node *);
 
 /**
  * Write all children of the given node.
@@ -34,9 +37,9 @@ static void alink(FILE *file, Node *node) {
   for (int i = 0; i < node->child_count; i++) {
     child = node->children[i];
     switch (child->code) {
-    case HASH_LINK_TEXT:
-      text = child;
-      break;
+    case HASH_LINK_BIBLIOGRAPHY:
+      bibliography_cite(file, child);
+      return;
 
     case HASH_LINK_DESTINATION:
       destination = child;
@@ -46,8 +49,12 @@ static void alink(FILE *file, Node *node) {
       destination = search_label_destination(tree_root(node), child->content);
       break;
 
+    case HASH_LINK_TEXT:
+      text = child;
+      break;
+
     default:
-      fprintf(stderr, "[WRITER LINK] Unexpected hash type: %u", child->code);
+      fprintf(stderr, "[WRITER LINK] Unexpected hash type: %u\n", child->code);
       assert(false);
     }
   }
@@ -226,9 +233,6 @@ void write_tree(FILE *file, Node *node) {
     table_cell(file, node);
     break;
 
-  case HASH_PIPE_TABLE_DELIMITER_ROW:
-    break;
-
   case HASH_STRONG_EMPHASIS:
     balise(file, node, "strong");
     break;
@@ -248,10 +252,12 @@ void write_tree(FILE *file, Node *node) {
     write_children(file, node);
     break;
 
+  case HASH_BIBTEX_DOCUMENT:
   case HASH_BLOCK_CONTINUATION:
   case HASH_BLOCK_QUOTE_MARKER:
   case HASH_LINK_REFERENCE_DEFINITION:
   case HASH_MINUS_METADATA:
+  case HASH_PIPE_TABLE_DELIMITER_ROW:
   case HASH_STREAM:
     break;
 
@@ -289,4 +295,84 @@ void write_page_info(FILE *file, Node *tree) {
 
     fprintf(file, "</ul>\n");
   }
+}
+
+static void bibliography_cite(FILE *file, Node *node) {
+  Author *authors;
+  Node *entry, *year;
+
+  entry = search_bibliography_entry(tree_root(node), node->content);
+  if (entry == NULL) {
+    fprintf(stderr, "Missing a bibliography entry: %s\n", node->content);
+    assert(false);
+  }
+  if ((year = get_field(entry, "year")) == NULL) {
+    fprintf(stderr, "'year' not found for bibtex entry %s\n",
+            entry->children[1]->content);
+    assert(false);
+  }
+  authors = parse_authors(entry);
+
+  fprintf(file, "<a href=\"#%s\">", node->content);
+  fprintf(file, "<cite>%s", authors->lastname);
+  if (authors->next != NULL)
+    fprintf(file, " et al.");
+  fprintf(file, ", %s</cite>", year->children[1]->content);
+  fprintf(file, "</a>");
+
+  mark_cited(entry); // To appear at the end of the bibliography.
+}
+
+void bibliography_entry(FILE *file, Node *entry) {
+  Author *authors;
+  Node *key, *title, *year, *aux;
+
+  if ((key = search_node(entry, HASH_KEY_BRACE)) == NULL)
+    assert(false);
+  if ((title = get_field(entry, "title")) == NULL)
+    assert(false);
+  if ((year = get_field(entry, "year")) == NULL)
+    assert(false);
+
+  authors = parse_authors(entry);
+
+  fprintf(file, "<li id=\"%s\">\n", key->content);
+  fprintf(file, "<span class=\"title\">%s</span>\n",
+          title->children[1]->content);
+  fprintf(file, "<br>\n");
+  fprintf(file, "<span class=\"aux\">");
+  while (authors != NULL) {
+    fprintf(file, "%s, %c., ", authors->lastname, authors->firstname[0]);
+    authors = authors->next;
+  }
+  fprintf(file, "%s", year->children[1]->content);
+  if ((aux = get_field(entry, "booktitle")) != NULL)
+    fprintf(file, ", %s", aux->children[1]->content);
+  if ((aux = get_field(entry, "publisher")) != NULL)
+    fprintf(file, ", %s", aux->children[1]->content);
+  if ((aux = get_field(entry, "doi")) != NULL)
+    fprintf(file, ", DOI: %s", aux->children[1]->content);
+  fprintf(file, "</span>\n");
+  fprintf(file, "</li>\n");
+}
+
+void write_bibliography(FILE *file, Node *tree) {
+  Node *entries, *entry, *marked;
+
+  if ((entries = search_node(tree, HASH_BIBTEX_DOCUMENT)) == NULL)
+    return;
+
+  fprintf(file, "\n<section id=\"bibliography\">\n");
+  fprintf(file, "<h2>References</h2>\n");
+  fprintf(file, "<ol>\n");
+  for (int i = 0; i < entries->child_count; i++) {
+    entry = entries->children[i];
+    assert(entry->code == HASH_ENTRY);
+
+    if ((marked = get_field(entry, "cited?")) != NULL &&
+        strcmp(marked->children[1]->content, "yes") == 0)
+      bibliography_entry(file, entry);
+  }
+  fprintf(file, "</ol>\n");
+  fprintf(file, "</section>\n");
 }

@@ -16,5 +16,6 @@ void add_child(Node *parent, Node *child);
 Node *tree_root(Node *);
 void free_tree(Node *);
 void print_tree(Node *);
+Node *search_node(Node *, unsigned int);
 
 #endif

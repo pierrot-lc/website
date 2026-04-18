@@ -4,7 +4,7 @@
 
 #include "hash.h"
 
-#define TOTAL_TYPES 65
+#define TOTAL_TYPES 72
 
 int main() {
 
@@ -15,6 +15,7 @@ int main() {
       "atx_h4_marker",
       "atx_heading",
       "backslash_escape",
+      "bibtex_document",
       "block_continuation",
       "block_mapping",
       "block_mapping_pair",
@@ -32,21 +33,27 @@ int main() {
       "emphasis",
       "emphasis_delimiter",
       "entity_reference",
+      "entry",
+      "entry_type",
       "fenced_code_block",
+      "field",
       "full_reference_link",
       "heading_content",
       "html_block",
+      "identifier",
       "image",
       "image_description",
       "inline",
       "inline_link",
       "key",
+      "key_brace",
       "language",
       "latex_block",
       "latex_display",
       "latex_inline",
       "latex_span_delimiter",
       "link",
+      "link_bibliography",
       "link_destination",
       "link_label",
       "link_reference_definition",
