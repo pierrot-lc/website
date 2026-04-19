@@ -106,8 +106,9 @@
         buildPhase = ''
           # List the different articles into a dedicated page.
           ${library_pkg}/bin/listing --directory ./posts --out ./posts.md
-          ${library_pkg}/bin/listing --directory ./phd-journal --out ./journal.md
           ${library_pkg}/bin/listing --directory ./paper-reviews --out ./reviews.md
+          ${library_pkg}/bin/listing --directory ./phd-journal --out ./journal.md
+          ${library_pkg}/bin/listing --directory ./recettes --out ./recettes.md
 
           # Merge posts and paper reviews.
           echo "## Posts" > ./combined.md

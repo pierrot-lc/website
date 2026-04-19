@@ -13,6 +13,7 @@ pub fn handle_default_static(
     "/journal" -> request.set_path(req, "/journal.html")
     "/papers" -> request.set_path(req, "/papers.html")
     "/posts" -> request.set_path(req, "/combined.html")
+    "/recettes" -> request.set_path(req, "/recettes.html")
     "/reviews" -> request.set_path(req, "/reviews.html")
     _ -> req
   }
