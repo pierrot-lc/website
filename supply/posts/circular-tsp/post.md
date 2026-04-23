@@ -6,36 +6,38 @@ tags:
   - TSP & NCO
 
 illustration: solution-example.png
+bibliography: biblio.bib
 ---
 
-Neural Combinatorial Optimization (NCO) aims to simplify the design of combinatorial optimization
+Neural Combinatorial Optimization (NCO) aims to improve the design of combinatorial optimization
 solvers by leveraging neural networks. It's an exciting area of research because learning-driven
 heuristics have the potential to outperform manually designed ones. In this post, we focus on the
-Traveling Salesman Problem (TSP), one of the most famous NCO problem, and propose to **encode the
+Traveling Salesman Problem (TSP), one of the most famous NCO problems, and propose to **encode the
 solution onto a circle**. Our motivation is to provide a flexible and straightforward way to
-represent the solution. As example, we use **flow matching** to generate the solutions by "sliding"
-the points on the circle. We also introduce **CircularRoPE**, a simple modification to Rotary
-Positional Embedding that ensures our neural solver remains invariant to circle's rotation. While
-our results are not on par with the state-of-the-art, we hope this post will motivate future similar
-research directions.
+represent the solution. As an example, we use **flow matching** to generate the solutions by
+"sliding" the points on the circle. We also introduce **CircularRoPE**, a simple modification to
+Rotary Positional Embedding that ensures our neural solver remains invariant to circle's rotation.
+While our results are not on par with the state-of-the-art, we hope this post will motivate future
+similar research directions.
 
 ## Motivation
 Most NCO solvers fall into two categories: autoregressive and heatmap-based solvers.
 
-**About autoregressive solvers.** State-of-the-art solvers like BQ-NCO or INViT treat the TSP
-solution as a sequence prediction. Starting from an initial city, the solver is repeatedly called to
-select the next city to visit. This starting point forces the model to learn that many different
-sequences represent the same optimal tour and the arbitrary choice of initial city can bias the
-whole solution generation. In addition, the number of forward passes is tied to the instance size
-$N$, preventing from easily trading inference time for solution quality.
+**About autoregressive solvers.** State-of-the-art solvers like BQ-NCO ([@Drakulic2023]) or INViT
+([@Fang2024]) treat the TSP solution as a sequence prediction. Starting from an initial city, the
+solver is repeatedly called to select the next city to visit. By fixing a starting city, the model
+must redundantly learn that all cyclic shifts of the same optimal tour are equivalent. This initial
+arbitrary choice can introduce a search bias propagated during the whole solution generation.
+Finally, the number of forward passes is tied to the instance size $N$, preventing from easily
+trading inference time for solution quality.
 
-**About heatmap solvers.** Heatmap-based approaches, like DIFUSCO, avoid sequential bias by
-predicting an $N \times N$ edge adjacency matrix. While these methods consider the solution as a
-whole, the heatmap is not a tour and they require a search algorithm (e.g. MCTS) to project the
+**About heatmap solvers.** Heatmap-based approaches, like DIFUSCO ([@Sun2023]), avoid the sequential
+bias by predicting an $N \times N$ edge adjacency matrix. While these methods consider the solution
+as a whole, the heatmap is not a tour and they require a search algorithm (e.g. MCTS) to project the
 heatmap onto the space of Hamiltonian cycles. This creates a gap between what the neural network
-optimizes and what the final solver produces. Furthermore, they have to keep the search space
-manageable and often restrict the search within the $k$-nearest neighbor graphs. This introduces a
-manual inductive bias that may exclude the true optimal edges.
+optimizes and the discrete tour that the solver produces. Furthermore, they have to keep the search
+space tractable and often restrict search within the $k$-nearest neighbor graph, a heuristic that
+may exclude optimal edges.
 
 Ideally, only a strict minimum set of inductive biases are embedded within the solver and the rest
 should be handled by the neural network. We argue that a solver should embed the cyclic nature of
@@ -61,7 +63,7 @@ $$
   \sum_{i = 1}^{N - 1} ||x_{p_i} - x_{p_{i+1}}||_2 + ||x_{p_N} - x_{p_1}||_2.
 $$
 
-**We consider the cyclic nature of the solution and places the cities onto the unit circle.** Each
+**We consider the cyclic nature of the solution and place the cities onto the unit circle.** Each
 city $i$ is assigned to an angular coordinate $a_i \in [0, 2\pi)$. The set of all angles $a = (a_1,
 \dots, a_N)$ implicitly defines a tour: the sequence is recovered by sorting cities according to
 their angular positions.
@@ -70,7 +72,7 @@ To train our models, we must map an optimal permutation $p^*$ to a target angula
 distribute the cities in the optimal tour uniformly along the circle:
 
 $$
-  a_{p_i^*} = \frac{2 \pi i}{N} \quad \forall i \in \{1, \dots, N\}.
+  a_{p_i^*} = a_i^* = \frac{2 \pi i}{N} \quad \forall i \in \{1, \dots, N\}.
 $$
 
 ## Circular Flow Matching
@@ -80,22 +82,23 @@ $$
   <figcaption>Example of a TSP-20 instance being solved using flow matching. The optimal sequence is visualized using contiguous colors.</figcaption>
 </figure>
 
-We cast the generation of the tour as a flow matching problem. The goal is to learn a time-dependent
-vector field $f_\theta$ that transports a distribution of random initial angles toward the target
-optimal configuration. At $t = 0$, the angles are randomly initialized following the uniform
-distribution $a(0) \sim U[0, 2\pi]^N$. The target state $a(1) = a^*$ are the angles corresponding to
-the optimal tour. Using the optimal transport formulation, the flow is defined as the shortest path
-between $a(0)$ and $a(1)$. The neural network is involved in the Ordinary Differential Equation
-(ODE)
+We cast the generation of the tour as a flow matching problem. We assume some familiarity with the
+method, a thorough introduction to general flow matching can be found in [@Holderrieth2026]. The
+goal is to learn a time-dependent vector field $f_\theta$ that transports a distribution of random
+initial angles toward the target optimal configuration. At $t = 0$, the angles are randomly
+initialized following the uniform distribution $a(0) \sim U[0, 2\pi]^N$. The target state $a(1) =
+a^*$ are the angles corresponding to the optimal tour. Using the optimal transport formulation, the
+flow is defined as the shortest path between $a(0)$ and $a(1)$, thus the neural network is involved
+in the Ordinary Differential Equation (ODE)
 
 $$
   \frac{da(t)}{dt} = f_\theta(a(t), t, X).
 $$
 
-The optimal solution on the circle is invariant to angular shifts, so it would be inefficient to ask
-for the model to predict a particular angle absolute configuration. Instead, we characterize the
-generated solution: we project the predicted state at $t = 1$ and compare the pairwise angular
-distances between the predicted solution and the optimal one. Our loss is as follows:
+The optimal solution on the circle is invariant to global rotations, so it would be inefficient to
+ask for the model to predict a particular angle position. Instead, we characterize the generated
+solution: we compute a one-step estimate of the solution, $\hat{a}$, and compare the pairwise
+angular distances between $\hat{a}$ and that of the optimal tour $a^*$. Our loss is as follows:
 
 $$
   \mathcal{L_{\text{cycle}}}(\theta) = || D(\hat{a}) - D(a^*) ||_2^2, \quad \hat{a} = a(t) + (1 - t) f_\theta(a(t), t, X)
@@ -104,7 +107,10 @@ $$
 where $D \in \mathbb{R}^{N \times N \times 2}$ is the matrix of pairwise signed distances:
 
 $$
-D(a)_{i, j} = (\text{cos}(a_i) - \text{cos}(a_j), \text{sin}(a_i) - \text{sin}(a_j)).
+  D(\hat{a})_{i, j} = \begin{pmatrix}
+    \cos \hat{a}_i - \cos \hat{a}_j \\
+    \sin \hat{a}_i - \sin \hat{a}_j
+  \end{pmatrix}.
 $$
 
 This loss is rotationally invariant.
@@ -117,13 +123,24 @@ $d_\text{model}$.
 
 To properly encode the current state of the solution, we design the model to be invariant to global
 rotations of the circle. To do so, our model must perceive the angles relatively to each other: we
-adapt Rotary Positional Embeddings (RoPE) which encodes the relative distance between discrete
-positions $m$ and $n$. We instead define the position of a token as its continuous angle $a_i \in
-[0, 2\pi)$. The transformation of the query $q$ and key $k$ vectors is defined as:
+adapt Rotary Positional Embeddings (RoPE, [@Su2021]) which encodes the relative distance between
+discrete positions $m$ and $n$. We instead define the position of a token as its continuous angle
+$a_i \in [0, 2\pi)$. The transformation of the query $q$ and key $k$ vectors is defined as:
 
 $$
-  \hat{q} = \text{RoPE}(q, a) = \text{Re}[q e^{i a \theta}], \quad
-  \hat{k} = \text{RoPE}(k, a) = \text{Re}[k e^{i a \theta}]
+  \text{RoPE}(q, a) = \begin{pmatrix}
+    \cos a \theta_1 & -\sin a \theta_1 & 0               & 0                & \dots \\
+    \sin a \theta_1 & \cos a \theta_1  & 0               & 0                & \dots \\
+    0               & 0                & \cos a \theta_2 & -\sin a \theta_2 & \dots \\
+    0               & 0                & \sin a \theta_2 & \cos a \theta_2  & \dots \\
+    \vdots          & \vdots           & \vdots          & \vdots           & \ddots
+  \end{pmatrix} \begin{pmatrix}
+    q_1 \\
+    q_2 \\
+    q_3 \\
+    q_4 \\
+    \vdots
+  \end{pmatrix} = \hat{q}
 $$
 
 The resulting attention score is proportional to the cosine of the angular difference:
@@ -145,7 +162,7 @@ introduce **CircularRoPE**. We define a set of integer frequencies $(\theta_j)_{
 follows:
 
 $$
-  \theta_j = \left\lfloor \text{exp}\left( \text{log}(K_{ \text{max} }) \frac{ j }{N - 1} \right) \right\rceil,
+  \theta_j = \left\lfloor K_{ \text{max} }^{ \frac{2 j}{d} } \right\rceil,
 $$
 
 where $d$ is the head dimension and $K_\text{max}$ controls the highest frequency (we use
@@ -159,7 +176,7 @@ In standard flow matching, the timestep $t$ is typically sampled from a uniform 
 all stages of the trajectory. However, we observed that for the TSP the task difficulty is
 non-uniformly distributed across time.
 
-At the beggining of the flow $t \approx 0$, the cities' angles are near-random making the flow
+At the beginning of the flow $t \approx 0$, the cities' angles are near-random making the flow
 prediction much harder. When trained with uniform sampling, the model tends to exhaust its capacity
 trying to minimize error in these early stages, at the expense of precision in the final refinement
 phase ($t \approx 1$).
@@ -170,12 +187,14 @@ biased toward $t = 1$, which forces the neural network to focus on the end of th
 
 ## Experiments
 All instances are randomly generated by sampling points uniformly on the unit square and using
-`Concorde` to generate optimal solutions. Training datasets contains 1M random instances.
-Performance is measured with the optimality gap
+`Concorde` ([@Applegate2006]) to generate optimal solutions. Training datasets contains 1M random
+instances. Performance is measured with the optimality gap
 
 $$
   \text{gap}(\%) = 100 * \frac{\text{cost}_{\text{pred}}}{\text{cost}_{\text{opt}}}.
 $$
+
+We report the total inference time in minutes for the entire 128 test instances of each category.
 
 **Initial experiment.** We first train three models for three different TSP sizes: 20, 50 and 100.
 Models are trained for 100k iterations with a batch size of 256. Models are similar to BQ-NCO and
@@ -206,8 +225,9 @@ ability to generalize to larger instances.
 | INViT-3V            | 4.95    | 1.0m   | 5.92   | 2.8m   | 6.30    | 5.9m   |
 
 We report the performance of our neural solver when using 100 and 1000 ODE solver steps. We compare
-against two well-known baselines, BQ-NCO and INViT. As expected, our solutions generated with only
-100 NFEs are much faster to produce, but sadly even with 1000 NFEs our model is not competitive.
+against two well-known baselines, BQ-NCO ([@Drakulic2023]) and INViT ([@Fang2024]). As expected, our
+solutions generated with only 100 NFEs are much faster to produce, but sadly even with 1000 NFEs our
+model is not competitive.
 
 **Ablations.** We now evaluate the pertinence of CircularRoPE and our flow matching loss. For
 CircularRoPE, we compare the TSP-100 model against a baseline that does not round the basis $\theta$
@@ -220,9 +240,9 @@ angles (Input Features).
 </figure>
 
 We can see that CircularRoPE and RoPE are slightly faster to train compared to the third baseline,
-but all of them plateau at the same spot. It appears that CircularRoPE do not bring much difference
-against the classical RoPE, probably because RoPE is already almost circular invariant (up to some
-rounding error).
+but all of them plateau at the same spot. It appears that CircularRoPE do not make much of a
+difference against the classical RoPE, probably because RoPE is already almost circular invariant
+(up to some rounding error).
 
 We now evaluate our circular invariant flow loss. We compare against the usual flow matching loss:
 $\mathcal{L}(\theta) = || f_\theta(a(t), t, X) - \text{flow}(a(0), a(1)) ||_2$. We also validate the
@@ -242,17 +262,17 @@ solver to focus on later stages of the solving process and further boost perform
 
 ## Analysis
 We experimentally saw a performance ceiling on TSP-100 instances, even when training larger models.
-This suggests that there is a fondamental issue with our approach.
+This suggests that there is a fundamental issue with our approach.
 
 <div class=figure-container>
   <figure>
     <img src="tsp-100_best.gif" alt="Circular flow matching">
-    <figcaption>Good example.</figcaption>
+    <figcaption>Good TSP-100 example.</figcaption>
   </figure>
 
   <figure>
     <img src="tsp-100_worst.gif" alt="Circular flow matching">
-    <figcaption>Bad example.</figcaption>
+    <figcaption>Bad TSP-100 example.</figcaption>
   </figure>
 </div>
 
@@ -276,13 +296,24 @@ This suggests that there is a fondamental issue with our approach.
   }
 </style>
 
-We believe one issue with OT flow matching is that early on trajectory mistakes are costly to
-correct. The transport cost of moving those points to the right region of the circle makes it highly
-unlikely to appear within our optimal transport training dataset. That's why we can see in our bad
-example multiple sets of points that are locally well ordered while being in the wrong global region
-of the circle.
+We hypothesize that OT flow matching suffers from a **high-cost correction problem**: early
+trajectory mistakes are difficult to rectify because the transport cost of moving those points to
+the correct region of the circle is too high to be well-represented in our optimal transport
+training data. This may explain why we observe points that are locally well-ordered but trapped in
+the wrong global region of the circle.
 
-Improvements like our biased sampling and the invariant flow loss helped to go from 8.35% to 5.05%,
-similar ideas might be necessary to make it competitive with other state-of-the-art methods. We hope
-for this post to inspire other researchers to create NCO solvers with the least inductive biases as
-possible.
+Another possibility is that continuous models are prone to **mode-averaging**. Unlike discrete
+models that can output a multimodal probability distribution over cities, our models must predict a
+single scalar position. For example, if a model is uncertain between two valid positions, the MSE
+loss encourages it to predict the mean, which would result in a degenerate solution. In contrast, a
+discrete model would maintain both modes, allowing for a valid choice during decoding. A potential
+solution could be to project the tour into a latent space using a VAE ([@Kingma2013]) and perform
+flow matching there where it is easier to express competing possibilities in a higher-dimensional
+manifold.
+
+Finally, improvements like our biased sampling and the invariant flow loss helped to go from 8.35%
+to 5.05%, similar ideas might be necessary to make it competitive with other state-of-the-art
+methods.
+
+We hope for this post to inspire other researchers to create NCO solvers with the least inductive
+biases as possible.
