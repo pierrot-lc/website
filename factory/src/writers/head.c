@@ -11,8 +11,11 @@
  *
  * See https://developer.mozilla.org/en-US/docs/Web/HTML/Element/meta/name.
  */
-static void meta(FILE *file, char *name, char *content) {
+static void meta_name(FILE *file, char *name, char *content) {
   fprintf(file, "<meta name=\"%s\" content=\"%s\">\n", name, content);
+}
+static void meta_property(FILE *file, char *name, char *content) {
+  fprintf(file, "<meta property=\"%s\" content=\"%s\">\n", name, content);
 }
 
 static void commons_meta(FILE *file, Node *node) {
@@ -33,26 +36,19 @@ static void commons_meta(FILE *file, Node *node) {
     fprintf(file, "<title>%s</title>\n", get_value_scalar(title));
 
   if (author != NULL)
-    meta(file, "author", get_value_scalar(author));
+    meta_name(file, "author", get_value_scalar(author));
   if (description != NULL)
-    meta(file, "description", get_value_scalar(description));
+    meta_name(file, "description", get_value_scalar(description));
 
   if (title != NULL)
-    meta(file, "og:title", get_value_scalar(title));
+    meta_property(file, "og:title", get_value_scalar(title));
   if (description != NULL)
-    meta(file, "og:description", get_value_scalar(description));
+    meta_property(file, "og:description", get_value_scalar(description));
   if (illustration != NULL)
-    meta(file, "og:image", get_value_scalar(illustration));
-
-  if (title != NULL)
-    meta(file, "twitter:title", get_value_scalar(title));
-  if (description != NULL)
-    meta(file, "twitter:description", get_value_scalar(description));
-  if (illustration != NULL)
-    meta(file, "twitter:image", get_value_scalar(illustration));
+    meta_property(file, "og:image", get_value_scalar(illustration));
 
   if (date != NULL)
-    meta(file, "published-date", get_value_scalar(date));
+    meta_name(file, "published-date", get_value_scalar(date));
 
   if (favicon != NULL)
     fprintf(file, "<link rel=\"icon\" href=\"%s\" type=\"image/x-icon\">\n",
