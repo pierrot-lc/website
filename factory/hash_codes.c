@@ -4,7 +4,7 @@
 
 #include "hash.h"
 
-#define TOTAL_TYPES 72
+#define TOTAL_TYPES 74
 
 int main() {
 
@@ -28,6 +28,7 @@ int main() {
       "code_span",
       "code_span_delimiter",
       "collapsed_reference_link",
+      "comment",
       "document",
       "double_quote_scalar",
       "emphasis",
@@ -45,6 +46,7 @@ int main() {
       "image_description",
       "inline",
       "inline_link",
+      "junk",
       "key",
       "key_brace",
       "language",
