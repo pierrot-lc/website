@@ -87,6 +87,10 @@ static Node *next_node(const char *source, TSNode ts_node) {
     children(node, source, ts_node);
     break;
 
+  case HASH_COMMENT:
+  case HASH_JUNK:
+    break;
+
   default:
     fprintf(stderr, "[BIBTEX] Unknown node: %s (%u)\n", ts_node_type(ts_node),
             hash(ts_node_type(ts_node)));
