@@ -1,23 +1,23 @@
 ---
-title: Cookies Sablés
+title: Cookies sablés
 date: 2026
 tags:
   - "Préparation: 15 min"
   - "Cuisson: 10 min"
-  - "Difficulté: facile"
 ---
 
 Des cookies à la fois sablés et sablonneux!!
 
 ## Ingrédients
-Pour **18 portions**:
-- 100g beurre mou (possibilité de mélanger 50/50 beurre doux et beurre salé)
-- 60g sucre roux
+Pour **6 belles bêtes**:
+- 100g beurre mou
+- 25g sucre blanc
+- 25g sucre roux
 - 10g sucre vanillé
 - 1 oeuf
 - 160g farine T15
 - 2g levure chimique
-- 150g chocolat en pépites (noir & lait)
+- 150g chocolat en pépites & chunks (noir & lait)
 
 ## Instructions
 1. Préchauffer le four à 180.
