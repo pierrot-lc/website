@@ -131,15 +131,65 @@ static void list(FILE *file, Node *node) {
   fprintf(file, "</ul>\n");
 }
 
+static bool is_cell_empty(Node *cell) {
+  assert(cell->code == HASH_PIPE_TABLE_CELL);
+  const char *empty_cell = "&nbsp;";
+
+  // Safely access the content of an inner child.
+  if (cell->children[0]->code != HASH_INLINE ||
+      cell->children[0]->child_count < 2 ||
+      cell->children[0]->children[1]->code != HASH_INLINE ||
+      cell->children[0]->children[1]->child_count != 1 ||
+      cell->children[0]->children[1]->children[0]->code != HASH_TEXT)
+    return false;
+
+  return strcmp(cell->children[0]->children[1]->children[0]->data.content,
+                empty_cell) == 0;
+}
+
+/**
+ * Returns the number of cells that is spanning this column header. It spans
+ * every empty cells on its right, under the condition that it is not itself an
+ * empty cell.
+ *
+ * Returns 0 for cells that should be skipped (padding).
+ */
+static unsigned int column_span(Table *table, int column) {
+  unsigned int col_span = 1;
+
+  if (is_cell_empty(table->columns[column]->cell)) {
+    // A cell should be ignored only if it has a preceding non-empty cell.
+    for (int j = 0; j < column; j++)
+      if (!is_cell_empty(table->columns[j]->cell))
+        return 0;
+
+    return 1;
+  }
+
+  for (int j = column + 1; j < table->ncols; j++) {
+    if (is_cell_empty(table->columns[j]->cell))
+      col_span += 1;
+    else
+      break;
+  }
+
+  return col_span;
+}
+
 static void table(FILE *file, Node *node) {
   assert(node->code == HASH_PIPE_TABLE);
   Table *table = node->data.table;
+  unsigned int col_span;
 
   fprintf(file, "<table>\n");
   fprintf(file, "<thead>\n");
   fprintf(file, "<tr>\n");
   for (int j = 0; j < table->ncols; j++) {
-    fprintf(file, "<th scope=\"col\" class=\"align-%s\">",
+    col_span = column_span(table, j);
+    if (col_span == 0)
+      continue;
+
+    fprintf(file, "<th scope=\"col\" colspan=\"%u\" class=\"align-%s\">", col_span,
             table->columns[j]->alignment);
     write_children(file, table->columns[j]->cell);
     fprintf(file, "</th>\n");

@@ -5,7 +5,12 @@ Here is a table:
 |:---------|:---:|---------:|---------|
 | BQ-NCO   | 100 | $0.33\%$ | AR Model|
 
-| *Model*  |   | Opt-Gap  | Comment |
+| *Model*  |   | | Comment |
+|:---------|:---:|---------:|---------|
+| BQ-NCO   | 100 \| 200 | $0.33\%$ | AR Model|
+| Hello   | You | _how are you_ | chanch is the best|
+
+|  | *Model*  | Opt-Gap  | Comment |
 |:---------|:---:|---------:|---------|
 | BQ-NCO   | 100 \| 200 | $0.33\%$ | AR Model|
 | Hello   | You | _how are you_ | chanch is the best|
