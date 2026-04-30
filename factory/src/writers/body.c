@@ -307,6 +307,7 @@ static void bibliography_cite(FILE *file, Node *node) {
   fprintf(file, "</a>");
 
   mark_cited(entry); // To appear at the end of the bibliography.
+  free_authors(authors);
 }
 
 void bibliography_entry(FILE *file, Node *entry) {
@@ -340,6 +341,8 @@ void bibliography_entry(FILE *file, Node *entry) {
     fprintf(file, ", DOI: %s", aux->children[1]->data.content);
   fprintf(file, "</span>\n");
   fprintf(file, "</li>\n");
+
+  free_authors(authors);
 }
 
 void write_bibliography(FILE *file, Node *tree) {

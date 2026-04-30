@@ -25,6 +25,7 @@ Node *get_field(Node *, char *);
  * Parse the list of authors of a bibtex entry.
  */
 Author *parse_authors(Node *);
+void free_authors(Author *);
 
 /**
  * Mark the corresponding entry as cited by adding a dedicated field in the

@@ -170,6 +170,15 @@ Author *parse_authors(Node *entry) {
   return list;
 }
 
+void free_authors(Author *authors) {
+  Author *next;
+  while (authors != NULL) {
+    next = authors->next;
+    free(authors);
+    authors = next;
+  }
+}
+
 void mark_cited(Node *entry) {
   Node *node, *name, *value;
 
