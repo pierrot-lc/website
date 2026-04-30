@@ -46,7 +46,8 @@ static void alink(FILE *file, Node *node) {
       break;
 
     case HASH_LINK_LABEL:
-      destination = search_label_destination(tree_root(node), child->content);
+      destination =
+          search_label_destination(tree_root(node), child->data.content);
       break;
 
     case HASH_LINK_TEXT:
@@ -60,7 +61,7 @@ static void alink(FILE *file, Node *node) {
   }
 
   if (destination != NULL)
-    fprintf(file, "<a href=\"%s\">", destination->content);
+    fprintf(file, "<a href=\"%s\">", destination->data.content);
   else
     fprintf(file, "<a>");
 
@@ -71,11 +72,11 @@ static void alink(FILE *file, Node *node) {
 }
 
 static void code_block(FILE *file, Node *node) {
-  if (node->content != NULL)
-    fprintf(file, "<pre><code class=\"language-%s\">", node->content);
+  if (node->data.content != NULL)
+    fprintf(file, "<pre><code class=\"language-%s\">", node->data.content);
   else
     fprintf(file, "<pre><code>");
-  fprintf(file, "%s", node->children[0]->content);
+  fprintf(file, "%s", node->children[0]->data.content);
   fprintf(file, "</code></pre>\n");
 }
 
@@ -96,7 +97,7 @@ static void image(FILE *file, Node *node) {
       break;
 
     case HASH_LINK_LABEL:
-      link = search_label_destination(tree_root(node), child->content);
+      link = search_label_destination(tree_root(node), child->data.content);
       break;
     }
   }
@@ -104,16 +105,18 @@ static void image(FILE *file, Node *node) {
   assert(link != NULL);
 
   if (desc != NULL)
-    fprintf(file, "<img src=\"%s\" alt=\"%s\">", link->content, desc->content);
+    fprintf(file, "<img src=\"%s\" alt=\"%s\">", link->data.content,
+            desc->data.content);
   else
-    fprintf(file, "<img src=\"%s\">", link->content);
+    fprintf(file, "<img src=\"%s\">", link->data.content);
 }
 
 static void latex(FILE *file, Node *node) {
   if (node->code == HASH_LATEX_DISPLAY)
-    fprintf(file, "<span class=\"latex-display\">%s</span>", node->content);
+    fprintf(file, "<span class=\"latex-display\">%s</span>",
+            node->data.content);
   else if (node->code == HASH_LATEX_INLINE)
-    fprintf(file, "<span class=\"latex-inline\">%s</span>", node->content);
+    fprintf(file, "<span class=\"latex-inline\">%s</span>", node->data.content);
   else {
     assert(false);
   }
@@ -129,52 +132,39 @@ static void list(FILE *file, Node *node) {
 }
 
 static void table(FILE *file, Node *node) {
+  assert(node->code == HASH_PIPE_TABLE);
+  Table *table = node->data.table;
+
   fprintf(file, "<table>\n");
-  assert(node->child_count >= 1); // Header.
   fprintf(file, "<thead>\n");
   fprintf(file, "<tr>\n");
-  write_children(file, node->children[0]);
+  for (int j = 0; j < table->ncols; j++) {
+    fprintf(file, "<th scope=\"col\" class=\"align-%s\">",
+            table->columns[j]->alignment);
+    write_children(file, table->columns[j]->cell);
+    fprintf(file, "</th>\n");
+  }
   fprintf(file, "</tr>\n");
   fprintf(file, "</thead>\n");
+
   fprintf(file, "<tbody>\n");
-  for (int i = 1; i < node->child_count; i++) {
+  for (int i = 0; i < table->nrows; i++) {
     fprintf(file, "<tr>\n");
-    write_children(file, node->children[i]);
+    for (int j = 0; j < table->ncols; j++) {
+      fprintf(file, "<td class=\"align-%s\">", table->columns[j]->alignment);
+      write_children(file, table->cells[i][j]);
+      fprintf(file, "</td>\n");
+    }
     fprintf(file, "</tr>\n");
   }
   fprintf(file, "</tbody>\n");
   fprintf(file, "</table>\n");
 }
 
-static void table_cell(FILE *file, Node *node) {
-  char *alignment = node->content;
-  assert(alignment != NULL);
-
-  const char *type;
-  const char *scope;
-
-  switch (node->code) {
-  case HASH_PIPE_TABLE_CELL:
-    type = "td";
-    scope = "";
-    break;
-  case HASH_PIPE_TABLE_HEADER:
-    type = "th";
-    scope = "scope=\"col\"";
-    break;
-  default:
-    assert(false);
-  }
-
-  fprintf(file, "<%s %s class=\"align-%s\">", type, scope, alignment);
-  write_children(file, node);
-  fprintf(file, "</%s>\n", type);
-}
-
 void write_tree(FILE *file, Node *node) {
   switch (node->code) {
   case HASH_ATX_HEADING:
-    balise(file, node, node->content);
+    balise(file, node, node->data.content);
     fprintf(file, "\n");
     break;
 
@@ -228,11 +218,6 @@ void write_tree(FILE *file, Node *node) {
     fprintf(file, "</tr>\n");
     break;
 
-  case HASH_PIPE_TABLE_CELL:
-  case HASH_PIPE_TABLE_HEADER:
-    table_cell(file, node);
-    break;
-
   case HASH_STRONG_EMPHASIS:
     balise(file, node, "strong");
     break;
@@ -243,7 +228,7 @@ void write_tree(FILE *file, Node *node) {
 
   case HASH_HTML_BLOCK:
   case HASH_TEXT:
-    fprintf(file, "%s", node->content);
+    fprintf(file, "%s", node->data.content);
     break;
 
   case HASH_DOCUMENT:
@@ -290,7 +275,8 @@ void write_page_info(FILE *file, Node *tree) {
       for (int i = 0; i < tags->child_count; i++) {
         assert(tags->children[i]->code == HASH_BLOCK_SEQUENCE_ITEM);
         assert(tags->children[i]->children[0] != NULL);
-        fprintf(file, "<li>%s</li>\n", tags->children[i]->children[0]->content);
+        fprintf(file, "<li>%s</li>\n",
+                tags->children[i]->children[0]->data.content);
       }
 
     fprintf(file, "</ul>\n");
@@ -301,23 +287,23 @@ static void bibliography_cite(FILE *file, Node *node) {
   Author *authors;
   Node *entry, *year;
 
-  entry = search_bibliography_entry(tree_root(node), node->content);
+  entry = search_bibliography_entry(tree_root(node), node->data.content);
   if (entry == NULL) {
-    fprintf(stderr, "Missing a bibliography entry: %s\n", node->content);
+    fprintf(stderr, "Missing a bibliography entry: %s\n", node->data.content);
     assert(false);
   }
   if ((year = get_field(entry, "year")) == NULL) {
     fprintf(stderr, "'year' not found for bibtex entry %s\n",
-            entry->children[1]->content);
+            entry->children[1]->data.content);
     assert(false);
   }
   authors = parse_authors(entry);
 
-  fprintf(file, "<a href=\"#%s\">", node->content);
+  fprintf(file, "<a href=\"#%s\">", node->data.content);
   fprintf(file, "<cite>%s", authors->lastname);
   if (authors->next != NULL)
     fprintf(file, " et al.");
-  fprintf(file, ", %s</cite>", year->children[1]->content);
+  fprintf(file, ", %s</cite>", year->children[1]->data.content);
   fprintf(file, "</a>");
 
   mark_cited(entry); // To appear at the end of the bibliography.
@@ -336,22 +322,22 @@ void bibliography_entry(FILE *file, Node *entry) {
 
   authors = parse_authors(entry);
 
-  fprintf(file, "<li id=\"%s\">\n", key->content);
+  fprintf(file, "<li id=\"%s\">\n", key->data.content);
   fprintf(file, "<span class=\"title\">%s</span>\n",
-          title->children[1]->content);
+          title->children[1]->data.content);
   fprintf(file, "<br>\n");
   fprintf(file, "<span class=\"aux\">");
   while (authors != NULL) {
     fprintf(file, "%s, %c., ", authors->lastname, authors->firstname[0]);
     authors = authors->next;
   }
-  fprintf(file, "%s", year->children[1]->content);
+  fprintf(file, "%s", year->children[1]->data.content);
   if ((aux = get_field(entry, "booktitle")) != NULL)
-    fprintf(file, ", %s", aux->children[1]->content);
+    fprintf(file, ", %s", aux->children[1]->data.content);
   if ((aux = get_field(entry, "publisher")) != NULL)
-    fprintf(file, ", %s", aux->children[1]->content);
+    fprintf(file, ", %s", aux->children[1]->data.content);
   if ((aux = get_field(entry, "doi")) != NULL)
-    fprintf(file, ", DOI: %s", aux->children[1]->content);
+    fprintf(file, ", DOI: %s", aux->children[1]->data.content);
   fprintf(file, "</span>\n");
   fprintf(file, "</li>\n");
 }
@@ -370,7 +356,7 @@ void write_bibliography(FILE *file, Node *tree) {
     assert(entry->code == HASH_ENTRY);
 
     if ((marked = get_field(entry, "cited?")) != NULL &&
-        strcmp(marked->children[1]->content, "yes") == 0)
+        strcmp(marked->children[1]->data.content, "yes") == 0)
       bibliography_entry(file, entry);
   }
   fprintf(file, "</ol>\n");

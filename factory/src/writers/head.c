@@ -66,7 +66,7 @@ static void css(FILE *file, Node *tree) {
   for (int i = 0; i < styles->child_count; i++) {
     assert(styles->children[i]->code == HASH_BLOCK_SEQUENCE_ITEM);
     assert((href = styles->children[i]->children[0]) != NULL);
-    fprintf(file, "<link rel=\"stylesheet\" href=\"%s\">\n", href->content);
+    fprintf(file, "<link rel=\"stylesheet\" href=\"%s\">\n", href->data.content);
   }
 }
 
@@ -81,7 +81,7 @@ static void scripts(FILE *file, Node *tree) {
   for (int i = 0; i < scripts->child_count; i++) {
     assert(scripts->children[i]->code == HASH_BLOCK_SEQUENCE_ITEM);
     assert((src = scripts->children[i]->children[0]) != NULL);
-    fprintf(file, "<script src=\"%s\"></script>\n", src->content);
+    fprintf(file, "<script src=\"%s\"></script>\n", src->data.content);
   }
 }
 

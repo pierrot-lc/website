@@ -137,7 +137,7 @@ Node *get_key(Node *node, char *key) {
   if (node->child_count == 0)
     return NULL;
 
-  if (node->code == HASH_KEY && strcmp(node->content, key) == 0)
+  if (node->code == HASH_KEY && strcmp(node->data.content, key) == 0)
     return node;
 
   for (int i = 0; i < node->child_count; i++) {
@@ -165,12 +165,12 @@ char *get_value_scalar(Node *node) {
     exit(EXIT_FAILURE);
   }
 
-  if (node->children[0]->content == NULL) {
+  if (node->children[0]->data.content == NULL) {
     perror("Value is null");
     exit(EXIT_FAILURE);
   }
 
-  return node->children[0]->content;
+  return node->children[0]->data.content;
 }
 
 Node *parse_yaml(const char *source) {

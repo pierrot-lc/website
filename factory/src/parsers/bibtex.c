@@ -105,7 +105,7 @@ Node *get_field(Node *node, char *name) {
   if (node->child_count == 0)
     return NULL;
 
-  if (node->code == HASH_FIELD && strcmp(node->children[0]->content, name) == 0)
+  if (node->code == HASH_FIELD && strcmp(node->children[0]->data.content, name) == 0)
     return node;
 
   for (int i = 0; i < node->child_count; i++) {
@@ -120,7 +120,7 @@ Node *get_field(Node *node, char *name) {
 Node *search_bibliography_entry(Node *node, char *entry) {
   Node *found;
 
-  if (node->code == HASH_KEY_BRACE && strcmp(node->content, entry) == 0)
+  if (node->code == HASH_KEY_BRACE && strcmp(node->data.content, entry) == 0)
     return node->parent;
 
   for (int i = 0; i < node->child_count; i++) {
@@ -139,11 +139,11 @@ Author *parse_authors(Node *entry) {
 
   if (node == NULL) {
     fprintf(stderr, "'author' not found for bibtex entry %s\n",
-            entry->children[1]->content);
+            entry->children[1]->data.content);
     assert(false);
   }
 
-  author = strdup(node->children[1]->content);
+  author = strdup(node->children[1]->data.content);
   token = strtok_r(author, " ", &saveptr);
 
   curr = list = (Author *)calloc(1, sizeof(Author));

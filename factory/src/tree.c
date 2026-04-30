@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "hash.h"
 #include "tree.h"
 
 Node *create_node(unsigned int code, char *content) {
@@ -10,7 +11,7 @@ Node *create_node(unsigned int code, char *content) {
   assert(node != NULL);
 
   node->code = code;
-  node->content = content;
+  node->data.content = content;
   node->children = NULL;
   node->child_count = 0;
   node->parent = NULL;
@@ -34,9 +35,38 @@ Node *tree_root(Node *node) {
   return tree_root(node->parent);
 }
 
+void _free_table(Node *node) {
+  Table *table;
+  assert(node->code == HASH_PIPE_TABLE);
+
+  table = node->data.table;
+
+  for (int j = 0; j < table->ncols; j++) {
+    free_tree(table->columns[j]->cell);
+    free(table->columns[j]);
+  }
+  free(table->columns);
+
+  for (int i = 0; i < table->nrows; i++) {
+    for (int j = 0; j < table->ncols; j++)
+      free_tree(table->cells[i][j]);
+    free(table->cells[i]);
+  }
+  free(table->cells);
+
+  free(table);
+}
+
 void free_tree(Node *root) {
-  if (root->content == NULL)
-    free(root->content);
+  switch (root->code) {
+  case HASH_PIPE_TABLE:
+    _free_table(root);
+    break;
+  default:
+    if (root->data.content == NULL)
+      free(root->data.content);
+    break;
+  }
 
   for (int i = 0; i < root->child_count; i++)
     free_tree(root->children[i]);
@@ -48,8 +78,8 @@ void _print_node(Node *node, unsigned int offset) {
   for (int i = 0; i < offset; i++)
     fprintf(stderr, " ");
 
-  if (node->content != NULL)
-    fprintf(stderr, "%s ", node->content);
+  if (node->data.content != NULL)
+    fprintf(stderr, "%s ", node->data.content);
 
   fprintf(stderr, "(%u)\n", node->code);
 
