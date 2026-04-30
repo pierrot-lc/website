@@ -24,6 +24,7 @@ static void children(Node *parent, const char *source, TSNode ts_node) {
   }
 }
 
+// TODO: Remove all braces in the text, not just the beginning and ending ones.
 static Node *field(const char *source, TSNode ts_node) {
   char *text;
   Node *node, *name, *value;
@@ -105,7 +106,8 @@ Node *get_field(Node *node, char *name) {
   if (node->child_count == 0)
     return NULL;
 
-  if (node->code == HASH_FIELD && strcmp(node->children[0]->data.content, name) == 0)
+  if (node->code == HASH_FIELD &&
+      strcmp(node->children[0]->data.content, name) == 0)
     return node;
 
   for (int i = 0; i < node->child_count; i++) {

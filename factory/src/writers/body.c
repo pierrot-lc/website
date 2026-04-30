@@ -136,6 +136,7 @@ static bool is_cell_empty(Node *cell) {
   const char *empty_cell = "&nbsp;";
 
   // Safely access the content of an inner child.
+  // This ugly function can be deduced with a `print_tree(cell)`.
   if (cell->children[0]->code != HASH_INLINE ||
       cell->children[0]->child_count < 2 ||
       cell->children[0]->children[1]->code != HASH_INLINE ||
@@ -154,26 +155,26 @@ static bool is_cell_empty(Node *cell) {
  *
  * Returns 0 for cells that should be skipped (padding).
  */
-static unsigned int column_span(Table *table, int column) {
-  unsigned int col_span = 1;
+static unsigned int column_span(Table *table, unsigned int c) {
 
-  if (is_cell_empty(table->columns[column]->cell)) {
+  if (is_cell_empty(table->columns[c]->cell)) {
     // A cell should be ignored only if it has a preceding non-empty cell.
-    for (int j = 0; j < column; j++)
+    for (int j = 0; j < c; j++)
       if (!is_cell_empty(table->columns[j]->cell))
         return 0;
 
     return 1;
   }
 
-  for (int j = column + 1; j < table->ncols; j++) {
-    if (is_cell_empty(table->columns[j]->cell))
-      col_span += 1;
-    else
+  unsigned int span = 1;
+  for (int j = c + 1; j < table->ncols; j++) {
+    if (!is_cell_empty(table->columns[j]->cell))
       break;
+
+    span += 1;
   }
 
-  return col_span;
+  return span;
 }
 
 static void table(FILE *file, Node *node) {
@@ -189,8 +190,8 @@ static void table(FILE *file, Node *node) {
     if (col_span == 0)
       continue;
 
-    fprintf(file, "<th scope=\"col\" colspan=\"%u\" class=\"align-%s\">", col_span,
-            table->columns[j]->alignment);
+    fprintf(file, "<th scope=\"col\" colspan=\"%u\" class=\"align-%s\">",
+            col_span, table->columns[j]->alignment);
     write_children(file, table->columns[j]->cell);
     fprintf(file, "</th>\n");
   }

@@ -22,7 +22,9 @@ Node *search_bibliography_entry(Node *, char *);
 Node *get_field(Node *, char *);
 
 /**
- * Parse the list of authors of a bibtex entry.
+ * Parse the list of authors of a bibtex entry. This is highly not very
+ * precise.
+ * TODO: Find a better approach.
  */
 Author *parse_authors(Node *);
 void free_authors(Author *);
