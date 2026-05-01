@@ -4,6 +4,7 @@ date: 2026-03-23
 tags:
   - Research blogpost
   - TSP & NCO
+  - <a href="https://codeberg.org/pierrot-lc/circular-tsp">code</a>
 
 illustration: solution-example.png
 bibliography: biblio.bib
