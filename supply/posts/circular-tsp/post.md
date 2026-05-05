@@ -318,3 +318,21 @@ methods.
 
 We hope for this post to inspire other researchers to create NCO solvers with the least inductive
 biases as possible.
+
+
+---
+
+If you wish to cite this work, please use the following:
+
+```
+@misc{pereira_2026_20037323,
+  author       = {Pereira, Pierre},
+  title        = {Encoding the TSP Solution on a Circle},
+  month        = mar,
+  year         = 2026,
+  publisher    = {Pierre Pereira},
+  doi          = {10.5281/zenodo.20037323},
+  url          = {https://doi.org/10.5281/zenodo.20037323},
+  howpublished = {\url{https://pierrot-lc.dev/posts/circular-tsp/}},
+}
+```
