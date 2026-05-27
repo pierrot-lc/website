@@ -32,13 +32,12 @@ class FeedParser(HTMLParser):
 
     def handle_meta(self, attrs: list[tuple[str, str | None]]):
         data = {key: value for key, value in attrs}
-        match data.get("name", None):
-            case "published-date":
-                self.published_date = data.get("content", None)
-            case "og:title":
-                self.title = data.get("content", None)
-            case _:
-                pass
+
+        if data.get("name") == "published-date":
+            self.published_date = data.get("content")
+
+        if data.get("property") == "og:title":
+            self.title = data.get("content")
 
     @override
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
