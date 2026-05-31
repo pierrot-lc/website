@@ -134,4 +134,5 @@ if __name__ == "__main__":
     for directory in args.directories:
         items += list_items(directory)
     items = list(sorted(items, key=lambda i: i[2], reverse=True))
+    assert len(items) > 0, "Empty feed!"
     write_rss((args.name, args.description), items, args.root, args.config, args.out)
