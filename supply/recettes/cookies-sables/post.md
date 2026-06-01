@@ -4,6 +4,7 @@ date: 2026
 tags:
   - "Préparation: 15 min"
   - "Cuisson: 10 min"
+lang: "fr"
 ---
 
 Des cookies à la fois sablés et sablonneux!!

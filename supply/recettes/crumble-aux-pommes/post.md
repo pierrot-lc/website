@@ -4,6 +4,7 @@ date: 2026
 tags:
   - "Préparation: 20 min"
   - "Cuisson: 30 min"
+lang: "fr"
 ---
 
 Crumble du chat qui tousse !

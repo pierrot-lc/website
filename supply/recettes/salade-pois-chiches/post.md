@@ -3,6 +3,7 @@ title: Salade pois chiches
 date: 2026
 tags:
   - "Préparation: 20 min"
+lang: "fr"
 ---
 
 ## Ingrédients

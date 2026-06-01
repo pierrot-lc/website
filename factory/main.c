@@ -68,7 +68,7 @@ int from_markdown(char *markdown_path, char *config_path) {
 
   // Generate the page.
   fprintf(stdout, "<!DOCTYPE html>\n");
-  fprintf(stdout, "<html>\n");
+  fprintf(stdout, "<html lang=\"%s\">\n", get_value_scalar(get_key(markdown, "lang")));
   write_head(stdout, markdown);
   fprintf(stdout, "<body>\n");
 

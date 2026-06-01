@@ -1,9 +1,10 @@
 ---
-title: Tarte poireaux lardons
+title: "Tarte poireaux lardons"
 date: 2026
 tags:
   - "Préparation: 40 min"
   - "Cuisson: 20 min"
+lang: "fr"
 ---
 
 ## Ingrédients

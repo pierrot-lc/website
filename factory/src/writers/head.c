@@ -12,10 +12,10 @@
  * See https://developer.mozilla.org/en-US/docs/Web/HTML/Element/meta/name.
  */
 static void meta_name(FILE *file, char *name, char *content) {
-  fprintf(file, "<meta name=\"%s\" content=\"%s\">\n", name, content);
+  fprintf(file, "<meta name=\"%s\" content=\"%s\" />\n", name, content);
 }
 static void meta_property(FILE *file, char *name, char *content) {
-  fprintf(file, "<meta property=\"%s\" content=\"%s\">\n", name, content);
+  fprintf(file, "<meta property=\"%s\" content=\"%s\" />\n", name, content);
 }
 
 static void commons_meta(FILE *file, Node *node) {
@@ -28,9 +28,9 @@ static void commons_meta(FILE *file, Node *node) {
   title = get_key(node, "title");
   favicon = get_key(node, "favicon");
 
-  fprintf(file, "<meta charset=\"utf-8\">\n");
+  fprintf(file, "<meta charset=\"utf-8\" />\n");
   fprintf(file, "<meta name=\"viewport\" content=\"width=device-width, "
-                "initial-scale=1.0\">\n");
+                "initial-scale=1\" />\n");
 
   if (title != NULL)
     fprintf(file, "<title>%s</title>\n", get_value_scalar(title));
@@ -51,7 +51,7 @@ static void commons_meta(FILE *file, Node *node) {
     meta_name(file, "published-date", get_value_scalar(date));
 
   if (favicon != NULL)
-    fprintf(file, "<link rel=\"icon\" href=\"%s\" type=\"image/x-icon\">\n",
+    fprintf(file, "<link rel=\"icon\" href=\"%s\" type=\"image/x-icon\" />\n",
             get_value_scalar(favicon));
 }
 
@@ -66,7 +66,7 @@ static void css(FILE *file, Node *tree) {
   for (int i = 0; i < styles->child_count; i++) {
     assert(styles->children[i]->code == HASH_BLOCK_SEQUENCE_ITEM);
     assert((href = styles->children[i]->children[0]) != NULL);
-    fprintf(file, "<link rel=\"stylesheet\" href=\"%s\">\n", href->data.content);
+    fprintf(file, "<link rel=\"stylesheet\" href=\"%s\" />\n", href->data.content);
   }
 }
 
