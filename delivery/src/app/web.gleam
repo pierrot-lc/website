@@ -35,5 +35,5 @@ pub fn handle_request(req: Request, static_dir: String) -> Response {
   use <- wisp.serve_static(req, under: "", from: static_dir)
 
   let body = string_tree.from_string("<h1>Hello, Joe!</h1>")
-  wisp.html_response(body, 200)
+  wisp.html_response(body, 404)
 }
