@@ -113,14 +113,13 @@ Energy-based Models. Either one of the three could be fun and could work well. I
 a good way to generate the solution as a whole if I want to apply those models.
 
 ## Importance of research
-Problem-size generalization is of utmost importance for the applicability of NCO in the industry. I
-do not see TSP as a target but a playground in which I can explore NCO ideas and better understand
-what works and what doesn't. It also serves as a deep learning benchmark in general: I can take
-ideas from text and image generation and judge their efficiency at generating TSP solutions.
-Hopefully, new ideas and understanding coming from NCO will also help other deep learning domains as
-well.
+Problem-size generalization is critical for the applicability of NCO in the industry. I do not see
+TSP as a target but a playground in which I can explore NCO ideas and better understand what works
+and what doesn't. It also serves as a deep learning benchmark in general: I can take ideas from text
+and image generation and judge their efficiency at generating TSP solutions. Hopefully, new ideas
+and understanding coming from NCO will also help other deep learning domains as well.
 
-In the end, I also like the idea of building a principled neural solver. TSP has many invariances
+In the end, I really like the idea of building a principled neural solver. TSP has many invariances
 and I want my solver to reflect those realities, all while being robust to large-scale phenomena.
-Outside of those hardcoded constraints, I try to rely on the training algorithm as much as possible.
+Outside of those hardcoded constraints, I try to rely on the training algorithm as much as possible,
 I believe that approach is how NCO should be used.
