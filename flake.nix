@@ -27,14 +27,14 @@
     in
       pkgs.stdenv.mkDerivation {
         pname = "katex";
-        version = pkgs.nodePackages.katex.version;
+        version = pkgs.katex.version;
         unpackPhase = "true";
 
-        buildInputs = [pkgs.nodePackages.katex];
+        buildInputs = [pkgs.katex];
 
         installPhase = ''
           mkdir -p $out
-          cp -r ${pkgs.nodePackages.katex}/lib/node_modules/katex/dist/{katex.min.css,katex.min.js,fonts} $out
+          cp -r ${pkgs.katex}/lib/node_modules/katex/dist/{katex.min.css,katex.min.js,fonts} $out
         '';
       };
 
