@@ -3,7 +3,6 @@ title: Consommer moins et consommer mieux
 date: 2026-08-12
 tags:
   - "Mis à jour: 2026-08-12"
-illustration: illustration.png
 lang: fr
 ---
 
