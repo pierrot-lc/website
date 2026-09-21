@@ -6,6 +6,7 @@ body {
 
 main {
   margin-inline: 20px;
+  padding-bottom: 30vh;
 
   p, li {
     text-align: justify;
