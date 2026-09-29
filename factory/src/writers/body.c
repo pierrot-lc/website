@@ -82,7 +82,7 @@ static void code_block(FILE *file, Node *node) {
 
 static void image(FILE *file, Node *node) {
   Node *child;
-  Node *link = NULL, *desc = NULL;
+  Node *link = NULL, *desc = NULL, *title = NULL;
 
   for (int i = 0; i < node->child_count; i++) {
     child = node->children[i];
@@ -99,16 +99,27 @@ static void image(FILE *file, Node *node) {
     case HASH_LINK_LABEL:
       link = search_label_destination(tree_root(node), child->data.content);
       break;
+
+    case HASH_LINK_TITLE:
+      title = child;
     }
   }
 
   assert(link != NULL);
+
+  if (title != NULL)
+    fprintf(file, "\n<figure>\n");
 
   if (desc != NULL)
     fprintf(file, "<img src=\"%s\" alt=\"%s\">", link->data.content,
             desc->data.content);
   else
     fprintf(file, "<img src=\"%s\">", link->data.content);
+
+  if (title != NULL) {
+    fprintf(file, "\n<figcaption>%s</figcaption>\n", title->data.content);
+    fprintf(file, "</figure>\n");
+  }
 }
 
 static void latex(FILE *file, Node *node) {

@@ -74,7 +74,8 @@ static Node *full_reference_link(const char *source, TSNode ts_node) {
 }
 
 static Node *image(const char *source, TSNode ts_node) {
-  Node *node = NULL, *url = NULL, *desc = NULL;
+  unsigned int start, end;
+  Node *node = NULL, *url = NULL, *desc = NULL, *title = NULL;
   TSNode ts_child;
 
   node = create_node(HASH_IMAGE, NULL);
@@ -96,6 +97,13 @@ static Node *image(const char *source, TSNode ts_node) {
       url = create_node(HASH_LINK_LABEL, ts_node_text(source, ts_child));
       break;
 
+    case HASH_LINK_TITLE:
+      // Ignore leading and ending quotes.
+      start = ts_node_start_byte(ts_child) + 1;
+      end = ts_node_end_byte(ts_child) - 1;
+      title = create_node(HASH_LINK_TITLE, extract_text(source, start, end));
+      break;
+
     default:
       fprintf(stderr, "[INLINE IMAGE] Unknown type: %s (%u)",
               ts_node_type(ts_child), hash(ts_node_type(ts_child)));
@@ -107,6 +115,9 @@ static Node *image(const char *source, TSNode ts_node) {
 
   if (desc != NULL)
     add_child(node, desc);
+
+  if (title != NULL)
+    add_child(node, title);
 
   return node;
 }

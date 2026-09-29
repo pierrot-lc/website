@@ -6,4 +6,6 @@ An image:
 
 ![](/another.png)
 
+![Image alt](/image.png "Figure caption")
+
 [label]: source.png
