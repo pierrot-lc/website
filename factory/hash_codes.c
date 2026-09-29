@@ -4,7 +4,7 @@
 
 #include "hash.h"
 
-#define TOTAL_TYPES 74
+#define TOTAL_TYPES 75
 
 int main() {
 
@@ -60,6 +60,7 @@ int main() {
       "link_label",
       "link_reference_definition",
       "link_text",
+      "link_title",
       "list",
       "list_item",
       "minus_metadata",
