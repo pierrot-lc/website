@@ -168,7 +168,7 @@ static Node *list_item(const char *source, TSNode ts_node) {
   TSNode ts_content;
   Node *node;
 
-  assert(ts_node_named_child_count(ts_node) == 2);
+  assert(ts_node_named_child_count(ts_node) >= 2);
 
   ts_content = ts_node_named_child(ts_node, 1);
   assert(hash(ts_node_type(ts_content)) == HASH_PARAGRAPH);
