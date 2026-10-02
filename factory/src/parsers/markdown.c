@@ -271,6 +271,7 @@ static Node *pipe_table(const char *source, TSNode ts_node) {
     // Column content.
     ts_child = ts_node_named_child(ts_headers, j);
     table->columns[j]->cell = pipe_table_cell(source, ts_child);
+    table->columns[j]->cell->parent = node;
 
     // Column alignment.
     ts_child = ts_node_named_child(ts_delimiters, j);
@@ -317,6 +318,7 @@ static Node *pipe_table(const char *source, TSNode ts_node) {
     for (int j = 0; j < table->ncols; j++) {
       ts_child = ts_node_named_child(ts_row, j);
       table->cells[i][j] = pipe_table_cell(source, ts_child);
+      table->cells[i][j]->parent=node;
     }
   }
 
