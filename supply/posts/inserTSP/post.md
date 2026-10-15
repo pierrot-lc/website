@@ -131,10 +131,12 @@ of the node $i$ in the tour. The new representation $\hat{x}_i \in \mathbb{R}^{2
 projected back to $\mathbb{R}^h$ with an MLP. We consider unvisited nodes to be their own neighbors
 such that this operation is also applicable to them.
 
-<figure class="image">
-  <img src="tour-embedding.png" alt="Tour embedding" width="500">
-  <figcaption>Each city in the tour receives the embedding of its neighbors.</figcaption>
-</figure>
+![Tour embedding](./tour-embedding.png "Each city in the tour receives the embedding of its neighbors.")
+
+<!-- <figure class="image"> -->
+<!--   <img src="tour-embedding.png" alt="Tour embedding" width="500"> -->
+<!--   <figcaption>Each city in the tour receives the embedding of its neighbors.</figcaption> -->
+<!-- </figure> -->
 
 A classical self-attention operation is then used so that all nodes (visited and unvisited) can
 freely exchange information and no flops are wasted.
@@ -186,7 +188,7 @@ So we trained a model with multiple cities to insert at the same time. For each 
 mini-batch, we sample between 1 and 10 unvisited cities to insert and compute the loss over those
 cities. Each of those cities are marked such that the model knows which are to be inserted.
 
-![Comparing 5-2-1 parallel marks](./parallel-comparison.gif)
+![Comparing 5-2-1 parallel marks](./parallel-comparison.gif "Comparing 5-2-1 parallel marks.")
 
 Here's the results when the model gets evaluated with a variable number of insertions in parallel:
 
