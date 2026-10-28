@@ -1,6 +1,6 @@
 ---
 title: Random Neural Insertions
-date: 2026-09-30
+date: 2026-10-27
 tags:
   - Research blogpost
   - TSP & NCO
