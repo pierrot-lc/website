@@ -1,3 +1,12 @@
+---
+title: Gâteau au chocolat
+date: 2026
+tags:
+  - "Préparation: 30 min"
+  - "Cuisson: 30 min"
+lang: "fr"
+---
+
 ## Ingrédients
 
 - 200g de chocolat noir pâtissier
